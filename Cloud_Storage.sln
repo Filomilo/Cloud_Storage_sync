@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35825.156 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cloud_Storage_Server", "Cloud_Storage_Server.csproj", "{F068DAE3-F1F1-4FCA-A8AF-4FD00B79772E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F068DAE3-F1F1-4FCA-A8AF-4FD00B79772E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F068DAE3-F1F1-4FCA-A8AF-4FD00B79772E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F068DAE3-F1F1-4FCA-A8AF-4FD00B79772E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F068DAE3-F1F1-4FCA-A8AF-4FD00B79772E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4968B70D-3308-4BF5-B305-71A7B4475AED}
+	EndGlobalSection
+EndGlobal
