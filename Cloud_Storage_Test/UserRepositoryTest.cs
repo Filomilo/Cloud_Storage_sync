@@ -3,12 +3,14 @@ using Cloud_Storage_Server.Database;
 using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
+using NUnit.Framework;
+
 
 namespace Cloud_Storage_Test;
-
+[TestFixture]
 public class UserRepositoryTest
 {
-    [Fact]
+    [Test]
     public void saveUser()
     {
         using (var context = new DatabaseContext())
@@ -27,12 +29,12 @@ public class UserRepositoryTest
             );
 
             int amountOfUsersAfter=context.Users.ToList().Count;
-            Assert.Equal(amountOFUsersBefore+1,amountOfUsersAfter);
+            Assert.That(amountOfUsersAfter == amountOFUsersBefore + 1);
 
         }
            
     }
-    [Fact]
+    [Test]
     public void saveUserIncorrectEmail()
     {
 
@@ -40,7 +42,7 @@ public class UserRepositoryTest
         {
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
-            Assert.Throws(typeof(ValidationException),new Action((() =>
+            Assert.Catch(expectedExceptionType: typeof(ValidationException),code: () =>
             {
                 UserRepository.saveUser(
                     new User()
@@ -50,12 +52,12 @@ public class UserRepositoryTest
                     }
 
                 );
-            })));
+            });
 
         }
 
     }
-    [Fact]
+    [Test]
     public void saveUserWithTheSameEmail()
     {
         using (var context = new DatabaseContext())
@@ -74,8 +76,8 @@ public class UserRepositoryTest
             );
 
             int amountOfUsersAfter = context.Users.ToList().Count;
-            Assert.Equal(amountOFUsersBefore + 1, amountOfUsersAfter);
-            Assert.Throws(typeof(DbUpdateException), new Action((() =>
+            Assert.That(amountOFUsersBefore + 1==amountOfUsersAfter);
+            Assert.Catch(typeof(DbUpdateException),() =>
             {
                 UserRepository.saveUser(
                     new User()
@@ -85,7 +87,7 @@ public class UserRepositoryTest
                     }
 
                 );
-            })));
+            });
         }
 
     }
