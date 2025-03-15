@@ -482,3 +482,5 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+Cloud_Storage_Server/databse.dat
+/Cloud_Storage_Server/Migrations
