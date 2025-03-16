@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using File = Cloud_Storage_Server.Database.Models.File;
 
-namespace Cloud_Storage_Test;
+namespace Cloud_Storage_Test.Database;
 
 
 public class FileRepositoryTest
@@ -18,11 +18,11 @@ public class FileRepositoryTest
     [SetUp]
     public void  PrepareUser()
     {
-        this.context = new DatabaseContext();
+        context = new DatabaseContext();
         
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
-            this._savedUser = UserRepository.saveUser(new User()
+            _savedUser = UserRepository.saveUser(new User()
             {
                 mail = "mail@mail.mail",
                 password = "password"
@@ -31,7 +31,7 @@ public class FileRepositoryTest
     [TearDown]
 public void removeContext()
 {
-    this.context.Dispose();
+    context.Dispose();
 }
 
 [Test]
@@ -47,7 +47,7 @@ public void removeContext()
                     Name = "File",
                     Path = "/location1/location2/location/3",
                     SyncDate = DateTime.Now,
-                    OwnerId = this._savedUser.id
+                    OwnerId = _savedUser.id
 
                 }
 
@@ -80,7 +80,7 @@ public void removeContext()
 
     [TestCase("123")]
     [TestCase("///.sadasd//as//")]
-    public void SaveNewFile_IncorrectPAth(String inocorrectPathName)
+    public void SaveNewFile_IncorrectPAth(string inocorrectPathName)
     {
         using (var context = new DatabaseContext())
         {
@@ -97,7 +97,7 @@ public void removeContext()
                         Name = "File",
                         Path = inocorrectPathName,
                         SyncDate = DateTime.Now,
-                        OwnerId = this._savedUser.id
+                        OwnerId = _savedUser.id
                     }
 
                 );
@@ -122,7 +122,7 @@ public void removeContext()
                 Name = "File",
                 Path = "/",
                 SyncDate = DateTime.Now,
-                OwnerId = this._savedUser.id
+                OwnerId = _savedUser.id
             };
             File fileToSaveCopy = new File()
             {
@@ -131,7 +131,7 @@ public void removeContext()
                 Name = "File",
                 Path = "/",
                 SyncDate = DateTime.Now,
-                OwnerId = this._savedUser.id
+                OwnerId = _savedUser.id
             };
 
 
@@ -165,7 +165,7 @@ public void removeContext()
                 Name = "File",
                 Path = "/",
                 SyncDate = DateTime.Now,
-                OwnerId = this._savedUser.id
+                OwnerId = _savedUser.id
             };
 
             File fileUpdateData = new File()
@@ -175,7 +175,7 @@ public void removeContext()
                 Name = "File88",
                 Path = "/newFolder",
                 SyncDate = DateTime.Now,
-                OwnerId = this._savedUser.id
+                OwnerId = _savedUser.id
 
             };
 
@@ -210,7 +210,7 @@ public void removeContext()
                 Name = "File",
                 Path = "/",
                 SyncDate = DateTime.Now,
-                OwnerId = this._savedUser.id
+                OwnerId = _savedUser.id
 
             };
 
@@ -221,7 +221,7 @@ public void removeContext()
                 Name = "File88",
                 Path = "/newFolder",
                 SyncDate = DateTime.Now,
-                OwnerId = this._savedUser.id
+                OwnerId = _savedUser.id
 
             };
             Assert.Throws(typeof(KeyNotFoundException),
@@ -248,7 +248,7 @@ public void removeContext()
                 Name = "File",
                 Path = "/",
                 SyncDate = DateTime.Now,
-                OwnerId = this._savedUser.id
+                OwnerId = _savedUser.id
 
 
             };
@@ -291,7 +291,7 @@ public void removeContext()
                 Name = "File",
                 Path = "/123/123",
                 SyncDate = DateTime.Now,
-                OwnerId = this._savedUser.id
+                OwnerId = _savedUser.id
 
             };
 
@@ -304,7 +304,7 @@ public void removeContext()
                 path: savedFile.Path,
                 name: savedFile.Name,
                 extension: savedFile.Extenstion,
-                ownerId: this._savedUser.id
+                ownerId: _savedUser.id
                 );
             Assert.That(fileToSave.Extenstion == fileInRepository.Extenstion);
             Assert.That(fileToSave.Hash == fileInRepository.Hash);
@@ -338,7 +338,7 @@ public void removeContext()
                     path: fileToSave.Path,
                     name: fileToSave.Name,
                     extension: fileToSave.Extenstion,
-                    ownerId: this._savedUser.id
+                    ownerId: _savedUser.id
                 );
             });
 
@@ -361,7 +361,7 @@ public void removeContext()
                 Name = $"File_{i}",
                 Path = "/123/123",
                 SyncDate = DateTime.Now,
-                OwnerId = this._savedUser.id
+                OwnerId = _savedUser.id
 
             };
 
@@ -371,7 +371,7 @@ public void removeContext()
             );
         }
 
-        List<File> files = FileRepository.GetAllUserFiles(this._savedUser.id);
+        List<File> files = FileRepository.GetAllUserFiles(_savedUser.id);
         Assert.That(files.Count== amountOfFile);
 
 

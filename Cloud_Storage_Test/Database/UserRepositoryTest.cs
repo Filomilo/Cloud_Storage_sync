@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 
 
-namespace Cloud_Storage_Test;
+namespace Cloud_Storage_Test.Database;
 [TestFixture]
 public class UserRepositoryTest
 {
