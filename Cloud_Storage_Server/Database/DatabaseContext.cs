@@ -13,7 +13,8 @@ namespace Cloud_Storage_Server.Database
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             //optionsBuilder.UseInMemoryDatabase("cloud_storage");
-            optionsBuilder.UseSqlite("Data Source=databse.dat");
+            optionsBuilder.UseSqlite("Data Source=databse.sqllite");
+            
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -21,6 +22,7 @@ namespace Cloud_Storage_Server.Database
                 .HasIndex(f => new { f.Extenstion, f.Name, f.Path,f.OwnerId })
                 .IsUnique();
         }
+
 
     }
 }
