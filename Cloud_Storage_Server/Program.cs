@@ -68,6 +68,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.UseWebSockets();
+
 
 using (var scope = app.Services.CreateScope())
 {
