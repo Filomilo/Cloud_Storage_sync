@@ -1,15 +1,15 @@
 ﻿using Cloud_Storage_Server.Database.Models;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Diagnostics;
-using File = Cloud_Storage_Server.Database.Models.File;
+using FileData = Cloud_Storage_Server.Database.Models.FileData;
 
 namespace Cloud_Storage_Server.Database.Repositories
 {
     public static class FileRepository
     {
-        public static File SaveNewFile(File file)
+        public static FileData SaveNewFile(FileData file)
         {
-            File savedFile = null;
+            FileData savedFile = null;
             using (DatabaseContext context = new DatabaseContext())
             {
                 var validationContext = new ValidationContext(file);
@@ -20,14 +20,14 @@ namespace Cloud_Storage_Server.Database.Repositories
             return savedFile;
         }
 
-        public static File  UpdateFile(File previousFileDataa,File newFileData)
+        public static FileData  UpdateFile(FileData previousFileDataa,FileData newFileData)
         {
-            File updatedFile;
+            FileData updatedFile;
             using (DatabaseContext context = new DatabaseContext())
             {
                 var validationContext = new ValidationContext(newFileData);
                 Validator.ValidateObject(newFileData, validationContext, true);
-                File found= context.Files.FirstOrDefault(
+                FileData found= context.Files.FirstOrDefault(
                     x => x.Path == previousFileDataa.Path && x.Name == previousFileDataa.Name && x.Extenstion == previousFileDataa.Extenstion
                 );
                 if (found == null)
@@ -47,18 +47,18 @@ namespace Cloud_Storage_Server.Database.Repositories
         }
 
 
-        public static File GetFileOfID(Guid id)
+        public static FileData GetFileOfID(Guid id)
         {
             using (DatabaseContext context = new DatabaseContext())
             {
-               File file= context.Files.Find(id);
+               FileData file= context.Files.Find(id);
                if (file == null)
                    throw new KeyNotFoundException("No file iwth this guuid");
                return file;
             }
         }
 
-        public static File getFileByPathNameExtensionAndUser(
+        public static FileData getFileByPathNameExtensionAndUser(
             string path,
             string name,
             string extension,
@@ -66,7 +66,7 @@ namespace Cloud_Storage_Server.Database.Repositories
         ){
         using (DatabaseContext context = new DatabaseContext())
         {
-                File file = context.Files.FirstOrDefault(
+                FileData file = context.Files.FirstOrDefault(
                                                     x =>
                                                         x.Path == path &&
                                                         x.Name == name &&
@@ -83,11 +83,11 @@ namespace Cloud_Storage_Server.Database.Repositories
         }
 
 
-        public static List<File> GetAllUserFiles(long userId)
+        public static List<FileData> GetAllUserFiles(long userId)
         {
             using (DatabaseContext context = new DatabaseContext())
             {
-                List<File> files = context.Files.Where(x => x.OwnerId == userId).ToList();
+                List<FileData> files = context.Files.Where(x => x.OwnerId == userId).ToList();
                 return files;
             }
         }

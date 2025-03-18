@@ -61,5 +61,7 @@ namespace Cloud_Storage_Server.Controllers
 
             return Ok(AuthService.GenerateToken(savedUser));
         }
+
+
     }
 }

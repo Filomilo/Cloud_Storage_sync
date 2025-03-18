@@ -5,7 +5,7 @@ using Cloud_Storage_Server.Database.Repositories;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-using File = Cloud_Storage_Server.Database.Models.File;
+using FileData = Cloud_Storage_Server.Database.Models.FileData;
 
 namespace Cloud_Storage_Test.Database;
 
@@ -59,10 +59,10 @@ public void removeContext()
     [Test]
     public void SaveNewFile_UserDoesntExist()
     {
-            Assert.Throws(typeof(DbUpdateException), () =>
+        Assert.Throws(typeof(DbUpdateException), (TestDelegate)(() =>
             {
                 FileRepository.SaveNewFile(
-                    new File()
+                    (FileData)new Cloud_Storage_Server.Database.Models.File()
                     {
                         Extenstion = "jpg",
                         Hash = "211283197283",
@@ -74,7 +74,7 @@ public void removeContext()
                     }
 
                 );
-            });
+            }));
         
     }
 
@@ -87,10 +87,10 @@ public void removeContext()
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
             int amountOfFilesBefore = context.Files.ToList().Count;
-            Assert.Throws(typeof(ValidationException), () =>
+            Assert.Throws(typeof(ValidationException), (TestDelegate)(() =>
             {
                 FileRepository.SaveNewFile(
-                    new File()
+                    (FileData)new Cloud_Storage_Server.Database.Models.File()
                     {
                         Extenstion = "jpg",
                         Hash = "211283197283",
@@ -101,7 +101,7 @@ public void removeContext()
                     }
 
                 );
-            });
+            }));
 
 
             int amoutOfFilesAfter = context.Files.ToList().Count;
@@ -115,7 +115,7 @@ public void removeContext()
     public void SaveNewFile_fileAlreadyExist()
     {
 
-            File fileToSave = new File()
+            FileData fileToSave = new File()
             {
                 Extenstion = "jpg",
                 Hash = "211283197283",
@@ -124,7 +124,7 @@ public void removeContext()
                 SyncDate = DateTime.Now,
                 OwnerId = _savedUser.id
             };
-            File fileToSaveCopy = new File()
+            FileData fileToSaveCopy = new File()
             {
                 Extenstion = "jpg",
                 Hash = "211283197283",
@@ -158,7 +158,7 @@ public void removeContext()
     {
   
 
-            File fileToSave = new File()
+            FileData fileToSave = new File()
             {
                 Extenstion = "jpg",
                 Hash = "211283197283",
@@ -168,7 +168,7 @@ public void removeContext()
                 OwnerId = _savedUser.id
             };
 
-            File fileUpdateData = new File()
+            FileData fileUpdateData = new File()
             {
                 Extenstion = "png",
                 Hash = "88888",
@@ -179,13 +179,13 @@ public void removeContext()
 
             };
 
-            File savedFile = FileRepository.SaveNewFile(
+            FileData savedFile = FileRepository.SaveNewFile(
                  fileToSave
              );
 
             FileRepository.UpdateFile(fileToSave, fileUpdateData);
 
-            File fileInRepository = FileRepository.GetFileOfID(savedFile.Id);
+            FileData fileInRepository = FileRepository.GetFileOfID(savedFile.Id);
             Assert.That(fileUpdateData.Extenstion== fileInRepository.Extenstion);
             Assert.That(fileUpdateData.Hash == fileInRepository.Hash);
             Assert.That(fileUpdateData.Name == fileInRepository.Name);
@@ -203,7 +203,7 @@ public void removeContext()
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
 
-            File fileToSave = new File()
+            FileData fileToSave = new File()
             {
                 Extenstion = "jpg",
                 Hash = "211283197283",
@@ -214,7 +214,7 @@ public void removeContext()
 
             };
 
-            File fileUpdateData = new File()
+            FileData fileUpdateData = new File()
             {
                 Extenstion = "png",
                 Hash = "88888",
@@ -241,7 +241,7 @@ public void removeContext()
     public void GetFileOfID_correct()
     {
  
-            File fileToSave = new File()
+            FileData fileToSave = new File()
             {
                 Extenstion = "jpg",
                 Hash = "211283197283",
@@ -254,11 +254,11 @@ public void removeContext()
             };
 
 
-            File savedFile = FileRepository.SaveNewFile(
+            FileData savedFile = FileRepository.SaveNewFile(
                 fileToSave
             );
 
-            File fileInRepository = FileRepository.GetFileOfID(savedFile.Id);
+            FileData fileInRepository = FileRepository.GetFileOfID(savedFile.Id);
             Assert.That(fileToSave.Extenstion == fileInRepository.Extenstion);
             Assert.That(fileToSave.Hash == fileInRepository.Hash);
             Assert.That(fileToSave.Name == fileInRepository.Name);
@@ -275,7 +275,7 @@ public void removeContext()
 
             Assert.Throws(typeof(KeyNotFoundException), () =>
             {
-                File fileInRepository = FileRepository.GetFileOfID(new Guid());
+                FileData fileInRepository = FileRepository.GetFileOfID(new Guid());
             });
 
     }
@@ -284,7 +284,7 @@ public void removeContext()
     public void getFileByPathNameAndExtension_correct()
     {
  
-            File fileToSave = new File()
+            FileData fileToSave = new File()
             {
                 Extenstion = "jpg",
                 Hash = "211283197283",
@@ -296,11 +296,11 @@ public void removeContext()
             };
 
 
-            File savedFile = FileRepository.SaveNewFile(
+            FileData savedFile = FileRepository.SaveNewFile(
                 fileToSave
             );
 
-            File fileInRepository = FileRepository.getFileByPathNameExtensionAndUser(
+            FileData fileInRepository = FileRepository.getFileByPathNameExtensionAndUser(
                 path: savedFile.Path,
                 name: savedFile.Name,
                 extension: savedFile.Extenstion,
@@ -323,7 +323,7 @@ public void removeContext()
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
 
-            File fileToSave = new File()
+            FileData fileToSave = new File()
             {
                 Extenstion = "jpg",
                 Hash = "211283197283",
@@ -334,7 +334,7 @@ public void removeContext()
             };
             Assert.Throws(typeof(KeyNotFoundException), () =>
             {
-                File fileInRepository = FileRepository.getFileByPathNameExtensionAndUser(
+                FileData fileInRepository = FileRepository.getFileByPathNameExtensionAndUser(
                     path: fileToSave.Path,
                     name: fileToSave.Name,
                     extension: fileToSave.Extenstion,
@@ -354,7 +354,7 @@ public void removeContext()
         int amountOfFile = 10;
         for (int i = 0; i < amountOfFile; i++)
         {
-            File fileToSave = new File()
+            FileData fileToSave = new File()
             {
                 Extenstion = "jpg",
                 Hash = "211283197283",
@@ -366,12 +366,12 @@ public void removeContext()
             };
 
 
-            File savedFile = FileRepository.SaveNewFile(
+            FileData savedFile = FileRepository.SaveNewFile(
                 fileToSave
             );
         }
 
-        List<File> files = FileRepository.GetAllUserFiles(_savedUser.id);
+        List<FileData> files = FileRepository.GetAllUserFiles(_savedUser.id);
         Assert.That(files.Count== amountOfFile);
 
 
