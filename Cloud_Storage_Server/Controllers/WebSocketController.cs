@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Cloud_Storage_Server.Database.Models;
+using Cloud_Storage_Server.Database.Repositories;
+using Cloud_Storage_Server.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System;
@@ -10,51 +13,46 @@ namespace Cloud_Storage_Server.Controllers
     
     public class WebSocketController : Controller
     {
+        private readonly IWebsockerConnectionService websockerConnectionService;
+        public WebSocketController(IWebsockerConnectionService websockerConnectionService)
+        {
+            this.websockerConnectionService = websockerConnectionService;
+        }
+
         [SwaggerIgnore]
         [Route("/ws")]
         [Authorize]
         public async Task Get()
         {
+
+
             if (HttpContext.WebSockets.IsWebSocketRequest)
             {
-                using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+                using WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+                User connectedUser = UserRepository.getUserByMail(HttpContext.User.Identity.Name);
+                
+                this.websockerConnectionService.addConnetedUser(webSocket, connectedUser);
 
-                string mes = "HEllo world";
-                await webSocket.SendAsync(
-                new ArraySegment<byte>(Encoding.ASCII.GetBytes(mes)),  // The message bytes
-    WebSocketMessageType.Text,       // Message type (Text/Binary/Close)
-    true,                            // Marks end of message
-    CancellationToken.None           // Cancellation token
-);
-                await Echo(webSocket);
+                var Buffrer = new Byte[2];
+                var token = new CancellationToken();
+                   
+
+                //await gor user to discnnect it
+                var res = await webSocket.ReceiveAsync(Buffrer, token);
+                //if (res.MessageType == WebSocketMessageType.Close)
+                //    Console.WriteLine("disconneted");
+                this.websockerConnectionService.removeConnectedUser(webSocket);
             }
             else
             {
                 HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             }
+
+          
         }
-        private static async Task Echo(WebSocket webSocket)
-        {
-            var buffer = new byte[1024 * 4];
-            var receiveResult = await webSocket.ReceiveAsync(
-                new ArraySegment<byte>(buffer), CancellationToken.None);
 
-            while (!receiveResult.CloseStatus.HasValue)
-            {
-                await webSocket.SendAsync(
-                    new ArraySegment<byte>(buffer, 0, receiveResult.Count),
-                    receiveResult.MessageType,
-                    receiveResult.EndOfMessage,
-                    CancellationToken.None);
+         
 
-                receiveResult = await webSocket.ReceiveAsync(
-                    new ArraySegment<byte>(buffer), CancellationToken.None);
-            }
-
-            await webSocket.CloseAsync(
-                receiveResult.CloseStatus.Value,
-                receiveResult.CloseStatusDescription,
-                CancellationToken.None);
-        }
+        
     }
 }

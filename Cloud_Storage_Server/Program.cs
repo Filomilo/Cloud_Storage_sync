@@ -1,6 +1,7 @@
 using System.Text;
 using Cloud_Storage_Server.Configurations;
 using Cloud_Storage_Server.Database;
+using Cloud_Storage_Server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -37,7 +38,7 @@ builder.Services.AddSwaggerGen(setup =>
     });
 });
 builder.Services.AddDbContext<DatabaseContext>();
-
+builder.Services.AddSingleton<IWebsockerConnectionService, WebsockerConnectionService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
