@@ -21,6 +21,15 @@ namespace Cloud_Storage_Server.Database.Repositories
             return usersaved;
         }
 
-
+        internal static User getUserByMail(string mail)
+        {
+            using (DatabaseContext context = new DatabaseContext())
+            {
+                User user = context.Users.FirstOrDefault(x => x.mail == mail);
+                if (user == null)
+                    throw new KeyNotFoundException("not user with that email in database");
+                return user;
+            }
+        }
     }
 }

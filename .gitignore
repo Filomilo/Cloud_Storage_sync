@@ -484,3 +484,6 @@ $RECYCLE.BIN/
 *.swp
 Cloud_Storage_Server/databse.dat
 /Cloud_Storage_Server/Migrations
+*.sqllite-shm
+*.sqllite-wal
+*.sqllite
