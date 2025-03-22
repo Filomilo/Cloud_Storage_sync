@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cloud_Storage_Test", "Cloud
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cloud_Storage_Desktop_lib", "Cloud_Storage_desktop\Cloud_Storage_Desktop_lib\Cloud_Storage_Desktop_lib.csproj", "{CA370CCA-FF1C-48AF-9638-4BBBE4356515}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleCloudDriveSync", "ConsoleCloudDriveSync\ConsoleCloudDriveSync.csproj", "{90CEC080-22EF-4DF5-A85B-E2F82543562A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{CA370CCA-FF1C-48AF-9638-4BBBE4356515}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA370CCA-FF1C-48AF-9638-4BBBE4356515}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA370CCA-FF1C-48AF-9638-4BBBE4356515}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90CEC080-22EF-4DF5-A85B-E2F82543562A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90CEC080-22EF-4DF5-A85B-E2F82543562A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90CEC080-22EF-4DF5-A85B-E2F82543562A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90CEC080-22EF-4DF5-A85B-E2F82543562A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
