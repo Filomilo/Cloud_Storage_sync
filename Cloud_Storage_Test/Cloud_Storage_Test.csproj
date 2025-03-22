@@ -21,5 +21,9 @@
     <ProjectReference Include="..\Cloud_Storage_Server\Cloud_Storage_Server.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="testData\" />
+  </ItemGroup>
+
 
 </Project>

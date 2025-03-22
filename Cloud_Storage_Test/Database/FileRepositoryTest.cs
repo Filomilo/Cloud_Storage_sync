@@ -40,7 +40,7 @@ public void removeContext()
      
             int amountOfFilesBefore = context.Files.ToList().Count;
             FileRepository.SaveNewFile(
-                new File()
+                new FileData()
                 {
                     Extenstion = "jpg",
                     Hash = "211283197283",
@@ -62,7 +62,7 @@ public void removeContext()
         Assert.Throws(typeof(DbUpdateException), (TestDelegate)(() =>
             {
                 FileRepository.SaveNewFile(
-                    (FileData)new Cloud_Storage_Server.Database.Models.File()
+                    (FileData)new Cloud_Storage_Server.Database.Models.FileData()
                     {
                         Extenstion = "jpg",
                         Hash = "211283197283",
@@ -90,7 +90,7 @@ public void removeContext()
             Assert.Throws(typeof(ValidationException), (TestDelegate)(() =>
             {
                 FileRepository.SaveNewFile(
-                    (FileData)new Cloud_Storage_Server.Database.Models.File()
+                    (FileData)new Cloud_Storage_Server.Database.Models.FileData()
                     {
                         Extenstion = "jpg",
                         Hash = "211283197283",
@@ -115,7 +115,7 @@ public void removeContext()
     public void SaveNewFile_fileAlreadyExist()
     {
 
-            FileData fileToSave = new File()
+            FileData fileToSave = new FileData()
             {
                 Extenstion = "jpg",
                 Hash = "211283197283",
@@ -124,7 +124,7 @@ public void removeContext()
                 SyncDate = DateTime.Now,
                 OwnerId = _savedUser.id
             };
-            FileData fileToSaveCopy = new File()
+            FileData fileToSaveCopy = new FileData()
             {
                 Extenstion = "jpg",
                 Hash = "211283197283",
@@ -158,7 +158,7 @@ public void removeContext()
     {
   
 
-            FileData fileToSave = new File()
+            FileData fileToSave = new FileData()
             {
                 Extenstion = "jpg",
                 Hash = "211283197283",
@@ -168,7 +168,7 @@ public void removeContext()
                 OwnerId = _savedUser.id
             };
 
-            FileData fileUpdateData = new File()
+            FileData fileUpdateData = new FileData()
             {
                 Extenstion = "png",
                 Hash = "88888",
@@ -203,7 +203,7 @@ public void removeContext()
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
 
-            FileData fileToSave = new File()
+            FileData fileToSave = new FileData()
             {
                 Extenstion = "jpg",
                 Hash = "211283197283",
@@ -214,7 +214,7 @@ public void removeContext()
 
             };
 
-            FileData fileUpdateData = new File()
+            FileData fileUpdateData = new FileData()
             {
                 Extenstion = "png",
                 Hash = "88888",
@@ -241,7 +241,7 @@ public void removeContext()
     public void GetFileOfID_correct()
     {
  
-            FileData fileToSave = new File()
+            FileData fileToSave = new FileData()
             {
                 Extenstion = "jpg",
                 Hash = "211283197283",
@@ -284,7 +284,7 @@ public void removeContext()
     public void getFileByPathNameAndExtension_correct()
     {
  
-            FileData fileToSave = new File()
+            FileData fileToSave = new FileData()
             {
                 Extenstion = "jpg",
                 Hash = "211283197283",
@@ -323,7 +323,7 @@ public void removeContext()
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
 
-            FileData fileToSave = new File()
+            FileData fileToSave = new FileData()
             {
                 Extenstion = "jpg",
                 Hash = "211283197283",
@@ -354,7 +354,7 @@ public void removeContext()
         int amountOfFile = 10;
         for (int i = 0; i < amountOfFile; i++)
         {
-            FileData fileToSave = new File()
+            FileData fileToSave = new FileData()
             {
                 Extenstion = "jpg",
                 Hash = "211283197283",
