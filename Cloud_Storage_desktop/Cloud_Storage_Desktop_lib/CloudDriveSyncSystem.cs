@@ -8,7 +8,7 @@ using Lombok.NET;
 namespace Cloud_Storage_Desktop_lib
 {
     [Singleton]
-    class CloudDriveSyncSystem
+    public partial class CloudDriveSyncSystem
     {
 
     }
