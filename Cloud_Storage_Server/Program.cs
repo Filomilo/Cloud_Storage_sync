@@ -39,7 +39,7 @@ builder.Services.AddSwaggerGen(setup =>
 });
 builder.Services.AddDbContext<DatabaseContext>();
 builder.Services.AddSingleton<IWebsockerConnectionService, WebsockerConnectionService>();
-
+builder.Services.AddSingleton<IFileSystemService>(provider => new FileSystemService("dataStorage/"));
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
