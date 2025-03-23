@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
+using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Services;
 using log4net;
 using log4net.Repository.Hierarchy;
@@ -126,7 +127,22 @@ namespace Cloud_Storage_Desktop_lib
             this.client.DefaultRequestHeaders.Authorization = null;
             CredentialManager.removeToken();
         }
-        
 
+        public void uploudFile(UploudFileData file, byte[] data)
+        {
+            var form = FileMangamentSerivce.GetFormDatForFile(file, data);
+            var response = this.client.PostAsync("api/Files/uploud", form).Result;
+
+            if (response.IsSuccessStatusCode)
+            {
+                logger.Info("Student data uploaded successfully!");
+            }
+            else
+            {
+                logger.Error($"Failed to upload data: {response.StatusCode}");
+            }
+        }
     }
-}
+    }
+
+

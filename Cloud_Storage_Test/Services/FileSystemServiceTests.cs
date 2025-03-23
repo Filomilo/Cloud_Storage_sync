@@ -30,6 +30,6 @@ namespace Cloud_Storage_Server.Services.Tests
                 this.iFileSystemService.GetFile(example_subdir);
             });
 
-        }
+        } 
     }
 }
