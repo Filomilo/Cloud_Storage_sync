@@ -9,12 +9,11 @@ namespace Cloud_Storage_Desktop_lib.Services
 {
     public class FileMangamentSerivce
     {
-
         public static MultipartFormDataContent GetFormDatForFile(UploudFileData data, byte[] bytes)
         {
             var form = new MultipartFormDataContent();
             var fileContent = new ByteArrayContent(bytes);
-            form.Add(fileContent, "file");
+            form.Add(fileContent, "file", $"{data.Name}{data.Extenstion}");
             form.Add(new StringContent(data.Path), "fileData.Path");
             form.Add(new StringContent(data.Name), "fileData.Name");
             form.Add(new StringContent(data.Extenstion), "fileData.Extenstion");

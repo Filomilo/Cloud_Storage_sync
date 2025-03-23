@@ -17,6 +17,7 @@ namespace Cloud_Storage_Desktop_lib
     {
         private static ILog logger = LogManager.GetLogger(typeof(ServerConnection));
         HttpClient client = new HttpClient();
+
         public ServerConnection(string ConnetionAdress)
         {
             client.BaseAddress = new Uri(ConnetionAdress);
@@ -26,17 +27,15 @@ namespace Cloud_Storage_Desktop_lib
             }
             _LoadToken();
         }
+
         public ServerConnection(HttpClient client)
         {
             this.client = client;
             _LoadToken();
         }
 
-
-
         public bool CheckIfHelathy()
         {
-
             HttpResponseMessage response = client.GetAsync("/api/Helath/health").Result;
             if (response.StatusCode != HttpStatusCode.OK)
             {
@@ -59,15 +58,9 @@ namespace Cloud_Storage_Desktop_lib
             return true;
         }
 
-
         public void login(string email, string password)
         {
-            AuthRequest auth = new AuthRequest()
-            {
-                Email = email,
-                Password = password
-            };
-     
+            AuthRequest auth = new AuthRequest() { Email = email, Password = password };
 
             HttpResponseMessage response = client.PostAsJsonAsync("/api/Auth/login", auth).Result;
             if (!response.IsSuccessStatusCode)
@@ -81,14 +74,11 @@ namespace Cloud_Storage_Desktop_lib
 
         public void Register(string email, string password)
         {
-            AuthRequest auth = new AuthRequest()
-            {
-                Email = email,
-                Password = password
-            };
+            AuthRequest auth = new AuthRequest() { Email = email, Password = password };
 
-
-            HttpResponseMessage response = client.PostAsJsonAsync("/api/Auth/Register", auth).Result;
+            HttpResponseMessage response = client
+                .PostAsJsonAsync("/api/Auth/Register", auth)
+                .Result;
             if (!response.IsSuccessStatusCode)
             {
                 logger.Error($"Couldn't login for auth {email}");
@@ -98,15 +88,17 @@ namespace Cloud_Storage_Desktop_lib
             _LoadToken();
         }
 
-
         private void _LoadToken()
         {
-            string token =CredentialManager.GetToken();
+            string token = CredentialManager.GetToken();
             if (token.Length > 0)
             {
                 try
                 {
-                    this.client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                    this.client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+                        "Bearer",
+                        token
+                    );
                     if (!this.CheckIfAuthirized())
                     {
                         logger.Warn("Token authirzation failed");
@@ -118,7 +110,6 @@ namespace Cloud_Storage_Desktop_lib
                     CredentialManager.removeToken();
                     Console.WriteLine(e);
                 }
-       
             }
         }
 
@@ -140,9 +131,8 @@ namespace Cloud_Storage_Desktop_lib
             else
             {
                 logger.Error($"Failed to upload data: {response.StatusCode}");
+                throw new Exception("Failed to uploud file");
             }
         }
     }
-    }
-
-
+}
