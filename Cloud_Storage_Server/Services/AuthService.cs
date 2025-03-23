@@ -2,6 +2,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_Server.Configurations;
 using Cloud_Storage_Server.Controllers;
 using Cloud_Storage_Server.Database.Models;
@@ -61,7 +62,7 @@ namespace Cloud_Storage_Server.Services
         }
 
 
-        public static User CreateNewUserBeasedOnLoginRequest(AuthController.AuthRequest loginRequest)
+        public static User CreateNewUserBeasedOnLoginRequest(AuthRequest loginRequest)
         {
             User user = new User
             {

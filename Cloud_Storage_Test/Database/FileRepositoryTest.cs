@@ -5,7 +5,7 @@ using Cloud_Storage_Server.Database.Repositories;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-using FileData = Cloud_Storage_Server.Database.Models.FileData;
+using FileData = Cloud_Storage_Common.Models.FileData;
 
 namespace Cloud_Storage_Test.Database;
 
@@ -43,7 +43,7 @@ public void removeContext()
                 new FileData()
                 {
                     Extenstion = "jpg",
-                    Hash = "211283197283",
+                    Hash = new byte[] { },
                     Name = "File",
                     Path = "/location1/location2/location/3",
                     SyncDate = DateTime.Now,
@@ -62,10 +62,10 @@ public void removeContext()
         Assert.Throws(typeof(DbUpdateException), (TestDelegate)(() =>
             {
                 FileRepository.SaveNewFile(
-                    (FileData)new Cloud_Storage_Server.Database.Models.FileData()
+                    (FileData)new FileData()
                     {
                         Extenstion = "jpg",
-                        Hash = "211283197283",
+                        Hash = new byte[] { },
                         Name = "File",
                         Path = "/location1/location2/location/3",
                         SyncDate = DateTime.Now,
@@ -90,10 +90,10 @@ public void removeContext()
             Assert.Throws(typeof(ValidationException), (TestDelegate)(() =>
             {
                 FileRepository.SaveNewFile(
-                    (FileData)new Cloud_Storage_Server.Database.Models.FileData()
+                    (FileData)new FileData()
                     {
                         Extenstion = "jpg",
-                        Hash = "211283197283",
+                        Hash = new byte[] { },
                         Name = "File",
                         Path = inocorrectPathName,
                         SyncDate = DateTime.Now,
@@ -118,7 +118,7 @@ public void removeContext()
             FileData fileToSave = new FileData()
             {
                 Extenstion = "jpg",
-                Hash = "211283197283",
+                Hash = new byte[] { },
                 Name = "File",
                 Path = "/",
                 SyncDate = DateTime.Now,
@@ -127,7 +127,7 @@ public void removeContext()
             FileData fileToSaveCopy = new FileData()
             {
                 Extenstion = "jpg",
-                Hash = "211283197283",
+                Hash = new byte[] { },
                 Name = "File",
                 Path = "/",
                 SyncDate = DateTime.Now,
@@ -161,7 +161,7 @@ public void removeContext()
             FileData fileToSave = new FileData()
             {
                 Extenstion = "jpg",
-                Hash = "211283197283",
+                Hash = new byte[] { },
                 Name = "File",
                 Path = "/",
                 SyncDate = DateTime.Now,
@@ -171,7 +171,7 @@ public void removeContext()
             FileData fileUpdateData = new FileData()
             {
                 Extenstion = "png",
-                Hash = "88888",
+                Hash = new byte[] { },
                 Name = "File88",
                 Path = "/newFolder",
                 SyncDate = DateTime.Now,
@@ -206,7 +206,7 @@ public void removeContext()
             FileData fileToSave = new FileData()
             {
                 Extenstion = "jpg",
-                Hash = "211283197283",
+                Hash = new byte[] { },
                 Name = "File",
                 Path = "/",
                 SyncDate = DateTime.Now,
@@ -217,7 +217,7 @@ public void removeContext()
             FileData fileUpdateData = new FileData()
             {
                 Extenstion = "png",
-                Hash = "88888",
+                Hash = new byte[] { },
                 Name = "File88",
                 Path = "/newFolder",
                 SyncDate = DateTime.Now,
@@ -244,7 +244,7 @@ public void removeContext()
             FileData fileToSave = new FileData()
             {
                 Extenstion = "jpg",
-                Hash = "211283197283",
+                Hash = new byte[] { },
                 Name = "File",
                 Path = "/",
                 SyncDate = DateTime.Now,
@@ -287,7 +287,7 @@ public void removeContext()
             FileData fileToSave = new FileData()
             {
                 Extenstion = "jpg",
-                Hash = "211283197283",
+                Hash = new byte[] { },
                 Name = "File",
                 Path = "/123/123",
                 SyncDate = DateTime.Now,
@@ -326,7 +326,7 @@ public void removeContext()
             FileData fileToSave = new FileData()
             {
                 Extenstion = "jpg",
-                Hash = "211283197283",
+                Hash = new byte[] { },
                 Name = "File",
                 Path = "/123/123",
                 SyncDate = DateTime.Now
@@ -357,7 +357,7 @@ public void removeContext()
             FileData fileToSave = new FileData()
             {
                 Extenstion = "jpg",
-                Hash = "211283197283",
+                Hash = new byte[] { },
                 Name = $"File_{i}",
                 Path = "/123/123",
                 SyncDate = DateTime.Now,

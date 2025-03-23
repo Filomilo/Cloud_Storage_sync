@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Cloud_Storage_Desktop_lib.Services;
 using log4net;
 using log4net.Repository.Hierarchy;
-using static Cloud_Storage_Server.Controllers.AuthController;
 
 namespace Cloud_Storage_Desktop_lib
 {

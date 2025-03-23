@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Cloud_Storage_Common\Cloud_Storage_Common.csproj" />
     <ProjectReference Include="..\Cloud_Storage_desktop\Cloud_Storage_desktop_gui\Cloud_Storage_desktop.csproj" />
     <ProjectReference Include="..\Cloud_Storage_desktop\Cloud_Storage_Desktop_lib\Cloud_Storage_Desktop_lib.csproj" />
     <ProjectReference Include="..\Cloud_Storage_Server\Cloud_Storage_Server.csproj" />

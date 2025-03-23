@@ -6,7 +6,6 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Cloud_Storage_Desktop_lib;
 using Lombok.NET;
-using Microsoft.Extensions.Configuration;
 
 namespace ConsoleCloudDriveSync
 {

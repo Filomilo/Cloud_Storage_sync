@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+﻿using Cloud_Storage_Server.Database.Models;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Cloud_Storage_Server.Database.Models
+namespace Cloud_Storage_Common.Models
 {
     public class UploudFileData
     {
@@ -16,7 +16,7 @@ namespace Cloud_Storage_Server.Database.Models
         [Required]
         public string Extenstion { get; set; }
         [Required]
-        public string Hash { get; set; }
+        public byte[] Hash { get; set; }
         [Required]
         public DateTime SyncDate { get; set; }
     }
@@ -26,9 +26,7 @@ namespace Cloud_Storage_Server.Database.Models
     {
         [Key]
         public Guid Id { get; set; }
- 
-
-        [BindNever]
+        
         [Required]
         [NotNull]
         [ForeignKey("User")] public long OwnerId { get; set; }

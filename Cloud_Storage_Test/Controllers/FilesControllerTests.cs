@@ -11,6 +11,7 @@ using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_Desktop_lib.Services;
 using System.Net.Http.Headers;
 using System.Xml.Linq;
+using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Database.Models;
 
 namespace Cloud_Storage_Server.Controllers.Tests
@@ -32,7 +33,7 @@ namespace Cloud_Storage_Server.Controllers.Tests
   
             string email = $"{Guid.NewGuid().ToString()}@mail.mail";
             string pass = "1234567890asdASD++";
-            string token = testServer.PostAsJsonAsync("/api/Auth/Register", new AuthController.AuthRequest(){Email = email,Password = pass}).Result.Content.ReadAsStringAsync().Result;
+            string token = testServer.PostAsJsonAsync("/api/Auth/Register", new AuthRequest(){Email = email,Password = pass}).Result.Content.ReadAsStringAsync().Result;
             testServer.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         }
@@ -54,7 +55,7 @@ namespace Cloud_Storage_Server.Controllers.Tests
             {
                 Name = "file",
                 Extenstion = "jpg",
-                Hash = "hash",
+                Hash = new byte[] { },
                 Id = new Guid(),
                 Owner = null,
                 OwnerId = 2,

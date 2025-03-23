@@ -1,4 +1,4 @@
-﻿using Cloud_Storage_Server.Database.Models;
+﻿using Cloud_Storage_Common.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -29,7 +29,7 @@ namespace Cloud_Storage_Server.Controllers
                 Path = "asdasd",
                 Name = "123",
                 Extenstion = "png",
-                Hash = "12345",
+                Hash = new byte[] { },
                 SyncDate = new DateTime(),
                 OwnerId = 1
             });
@@ -38,7 +38,7 @@ namespace Cloud_Storage_Server.Controllers
                 Path = "asdasd",
                 Name = "123",
                 Extenstion = "png",
-                Hash = "12345",
+                Hash =  new byte[]{},
                 SyncDate = new DateTime(),
                 OwnerId = 1
             });
@@ -48,7 +48,7 @@ namespace Cloud_Storage_Server.Controllers
                 Path = "asdasd",
                 Name = "123",
                 Extenstion = "png",
-                Hash = "12345",
+                Hash = new byte[] { },
                 SyncDate = new DateTime(),
                 OwnerId = 1
             });
@@ -57,7 +57,7 @@ namespace Cloud_Storage_Server.Controllers
                 Path = "asdasd",
                 Name = "123",
                 Extenstion = "png",
-                Hash = "12345",
+                Hash = new byte[] { },
                 SyncDate = new DateTime(),
                 OwnerId = 1
             });
