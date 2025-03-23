@@ -11,6 +11,8 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.14" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.14" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="NUnit" Version="4.3.2" />
   </ItemGroup>
@@ -19,6 +21,7 @@
     <ProjectReference Include="..\Cloud_Storage_desktop\Cloud_Storage_desktop_gui\Cloud_Storage_desktop.csproj" />
     <ProjectReference Include="..\Cloud_Storage_desktop\Cloud_Storage_Desktop_lib\Cloud_Storage_Desktop_lib.csproj" />
     <ProjectReference Include="..\Cloud_Storage_Server\Cloud_Storage_Server.csproj" />
+    <ProjectReference Include="..\ConsoleCloudDriveSync\ConsoleCloudDriveSync.csproj" />
   </ItemGroup>
 
   <ItemGroup>
