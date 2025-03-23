@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Hosting;
 using Cloud_Storage_Server;
+using Cloud_Storage_Server.Database.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Hosting;
@@ -40,6 +41,13 @@ namespace Cloud_Storage_Desktop_lib.Tests
             _testServer = new MyWebApplication().CreateDefaultClient();
            this.server= new ServerConnection(_testServer);
 
+           string email = $"{Guid.NewGuid().ToString()}@mail.mail";
+           string pass = "1234567890asdASD++";
+           server.Logout();
+           Assert.That(server.CheckIfAuthirized() == false);
+           server.Register(email, pass);
+           Assert.That(server.CheckIfAuthirized());
+
         }
         [TearDown]
         public void tearDown()
@@ -68,7 +76,7 @@ namespace Cloud_Storage_Desktop_lib.Tests
         [Test()]
         public void loginTest()
         {
-         
+            server.Logout();
             string email = $"{Guid.NewGuid().ToString()}@mail.mail";
             string pass = "1234567890asdASD++";
             server.Logout();
@@ -82,5 +90,24 @@ namespace Cloud_Storage_Desktop_lib.Tests
             server.Logout();
             Assert.That(server.CheckIfAuthirized() == false);
         }
+
+
+
+
+
+
+
+        private string exampleDataImageDirector = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin")) + "testData\\nyan.jpg";
+
+        [Test]
+        public void uploudAdnDownlaodFile()
+        {
+            byte[] exmpaleData = File.ReadAllBytes(exampleDataImageDirector);
+            //server.uploudFile(new FileData()
+            //{
+
+            //});
+        }
+
     }
 }
