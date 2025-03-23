@@ -2,11 +2,27 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Cloud_Storage_Desktop_lib;
+using Lombok.NET;
+using Microsoft.Extensions.Configuration;
 
 namespace ConsoleCloudDriveSync
 {
+    [AllArgsConstructor]
+    partial class Operation
+    {
+        public Operation(string v, Action value)
+        {
+            Description = v;
+            Function = value;
+        }
+
+        public string Description { get; set; }
+        public Action Function { get; set; }
+    }
+
     class Program
     {
         static  void Main(string[] args)
@@ -15,7 +31,7 @@ namespace ConsoleCloudDriveSync
             Console.WriteLine("Start");
             if (!ServerConnectionEstablish()) return;
             AuthorizeConnectino();
-
+            ConfigurationLoop();
 
             Console.ReadLine();
         }
@@ -23,6 +39,7 @@ namespace ConsoleCloudDriveSync
         {
             while(!CloudDriveSyncSystem.Instance.ServerConnection.CheckIfAuthirized())
             {
+
                 Console.WriteLine("Connection is not authorized please register or login");
                 Console.Clear();
                 Console.WriteLine("L - Login , R- register");
@@ -96,5 +113,44 @@ namespace ConsoleCloudDriveSync
             Console.WriteLine("Conneciotn with server established");
             return true;
         }
+
+        private static void ConfigurationLoop()
+        {
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine($"Current configuration:\n {{\n {CloudDriveSyncSystem.Instance.Configuration}\n}}");
+                Choice("What would you like to do: ", new Dictionary<char, Operation>()
+                {
+                    { 'Q', new Operation("QUIT",() => { Console.WriteLine("QUIT"); })},
+                    { 'L', new Operation("QUIT",() => { Console.WriteLine("Logut"); })},
+                });
+            }
+        }
+
+        private static void Choice(String quiestion, Dictionary<char, Operation> choices)
+        {
+
+            Console.WriteLine(quiestion+"\n");
+            foreach (var VARIABLE in choices)
+            {
+                Console.WriteLine($"[{VARIABLE.Key}] -- {VARIABLE.Value.Description}");
+            }
+
+            while (true)
+            {
+                char choice = Console.ReadKey().KeyChar;
+
+                if (choices.ContainsKey(choice))
+                {
+                      choices[choice].Function.Invoke();
+                break;
+                }
+       Console.WriteLine("Not valid choice");
+             
+            }
+        
+        }
+
     }
 }
