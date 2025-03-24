@@ -10,7 +10,7 @@ namespace Cloud_Storage_Common.Models
     {
         [Required]
         [RegularExpression(
-            @"^((/[a-zA-Z0-9-_]+)+|/)$",
+            @"^(?:\.|[a-zA-Z0-9_-]+(?:\\[a-zA-Z0-9_-]+)*)$",
             ErrorMessage = "Path string doesn't match path syntax"
         )]
         public string Path { get; set; }
@@ -22,7 +22,7 @@ namespace Cloud_Storage_Common.Models
         public string Extenstion { get; set; }
 
         [Required]
-        public byte[] Hash { get; set; }
+        public string Hash { get; set; }
 
         [Required]
         public DateTime SyncDate { get; set; }
@@ -37,6 +37,19 @@ namespace Cloud_Storage_Common.Models
 
     public class FileData : UploudFileData
     {
+        private UploudFileData data;
+
+        public FileData() { }
+
+        public FileData(UploudFileData data)
+        {
+            this.Path = data.Path;
+            this.SyncDate = data.SyncDate;
+            this.Name = data.Name;
+            this.Hash = data.Hash;
+            this.Extenstion = data.Extenstion;
+        }
+
         [Key]
         public Guid Id { get; set; }
 

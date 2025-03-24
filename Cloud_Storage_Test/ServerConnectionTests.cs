@@ -14,6 +14,7 @@ using Cloud_Storage_Test;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
@@ -106,11 +107,13 @@ namespace Cloud_Storage_Desktop_lib.Tests
             files.ForEach(x =>
                 x.Path = Path.GetRelativePath(TestHelpers.ExampleDataDirectory, x.Path)
             );
+            List<byte[]> bytArrays = new List<byte[]>();
             foreach (UploudFileData file in files)
             {
                 byte[] data = File.ReadAllBytes(
                     file.getFullPathForBasePath(TestHelpers.ExampleDataDirectory)
                 );
+                bytArrays.Add(data);
                 Assert.DoesNotThrow(() =>
                 {
                     this.server.uploudFile(file, data);
@@ -119,6 +122,18 @@ namespace Cloud_Storage_Desktop_lib.Tests
 
             List<FileData> filesOnServer = this.server.GetListOfFiles();
             Assert.That(filesOnServer.Count == files.Count);
+            for (var i = 0; i < filesOnServer.Count; i++)
+            {
+                UploudFileData uploudFileData = files.First(x => x.Hash == filesOnServer[i].Hash);
+                Assert.That(uploudFileData.Name == filesOnServer[i].Name);
+                Assert.That(uploudFileData.Path == filesOnServer[i].Path);
+                Assert.That(uploudFileData.Extenstion == filesOnServer[i].Extenstion);
+                byte[] bytes = this.server.DownloadFlie(filesOnServer[i].Id);
+                Assert.That(Enumerable.SequenceEqual(bytes, bytArrays[i]));
+                string hash = FileManager.getHashOfArrayBytes(bytes);
+
+                Assert.That(filesOnServer[i].Hash == hash);
+            }
         }
     }
 }

@@ -61,7 +61,7 @@ namespace Cloud_Storage_Server.Controllers.Tests
                 {
                     Name = "file",
                     Extenstion = "jpg",
-                    Hash = new byte[] { 213 },
+                    Hash = "123",
                     Id = new Guid(),
                     Owner = null,
                     OwnerId = 2,
@@ -70,7 +70,7 @@ namespace Cloud_Storage_Server.Controllers.Tests
                 },
                 exmpaleData
             );
-            var response = testServer.PostAsync("api/Files/uploud", form).Result;
+            var response = testServer.PostAsync("api/Files/upload", form).Result;
             Assert.That(response.IsSuccessStatusCode);
         }
     }

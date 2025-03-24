@@ -1,67 +1,45 @@
-﻿using Cloud_Storage_Common.Models;
+﻿using System.ComponentModel.DataAnnotations;
+using System.IO.Compression;
+using Cloud_Storage_Common;
+using Cloud_Storage_Common.Models;
+using Cloud_Storage_Server.Database.Models;
+using Cloud_Storage_Server.Database.Repositories;
+using Cloud_Storage_Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cloud_Storage_Server.Controllers
 {
-
     public class FileUploudRequest
     {
-        public UploudFileData fileData { get;set; }
+        public UploudFileData fileData { get; set; }
+
         [Required]
-        public IFormFile file {get;set;}
+        public IFormFile file { get; set; }
     }
 
     [Route("api/[controller]")]
     //[Authorize]
     public class FilesController : Controller
     {
+        private readonly IFileSyncService _FileSyncService;
+
+        public FilesController(IFileSyncService fileSyncService)
+        {
+            _FileSyncService =
+                fileSyncService ?? throw new ArgumentNullException(nameof(fileSyncService));
+        }
+
         [Route("list")]
         [HttpGet]
-      public IActionResult listOfFiles()
+        public IActionResult listOfFiles()
         {
-            // tepmorary
-            List<FileData> files=new List<FileData>();
-            files.Add(new FileData
-            {
-                Path = "asdasd",
-                Name = "123",
-                Extenstion = "png",
-                Hash = new byte[] { },
-                SyncDate = new DateTime(),
-                OwnerId = 1
-            });
-            files.Add(new FileData
-            {
-                Path = "asdasd",
-                Name = "123",
-                Extenstion = "png",
-                Hash =  new byte[]{},
-                SyncDate = new DateTime(),
-                OwnerId = 1
-            });
-
-            files.Add(new FileData
-            {
-                Path = "asdasd",
-                Name = "123",
-                Extenstion = "png",
-                Hash = new byte[] { },
-                SyncDate = new DateTime(),
-                OwnerId = 1
-            });
-            files.Add(new FileData
-            {
-                Path = "asdasd",
-                Name = "123",
-                Extenstion = "png",
-                Hash = new byte[] { },
-                SyncDate = new DateTime(),
-                OwnerId = 1
-            });
-
+            User user = UserRepository.getUserByMail(
+                AuthService.GetEmailFromToken(Request.Headers.Authorization)
+            );
+            List<FileData> files = FileRepository.GetAllUserFiles(user.id);
             return Ok(files);
         }
 
@@ -71,18 +49,30 @@ namespace Cloud_Storage_Server.Controllers
         {
             return Ok();
         }
-        [Route("uploud")]
+
+        [Route("upload")]
         [HttpPost]
-        public async Task<IActionResult> UploudFile(
-            [FromForm] FileUploudRequest filerequest
-            )
+        public async Task<IActionResult> UploadFile([FromForm] FileUploudRequest filerequest)
         {
-            using (var sr = new StreamReader(filerequest.file.OpenReadStream()))
+            try
             {
-                var content = sr.ReadToEnd();
-                return Ok(content);
+                User user = UserRepository.getUserByMail(
+                    AuthService.GetEmailFromToken(Request.Headers.Authorization)
+                );
+                using (var memoryStream = new MemoryStream())
+                {
+                    await filerequest.file.CopyToAsync(memoryStream);
+
+                    byte[] content = memoryStream.ToArray();
+
+                    _FileSyncService.AddNewFile(user, filerequest.fileData, content);
+                    return Ok("Succsesfully added file");
+                }
             }
-            return Ok();
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [Route("delete")]
@@ -92,5 +82,32 @@ namespace Cloud_Storage_Server.Controllers
             return Ok();
         }
 
+        [Route("download")]
+        [Authorize]
+        [HttpGet]
+        public IActionResult DownlaodFile([FromQuery] Guid guid)
+        {
+            User user = UserRepository.getUserByMail(
+                AuthService.GetEmailFromToken(Request.Headers.Authorization)
+            );
+            FileData fileData = FileRepository.GetFileOfID(guid);
+
+            byte[] data = _FileSyncService.DownloadFile(user, fileData);
+
+            return File(data, "application/octet-stream", fileData.Name);
+        }
+
+        /// <summary>
+        /// Used after downlaod file to update verison
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        [Route("update")]
+        [Authorize]
+        [HttpPost]
+        public IActionResult update([FromBody] FileData file)
+        {
+            return BadRequest("no itmpelmetned");
+        }
     }
 }
