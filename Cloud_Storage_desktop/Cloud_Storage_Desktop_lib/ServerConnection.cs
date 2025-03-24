@@ -4,12 +4,14 @@ using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Services;
 using log4net;
 using log4net.Repository.Hierarchy;
+using Newtonsoft.Json;
 
 namespace Cloud_Storage_Desktop_lib
 {
@@ -133,6 +135,16 @@ namespace Cloud_Storage_Desktop_lib
                 logger.Error($"Failed to upload data: {response.StatusCode}");
                 throw new Exception("Failed to uploud file");
             }
+        }
+
+        public List<FileData> GetListOfFiles()
+        {
+            var response = this.client.GetAsync("api/Files/list").Result;
+            var raw = response.Content.ReadAsStringAsync().Result;
+            List<FileData> parsed = JsonConvert.DeserializeObject<List<FileData>>(raw);
+            //var parsed = JsonSerializer.Deserialize<List<FileData>>(raw);
+
+            return parsed;
         }
     }
 }

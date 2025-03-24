@@ -98,7 +98,7 @@ namespace Cloud_Storage_Desktop_lib.Tests
             + "testData\\nyan.jpg";
 
         [Test]
-        public void uploudAdnDownlaodFile()
+        public void uploudAndDownloadFile()
         {
             List<UploudFileData> files = FileManager.GetAllFilesInLocation(
                 TestHelpers.ExampleDataDirectory
@@ -116,6 +116,9 @@ namespace Cloud_Storage_Desktop_lib.Tests
                     this.server.uploudFile(file, data);
                 });
             }
+
+            List<FileData> filesOnServer = this.server.GetListOfFiles();
+            Assert.That(filesOnServer.Count == files.Count);
         }
     }
 }
