@@ -131,7 +131,6 @@ namespace Cloud_Storage_Desktop_lib.Tests
                 byte[] bytes = this.server.DownloadFlie(filesOnServer[i].Id);
                 Assert.That(Enumerable.SequenceEqual(bytes, bytArrays[i]));
                 string hash = FileManager.getHashOfArrayBytes(bytes);
-
                 Assert.That(filesOnServer[i].Hash == hash);
             }
         }

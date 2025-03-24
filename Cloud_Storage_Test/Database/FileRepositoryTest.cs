@@ -40,9 +40,9 @@ public class FileRepositoryTest
             new FileData()
             {
                 Extenstion = "jpg",
-                Hash = "",
+                Hash = "1234567",
                 Name = "File",
-                Path = "/location1/location2/location/3",
+                Path = "location1\\location2\\location\\3",
                 SyncDate = DateTime.Now,
                 OwnerId = _savedUser.id,
             }
@@ -65,9 +65,9 @@ public class FileRepositoryTest
                             new FileData()
                             {
                                 Extenstion = "jpg",
-                                Hash = "",
+                                Hash = "45678",
                                 Name = "File",
-                                Path = "/location1/location2/location/3",
+                                Path = "location1\\location2\\location\\3",
                                 SyncDate = DateTime.Now,
                                 OwnerId = -1,
                             }
@@ -118,18 +118,18 @@ public class FileRepositoryTest
         FileData fileToSave = new FileData()
         {
             Extenstion = "jpg",
-            Hash = "",
+            Hash = "3546",
             Name = "File",
-            Path = "/",
+            Path = ".",
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
         };
         FileData fileToSaveCopy = new FileData()
         {
             Extenstion = "jpg",
-            Hash = "",
+            Hash = "3456",
             Name = "File",
-            Path = "/",
+            Path = ".",
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
         };
@@ -154,9 +154,9 @@ public class FileRepositoryTest
         FileData fileToSave = new FileData()
         {
             Extenstion = "jpg",
-            Hash = "",
+            Hash = "23re",
             Name = "File",
-            Path = "/",
+            Path = ".",
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
         };
@@ -164,9 +164,9 @@ public class FileRepositoryTest
         FileData fileUpdateData = new FileData()
         {
             Extenstion = "png",
-            Hash = "",
+            Hash = "234567",
             Name = "File88",
-            Path = "/newFolder",
+            Path = "newFolder",
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
         };
@@ -204,9 +204,9 @@ public class FileRepositoryTest
             FileData fileUpdateData = new FileData()
             {
                 Extenstion = "png",
-                Hash = "",
+                Hash = "234567",
                 Name = "File88",
-                Path = "/newFolder",
+                Path = "newFolder",
                 SyncDate = DateTime.Now,
                 OwnerId = _savedUser.id,
             };
@@ -226,9 +226,9 @@ public class FileRepositoryTest
         FileData fileToSave = new FileData()
         {
             Extenstion = "jpg",
-            Hash = "",
+            Hash = "23456",
             Name = "File",
-            Path = "/",
+            Path = ".",
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
         };
@@ -261,9 +261,9 @@ public class FileRepositoryTest
         FileData fileToSave = new FileData()
         {
             Extenstion = "jpg",
-            Hash = "",
+            Hash = "567890-",
             Name = "File",
-            Path = "/123/123",
+            Path = "123\\123",
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
         };
@@ -323,9 +323,9 @@ public class FileRepositoryTest
             FileData fileToSave = new FileData()
             {
                 Extenstion = "jpg",
-                Hash = "",
+                Hash = "1234",
                 Name = $"File_{i}",
-                Path = "/123/123",
+                Path = "123\\1234",
                 SyncDate = DateTime.Now,
                 OwnerId = _savedUser.id,
             };
