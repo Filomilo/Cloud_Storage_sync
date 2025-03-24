@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using Cloud_Storage_Desktop_lib;
 
 namespace Cloud_Storage_Server.Controllers
 {
@@ -14,11 +15,7 @@ namespace Cloud_Storage_Server.Controllers
     public class AuthController : ControllerBase
     {
   
-        public class AuthRequest
-        {
-            public string Email { get; set; }
-            public string Password { get; set; }
-        }
+     
         [HttpPost]
         [Route("login")]
         public IActionResult login(AuthRequest loginRequest)

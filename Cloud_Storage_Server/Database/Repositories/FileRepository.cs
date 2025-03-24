@@ -1,7 +1,6 @@
-﻿using Cloud_Storage_Server.Database.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Diagnostics;
-using FileData = Cloud_Storage_Server.Database.Models.FileData;
+using FileData = Cloud_Storage_Common.Models.FileData;
 
 namespace Cloud_Storage_Server.Database.Repositories
 {

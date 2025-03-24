@@ -9,7 +9,6 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(setup =>
@@ -26,21 +25,23 @@ builder.Services.AddSwaggerGen(setup =>
         Reference = new OpenApiReference
         {
             Id = JwtBearerDefaults.AuthenticationScheme,
-            Type = ReferenceType.SecurityScheme
-        }
+            Type = ReferenceType.SecurityScheme,
+        },
     };
 
     setup.AddSecurityDefinition(jwtSecurityScheme.Reference.Id, jwtSecurityScheme);
 
-    setup.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        { jwtSecurityScheme, Array.Empty<string>() }
-    });
+    setup.AddSecurityRequirement(
+        new OpenApiSecurityRequirement { { jwtSecurityScheme, Array.Empty<string>() } }
+    );
 });
 builder.Services.AddDbContext<DatabaseContext>();
 builder.Services.AddSingleton<IWebsockerConnectionService, WebsockerConnectionService>();
-builder.Services.AddSingleton<IFileSystemService>(provider => new FileSystemService("dataStorage/"));
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+FileSystemService fileSystemService = new FileSystemService("dataStorage/");
+builder.Services.AddSingleton<IFileSystemService>(provider => fileSystemService);
+builder.Services.AddSingleton<IFileSyncService>(provider => new FileSyncService(fileSystemService));
+builder
+    .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.RequireHttpsMetadata = false;
@@ -48,13 +49,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(AuthConfiguration.PrivateKey)),
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.ASCII.GetBytes(AuthConfiguration.PrivateKey)
+            ),
             ValidateIssuer = false,
-            ValidateAudience = false
+            ValidateAudience = false,
         };
     });
 builder.Services.AddAuthorization();
-
 
 var app = builder.Build();
 
@@ -71,17 +73,16 @@ app.MapControllers();
 
 app.UseWebSockets();
 
-
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
     var context = services.GetRequiredService<DatabaseContext>();
     ;
-    context.Database.Migrate();
+    //context.Database.Migrate();
     context.Database.EnsureCreated();
 }
 
-
 app.Run();
+
 public partial class Program { }
