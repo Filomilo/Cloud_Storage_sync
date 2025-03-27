@@ -10,7 +10,7 @@ namespace Cloud_Storage_Common.Models
     {
         [Required]
         [RegularExpression(
-            @"^(?:\.|[a-zA-Z0-9_-]+(?:\\[a-zA-Z0-9_-]+)*)$",
+            $"{FileManager.RegexRelativePathValidation}",
             ErrorMessage = "Path string doesn't match path syntax"
         )]
         public string Path { get; set; }
@@ -18,7 +18,7 @@ namespace Cloud_Storage_Common.Models
         [Required]
         public string Name { get; set; }
 
-        [Required]
+        [NotNull]
         public string Extenstion { get; set; }
 
         [Required]
@@ -29,9 +29,13 @@ namespace Cloud_Storage_Common.Models
 
         public string getFullPathForBasePath(string basepath)
         {
-            string cleanedPAth = Path[0] == '.' ? Path.Remove(0, 1) : Path + "\\";
-            string basePAth = $"{basepath}{cleanedPAth}{Name}{Extenstion}";
-            return basePAth;
+            return System.IO.Path.GetFullPath(this.Path, basepath);
+        }
+
+        public string getFullFilePathForBasePath(string basepath)
+        {
+            return System.IO.Path.GetFullPath(this.Path, basepath)
+                + $"\\{this.Name}{this.Extenstion}";
         }
     }
 
@@ -45,9 +49,9 @@ namespace Cloud_Storage_Common.Models
         {
             this.Path = data.Path;
             this.SyncDate = data.SyncDate;
-            this.Name = data.Name;
+            this.Name = data.Name == null ? "" : data.Name;
             this.Hash = data.Hash;
-            this.Extenstion = data.Extenstion;
+            this.Extenstion = data.Extenstion == null ? "" : data.Extenstion;
         }
 
         [Key]

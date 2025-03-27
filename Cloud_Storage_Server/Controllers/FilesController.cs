@@ -28,8 +28,7 @@ namespace Cloud_Storage_Server.Controllers
 
         public FilesController(IFileSyncService fileSyncService)
         {
-            _FileSyncService =
-                fileSyncService ?? throw new ArgumentNullException(nameof(fileSyncService));
+            _FileSyncService = fileSyncService;
         }
 
         [Route("list")]
@@ -50,15 +49,27 @@ namespace Cloud_Storage_Server.Controllers
             return Ok();
         }
 
+        FileUploudRequest santizeFileUploudRequest(FileUploudRequest fileUploudRequest)
+        {
+            fileUploudRequest.fileData.Extenstion =
+                fileUploudRequest.fileData.Extenstion == null
+                    ? ""
+                    : fileUploudRequest.fileData.Extenstion;
+            return fileUploudRequest;
+        }
+
         [Route("upload")]
         [HttpPost]
         public async Task<IActionResult> UploadFile([FromForm] FileUploudRequest filerequest)
         {
+            filerequest = santizeFileUploudRequest(filerequest);
             try
             {
                 User user = UserRepository.getUserByMail(
                     AuthService.GetEmailFromToken(Request.Headers.Authorization)
                 );
+                if (_FileSyncService.DoesFileAlreadyExist(user, filerequest.fileData))
+                    return Ok("File like this already exist");
                 using (var memoryStream = new MemoryStream())
                 {
                     await filerequest.file.CopyToAsync(memoryStream);
@@ -68,6 +79,10 @@ namespace Cloud_Storage_Server.Controllers
                     _FileSyncService.AddNewFile(user, filerequest.fileData, content);
                     return Ok("Succsesfully added file");
                 }
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return BadRequest("Couldn't Autheticate user");
             }
             catch (Exception ex)
             {

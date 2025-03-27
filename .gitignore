@@ -487,3 +487,4 @@ Cloud_Storage_Server/databse.dat
 *.sqllite-shm
 *.sqllite-wal
 *.sqllite
+/Cloud_Storage_Server/dataStorage
