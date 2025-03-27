@@ -9,6 +9,7 @@ namespace Cloud_Storage_Server.Services
         public void AddNewFile(User user, UploudFileData data, byte[] file);
         public byte[] DownloadFile(User user, FileData data);
         public List<FileData> ListFilesForUser(User user);
+        public bool DoesFileAlreadyExist(User user, UploudFileData data);
     }
 
     public class FileSyncService : IFileSyncService
@@ -33,6 +34,28 @@ namespace Cloud_Storage_Server.Services
 
             this._fileSystemService.SaveFile(GetRealtivePathForFile(user, saved), file);
             //todo: save actual file
+        }
+
+        public bool DoesFileAlreadyExist(User user, UploudFileData data)
+        {
+            try
+            {
+                FileData fileInRepo = FileRepository.getFileByPathNameExtensionAndUser(
+                    data.Path,
+                    data.Name,
+                    data.Extenstion,
+                    user.id
+                );
+                if (fileInRepo == null || fileInRepo.Hash == data.Hash)
+                {
+                    return true;
+                }
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return false;
+            }
+            return false;
         }
 
         public byte[] DownloadFile(User user, FileData data)

@@ -1,5 +1,6 @@
-﻿using Cloud_Storage_Server.Database.Models;
-using System.IO;
+﻿using System.IO;
+using Cloud_Storage_Common;
+using Cloud_Storage_Server.Database.Models;
 
 namespace Cloud_Storage_Server.Services
 {
@@ -34,33 +35,33 @@ namespace Cloud_Storage_Server.Services
         {
             return _basePath + path;
         }
+
         public void SaveFile(string path, byte[] dataBytes)
         {
-            
-            try
-            {
-                File.WriteAllBytes(GetFullPathToFile(path), dataBytes);
+            FileManager.SaveFile(GetFullPathToFile(path), dataBytes);
+            //try
+            //{
+            //    File.WriteAllBytes(GetFullPathToFile(path), dataBytes);
 
-            }
-            catch (DirectoryNotFoundException ex)
-            {
-                this.CreateDirectory(path);
-                File.WriteAllBytes(_basePath + path, dataBytes);
-            }
-            File.SetAttributes(GetFullPathToFile(path), File.GetAttributes(GetFullPathToFile(path)) & ~FileAttributes.ReadOnly);
+            //}
+            //catch (DirectoryNotFoundException ex)
+            //{
+            //    this.CreateDirectory(path);
+            //    File.WriteAllBytes(_basePath + path, dataBytes);
+            //}
+            //File.SetAttributes(GetFullPathToFile(path), File.GetAttributes(GetFullPathToFile(path)) & ~FileAttributes.ReadOnly);
         }
 
         public void CreateDirectory(string path)
         {
-            Directory.CreateDirectory(_basePath+ TrimFileName(path));
+            Directory.CreateDirectory(_basePath + TrimFileName(path));
         }
 
         private static string TrimFileName(string parhFile)
         {
             List<string> splits = parhFile.Split("\\").ToList();
             splits.RemoveAt(splits.Count - 1);
-            return string.Join("\\",splits);
+            return string.Join("\\", splits);
         }
     }
-
 }

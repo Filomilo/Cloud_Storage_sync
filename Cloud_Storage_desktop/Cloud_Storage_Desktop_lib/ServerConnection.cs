@@ -133,7 +133,7 @@ namespace Cloud_Storage_Desktop_lib
             else
             {
                 logger.Error($"Failed to upload data: {response.StatusCode}");
-                throw new Exception("Failed to uploud file");
+                throw new Exception($"{response.Content.ReadAsStringAsync().Result}");
             }
         }
 

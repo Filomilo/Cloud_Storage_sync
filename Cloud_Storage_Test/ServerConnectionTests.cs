@@ -111,7 +111,7 @@ namespace Cloud_Storage_Desktop_lib.Tests
             foreach (UploudFileData file in files)
             {
                 byte[] data = File.ReadAllBytes(
-                    file.getFullPathForBasePath(TestHelpers.ExampleDataDirectory)
+                    file.getFullFilePathForBasePath(TestHelpers.ExampleDataDirectory)
                 );
                 bytArrays.Add(data);
                 Assert.DoesNotThrow(() =>

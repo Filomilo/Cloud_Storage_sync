@@ -30,4 +30,9 @@
     <ProjectReference Include="..\Cloud_Storage_Common\Cloud_Storage_Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="NewFolder1\" />
+    <Folder Include="NewFolder\" />
+  </ItemGroup>
+
 </Project>

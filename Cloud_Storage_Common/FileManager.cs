@@ -11,6 +11,9 @@ namespace Cloud_Storage_Common
 {
     public static class FileManager
     {
+        public const string RegexRelativePathValidation =
+            "^(?:\\.|[a-zA-Z0-9_-]+(?:\\\\[a-zA-Z0-9_-]+)*)$";
+
         public static List<UploudFileData> GetAllFilesInLocation(string path)
         {
             List<UploudFileData> listOfFIles = new List<UploudFileData>();
@@ -34,6 +37,36 @@ namespace Cloud_Storage_Common
             return listOfFIles;
         }
 
+        public static List<UploudFileData> GetAllFilesInLocationRelative(string path)
+        {
+            List<UploudFileData> listOfFIles = new List<UploudFileData>();
+
+            foreach (string file in Directory.GetFiles(path, "*.*", SearchOption.AllDirectories))
+            {
+                FileInfo fileinfo = new FileInfo(file);
+                string relativePath = Path.GetRelativePath(path, Path.GetDirectoryName(file));
+                relativePath = relativePath.Length == 0 ? "." : relativePath;
+                listOfFIles.Add(
+                    new UploudFileData()
+                    {
+                        Path = relativePath,
+                        Name = Path.GetFileNameWithoutExtension(file),
+                        Extenstion = Path.GetExtension(file) == null ? "" : Path.GetExtension(file),
+                        Hash = GetHashOfFile(file),
+                        SyncDate = DateTime.Now,
+                    }
+                );
+            }
+
+            return listOfFIles;
+        }
+
+        public static byte[] GetBytesOfFiles(string fullpath)
+        {
+            byte[] bytes = File.ReadAllBytes(fullpath);
+            return bytes;
+        }
+
         public static string getHashOfArrayBytes(byte[] bytes)
         {
             using (var md5 = MD5.Create())
@@ -54,6 +87,20 @@ namespace Cloud_Storage_Common
                     return Convert.ToBase64String(md5.ComputeHash(stream));
                 }
             }
+        }
+
+        public static void SaveFile(string path, byte[] bytes)
+        {
+            try
+            {
+                File.WriteAllBytes(path, bytes);
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                File.WriteAllBytes(path, bytes);
+            }
+            File.SetAttributes(path, File.GetAttributes(path) & ~FileAttributes.ReadOnly);
         }
     }
 }
