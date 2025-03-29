@@ -2,11 +2,13 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Cloud_Storage_Server.Database.Models;
+using Lombok.NET;
 using Microsoft.EntityFrameworkCore;
 
 namespace Cloud_Storage_Common.Models
 {
-    public class UploudFileData
+
+     public class UploudFileData
     {
         [Required]
         [RegularExpression(
@@ -24,8 +26,7 @@ namespace Cloud_Storage_Common.Models
         [Required]
         public string Hash { get; set; }
 
-        [Required]
-        public DateTime SyncDate { get; set; }
+    
 
         public string getFullPathForBasePath(string basepath)
         {
@@ -36,6 +37,11 @@ namespace Cloud_Storage_Common.Models
         {
             return System.IO.Path.GetFullPath(this.Path, basepath)
                 + $"\\{this.Name}{this.Extenstion}";
+        }
+
+        public override string ToString()
+        {
+            return $"{Path}{Name}{Extenstion} >>>> {Hash}";
         }
     }
 
@@ -48,7 +54,6 @@ namespace Cloud_Storage_Common.Models
         public FileData(UploudFileData data)
         {
             this.Path = data.Path;
-            this.SyncDate = data.SyncDate;
             this.Name = data.Name == null ? "" : data.Name;
             this.Hash = data.Hash;
             this.Extenstion = data.Extenstion == null ? "" : data.Extenstion;
@@ -62,5 +67,8 @@ namespace Cloud_Storage_Common.Models
         [ForeignKey("User")]
         public long OwnerId { get; set; }
         public virtual User Owner { get; set; }
+
+        [Required]
+        public DateTime SyncDate { get; set; }
     }
 }

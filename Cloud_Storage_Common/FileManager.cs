@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics.Arm;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Cloud_Storage_Common.Models;
@@ -35,7 +38,6 @@ namespace Cloud_Storage_Common
                         Name = Path.GetFileNameWithoutExtension(file),
                         Extenstion = Path.GetExtension(file),
                         Hash = GetHashOfFile(file),
-                        SyncDate = DateTime.Now,
                     }
                 );
             }
@@ -43,6 +45,23 @@ namespace Cloud_Storage_Common
             return listOfFIles;
         }
 
+        public static string GetRealtivePathToFile(string filePath, string realativeTo)
+        {
+            string relativePath = Path.GetRelativePath(realativeTo, Path.GetDirectoryName(filePath));
+            relativePath = relativePath.Length == 0 ? "." : relativePath;
+            return relativePath;
+        }
+        public static UploudFileData GetUploadFileData(string filePath,string storageLocation)
+        {
+           
+            return new UploudFileData()
+            {
+                Path = GetRealtivePathToFile(filePath,storageLocation),
+                Name = Path.GetFileNameWithoutExtension(filePath),
+                Extenstion = Path.GetExtension(filePath) == null ? "" : Path.GetExtension(filePath),
+                Hash = GetHashOfFile(filePath)
+            };
+        }
         public static List<UploudFileData> GetAllFilesInLocationRelative(string path)
         {
             List<UploudFileData> listOfFIles = new List<UploudFileData>();
@@ -59,7 +78,6 @@ namespace Cloud_Storage_Common
                         Name = Path.GetFileNameWithoutExtension(file),
                         Extenstion = Path.GetExtension(file) == null ? "" : Path.GetExtension(file),
                         Hash = GetHashOfFile(file),
-                        SyncDate = DateTime.Now,
                     }
                 );
             }
@@ -84,13 +102,14 @@ namespace Cloud_Storage_Common
             }
         }
 
+     
         public static string GetHashOfFile(string filename)
         {
-            using (var md5 = MD5.Create())
+            using (var sha256 = SHA256.Create())
             {
                 using (var stream = File.OpenRead(filename))
                 {
-                    return Convert.ToBase64String(md5.ComputeHash(stream));
+                    return BitConverter.ToString(sha256.ComputeHash(stream)).Replace("-", ""); ;
                 }
             }
         }

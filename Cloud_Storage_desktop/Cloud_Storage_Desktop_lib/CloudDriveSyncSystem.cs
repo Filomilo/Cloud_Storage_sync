@@ -10,27 +10,42 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Cloud_Storage_Common;
+using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
+using Cloud_Storage_Desktop_lib.Interfaces;
+using Cloud_Storage_Desktop_lib.Services;
+using Cloud_Storage_Desktop_lib.SyncingHandlers;
 using Lombok.NET;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
 namespace Cloud_Storage_Desktop_lib
 {
-    internal class SyncTask
+    internal class SyncTask : ITaskToRun
     {
-        public SyncTask(Task task, CancellationTokenSource token, string file)
+        private String file;
+        private Action action;
+        public object Id
         {
-            Task = task;
-            Token = token;
-            this.file = file;
+            get
+            {
+                return file;
+            }
         }
 
-        public Task Task{
-            get; set;
+        public Action ActionToRun
+        {
+            get
+            {
+                return action;
+            }
         }
-        public string file { get; set; }
-        public CancellationTokenSource Token { get; set; }
+
+        public SyncTask(String file, Action action)
+        {
+            this.file=file;
+            this.action = action;
+        }
     }
 
     public partial class CloudDriveSyncSystem
@@ -57,18 +72,23 @@ namespace Cloud_Storage_Desktop_lib
             get { return _ServerConnection; }
         }
 
-        private Configuration _Configuration = new Configuration();
-        public Configuration Configuration
+        private IConfiguration _Configuration = new Configuration();
+        public IConfiguration Configuration
         {
             get { return _Configuration; }
         }
 
-        private object _SyncCollectionLock = new object();
+        private ITaskRunController _TaskRunnerController;
         private CloudDriveSyncSystem()
         {
             this._ServerConnection = new ServerConnection(this.Configuration.ApiUrl);
-            this._Synctasks.CollectionChanged += RefreshQueue;
+            this._TaskRunnerController=new RunningTaskController(this.Configuration);
+            _FileSyncHandler = new PrepareFileSyncData(_Configuration);
         }
+
+
+        private IHandler _FileSyncHandler;
+
 
         //Testt only do not use
         public CloudDriveSyncSystem(HttpClient client)
@@ -78,60 +98,8 @@ namespace Cloud_Storage_Desktop_lib
             _instance = this;
         }
 
-        private ObservableCollection<SyncTask> _Synctasks =
-            new ObservableCollection<SyncTask>(new List<SyncTask>());
-        private Queue<SyncTask> _FileToSyncQueue = new Queue<SyncTask>();
-        public void CancelSyncingAll()
-        {
-            throw new NotImplementedException("Not implmented");
-        }
 
-        private void _AddTaskToRun(SyncTask task)
-        {
-            logger.Log(LogLevel.Debug,"Added taks");
-            this._Synctasks.Add(task);
-            task.Task.Start();
-        }
-
-        private void _RemoveTaskToRun(SyncTask task)
-        {
-
-        }
-        private void RefreshQueue(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            if(e.Action != NotifyCollectionChangedAction.Remove)
-                return;
-            lock (this._SyncCollectionLock)
-            {
-                if (this._Synctasks.Count < this.Configuration.MaxStimulationsFileSync && this._FileToSyncQueue.Count > 0)
-                {
-
-                    var FromQueue = this._FileToSyncQueue.Dequeue();
-     
-
-                }
-                else
-                {
-                    logger.LogDebug("Cannot add syncing file");
-                }
-            }
-           
-        }
-        private void _AddNewSyncTask(Task task, CancellationTokenSource token,string file)
-        {
-            lock (this._SyncCollectionLock)
-            {
-                if (_Synctasks.Count >= this.Configuration.MaxStimulationsFileSync)
-                {
-                    this._FileToSyncQueue.Enqueue(
-                       new SyncTask(task, token, file));
-                }
-                else
-                {
-                    _AddTaskToRun(new SyncTask(task, token, file));
-                }
-            }
-        }
+    
         public void SyncFiles()
         {
             logger.Log(LogLevel.Information,$"Retrving files in location:{this.Configuration.StorageLocation} ");
@@ -139,30 +107,19 @@ namespace Cloud_Storage_Desktop_lib
             foreach (String file in files)
             {
                 CancellationTokenSource token = new CancellationTokenSource();
-                Task syncFileTask = new Task(() =>
-                {
-                    try
+                this._TaskRunnerController.AddTask(new SyncTask(
+                    file, () =>
                     {
-                        this.SyncFile(file);
-                    }
-                    catch (Exception exception)
-                    {
-                        logger.Log(LogLevel.Error,$"Error while syncing file {exception.Message}");
-                    }
-
-                    lock (this._SyncCollectionLock)
-                    {
-                    SyncTask syncTask = this._Synctasks.First(x => x.file == file);
-                    
-                    if (syncTask!=null)
-                    {
-                        this._Synctasks.Remove(syncTask);
-                    }
-                    }
-                   
-                },token.Token);
-
-                _AddNewSyncTask(syncFileTask, token,file);
+                        try
+                        {
+                            this.SyncFile(file);
+                        }
+                        catch (Exception exception)
+                        {
+                            logger.Log(LogLevel.Error, $"Error while syncing file {exception.Message}");
+                        }
+                    })
+                    );
 
             }
 
@@ -171,7 +128,9 @@ namespace Cloud_Storage_Desktop_lib
         private void SyncFile(string filePath)
         {
             logger.Log(LogLevel.Information,$"Start sync: {filePath}");
-            Thread.Sleep(100);
+            Thread.Sleep(5000);
+            object res = this._FileSyncHandler.Handle(filePath);
+            logger.LogDebug("FileSyync Handler result: "+ res.ToString());
             logger.Log(LogLevel.Information, $"Finished sync: {filePath}");
 
         }
