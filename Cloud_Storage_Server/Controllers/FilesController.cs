@@ -62,32 +62,33 @@ namespace Cloud_Storage_Server.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadFile([FromForm] FileUploudRequest filerequest)
         {
-            filerequest = santizeFileUploudRequest(filerequest);
-            try
-            {
-                User user = UserRepository.getUserByMail(
-                    AuthService.GetEmailFromToken(Request.Headers.Authorization)
-                );
-                if (_FileSyncService.DoesFileAlreadyExist(user, filerequest.fileData))
-                    return Ok("File like this already exist");
-                using (var memoryStream = new MemoryStream())
-                {
-                    await filerequest.file.CopyToAsync(memoryStream);
+            //filerequest = santizeFileUploudRequest(filerequest);
+            //try
+            //{
+            //    User user = UserRepository.getUserByMail(
+            //        AuthService.GetEmailFromToken(Request.Headers.Authorization)
+            //    );
+            //    if (_FileSyncService.DoesFileAlreadyExist(user, filerequest.fileData))
+            //        return Ok("File like this already exist");
+            //    using (var memoryStream = new MemoryStream())
+            //    {
+            //        await filerequest.file.CopyToAsync(memoryStream);
 
-                    byte[] content = memoryStream.ToArray();
+            //        byte[] content = memoryStream.ToArray();
 
-                    _FileSyncService.AddNewFile(user, filerequest.fileData, content);
-                    return Ok("Succsesfully added file");
-                }
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return BadRequest("Couldn't Autheticate user");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            //        _FileSyncService.AddNewFile(user, filerequest.fileData, content);
+            //        return Ok("Succsesfully added file");
+            //    }
+            //}
+            //catch (KeyNotFoundException ex)
+            //{
+            //    return BadRequest("Couldn't Autheticate user");
+            //}
+            //catch (Exception ex)
+            //{
+            //    return BadRequest(ex.Message);
+            //}
+            return BadRequest("Not implmented");
         }
 
         [Route("delete")]

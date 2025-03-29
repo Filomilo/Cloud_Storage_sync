@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -13,6 +14,11 @@ namespace Cloud_Storage_Common
     {
         public const string RegexRelativePathValidation =
             "^(?:\\.|[a-zA-Z0-9_-]+(?:\\\\[a-zA-Z0-9_-]+)*)$";
+
+        public static List<string> GetAllFilePathInLocaation(string storageLocation)
+        {
+            return Directory.GetFiles(storageLocation, "*.*", SearchOption.AllDirectories).ToList();
+        }
 
         public static List<UploudFileData> GetAllFilesInLocation(string path)
         {

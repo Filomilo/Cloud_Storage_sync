@@ -41,7 +41,7 @@ namespace ConsoleCloudDriveSync
 
         private static bool Login()
         {
-            Console.Clear();
+            //Console.Clear();
             Console.WriteLine("Provide email adress you would like to login with: ");
             string email = Console.ReadLine();
 
@@ -62,7 +62,7 @@ namespace ConsoleCloudDriveSync
 
         private static bool Registration()
         {
-            Console.Clear();
+            //Console.Clear();
             Console.WriteLine("Provide email adress you would like to register with: ");
             string email = Console.ReadLine();
 
@@ -97,7 +97,7 @@ namespace ConsoleCloudDriveSync
         {
             while (true)
             {
-                Console.Clear();
+                //Console.Clear();
                 Console.WriteLine(
                     $"Current configuration:\n {{\n {CloudDriveSyncSystem.Instance.Configuration}\n}}"
                 );
@@ -175,20 +175,10 @@ namespace ConsoleCloudDriveSync
                 choices.Add(
                     'P',
                     new Operation(
-                        "Upload files to server",
+                        "Sync",
                         () =>
                         {
-                            CloudDriveSyncSystem.Instance.UploudFiles();
-                        }
-                    )
-                );
-                choices.Add(
-                    'D',
-                    new Operation(
-                        "Download files from sever",
-                        () =>
-                        {
-                            CloudDriveSyncSystem.Instance.DownloadFiles();
+                            CloudDriveSyncSystem.Instance.SyncFiles();
                         }
                     )
                 );
