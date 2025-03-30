@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Cloud_Storage_Server.Database.Repositories
 {
-
     public static class UserRepository
     {
         public static User saveUser(User user)
@@ -14,7 +13,7 @@ namespace Cloud_Storage_Server.Database.Repositories
             {
                 var validationContext = new ValidationContext(user);
                 Validator.ValidateObject(user, validationContext, true);
-                usersaved= context.Add(user).Entity;
+                usersaved = context.Add(user).Entity;
                 context.SaveChanges();
             }
 
@@ -29,6 +28,19 @@ namespace Cloud_Storage_Server.Database.Repositories
                 if (user == null)
                     throw new KeyNotFoundException("not user with that email in database");
                 return user;
+            }
+        }
+
+        public static bool DoesUserWithMailExist(string mail)
+        {
+            try
+            {
+                User user = getUserByMail(mail);
+                return true;
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return false;
             }
         }
     }

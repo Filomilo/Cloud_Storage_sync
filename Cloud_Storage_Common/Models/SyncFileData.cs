@@ -2,11 +2,49 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Cloud_Storage_Server.Database.Models;
+using Lombok.NET;
 using Microsoft.EntityFrameworkCore;
 
 namespace Cloud_Storage_Common.Models
 {
-    public class UploudFileData
+    public class FileData
+    {
+        [Required]
+        [RegularExpression(
+            $"{FileManager.RegexRelativePathValidation}",
+            ErrorMessage = "Path string doesn't match path syntax"
+        )]
+        public string Path { get; set; }
+
+        [Required]
+        public string Name { get; set; }
+
+        [NotNull]
+        public string Extenstion { get; set; }
+
+        public string getFullPathForBasePath(string basepath)
+        {
+            return System.IO.Path.GetFullPath(this.Path, basepath);
+        }
+
+        public string getFullFilePathForBasePath(string basepath)
+        {
+            return System.IO.Path.GetFullPath(this.Path, basepath)
+                + $"\\{this.Name}{this.Extenstion}";
+        }
+
+        public override string ToString()
+        {
+            return $"{Path}{Name}{Extenstion}";
+        }
+
+        public string GetRealativePath()
+        {
+            return $"{this.Path}{this.Name}{this.Extenstion}";
+        }
+    }
+
+    public class UploudFileData : FileData
     {
         [Required]
         [RegularExpression(
@@ -24,9 +62,6 @@ namespace Cloud_Storage_Common.Models
         [Required]
         public string Hash { get; set; }
 
-        [Required]
-        public DateTime SyncDate { get; set; }
-
         public string getFullPathForBasePath(string basepath)
         {
             return System.IO.Path.GetFullPath(this.Path, basepath);
@@ -37,18 +72,22 @@ namespace Cloud_Storage_Common.Models
             return System.IO.Path.GetFullPath(this.Path, basepath)
                 + $"\\{this.Name}{this.Extenstion}";
         }
+
+        public override string ToString()
+        {
+            return $"{Path}{Name}{Extenstion} >>>> {Hash}";
+        }
     }
 
-    public class FileData : UploudFileData
+    public class SyncFileData : UploudFileData
     {
         private UploudFileData data;
 
-        public FileData() { }
+        public SyncFileData() { }
 
-        public FileData(UploudFileData data)
+        public SyncFileData(UploudFileData data)
         {
             this.Path = data.Path;
-            this.SyncDate = data.SyncDate;
             this.Name = data.Name == null ? "" : data.Name;
             this.Hash = data.Hash;
             this.Extenstion = data.Extenstion == null ? "" : data.Extenstion;
@@ -62,5 +101,8 @@ namespace Cloud_Storage_Common.Models
         [ForeignKey("User")]
         public long OwnerId { get; set; }
         public virtual User Owner { get; set; }
+
+        [Required]
+        public DateTime SyncDate { get; set; }
     }
 }

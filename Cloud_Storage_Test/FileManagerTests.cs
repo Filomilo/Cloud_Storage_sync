@@ -20,7 +20,7 @@ namespace Cloud_Storage_Common.Tests
         [Test()]
         public void GetAllFilesInLocationTest()
         {
-            List<UploudFileData> files = Cloud_Storage_Common.FileManager.GetAllFilesInLocation(
+            List<FileData> files = Cloud_Storage_Common.FileManager.GetAllFilesInLocation(
                 TestHelpers.ExampleDataDirectory
             );
             Assert.That(files.Count == 3);
@@ -29,22 +29,21 @@ namespace Cloud_Storage_Common.Tests
         [Test()]
         public void GetAllFilesInLocationRelativeTest()
         {
-            List<UploudFileData> files =
-                Cloud_Storage_Common.FileManager.GetAllFilesInLocationRelative(
-                    TestHelpers.ExampleDataDirectory
-                );
+            List<FileData> files = Cloud_Storage_Common.FileManager.GetAllFilesInLocationRelative(
+                TestHelpers.ExampleDataDirectory
+            );
             Assert.That(files.Count == 3);
 
-            foreach (UploudFileData file in files)
+            foreach (FileData file in files)
             {
                 Assert.That(Regex.IsMatch(file.Path, FileManager.RegexRelativePathValidation));
             }
 
-            List<UploudFileData> filesnotRealtive =
+            List<FileData> filesnotRealtive =
                 Cloud_Storage_Common.FileManager.GetAllFilesInLocation(
                     TestHelpers.ExampleDataDirectory
                 );
-            foreach (UploudFileData file in files)
+            foreach (FileData file in files)
             {
                 string absoultepath1 = filesnotRealtive.First(x => x.Name == file.Name).Path;
                 string absoulutePath2 = file.getFullPathForBasePath(

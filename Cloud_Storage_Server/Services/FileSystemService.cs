@@ -6,9 +6,9 @@ namespace Cloud_Storage_Server.Services
 {
     public interface IFileSystemService
     {
-        public void SaveFile(string path, byte[] dataBytes);
+        public void SaveFile(string path, Stream dataBytes);
         public void DeleteFile(string path);
-        public byte[] GetFile(string path);
+        public Stream GetFile(string path);
     }
 
     public class FileSystemService : IFileSystemService
@@ -25,31 +25,20 @@ namespace Cloud_Storage_Server.Services
             File.Delete(this.GetFullPathToFile(path));
         }
 
-        public byte[] GetFile(string path)
+        public Stream GetFile(string path)
         {
-            byte[] data = File.ReadAllBytes(this.GetFullPathToFile(path));
+            Stream data = FileManager.GetStreamForFile(this.GetFullPathToFile(path));
             return data;
         }
 
         private string GetFullPathToFile(string path)
         {
-            return _basePath + path;
+            return Directory.GetCurrentDirectory() + "\\" + _basePath + path + ".dat";
         }
 
-        public void SaveFile(string path, byte[] dataBytes)
+        public void SaveFile(string path, Stream stream)
         {
-            FileManager.SaveFile(GetFullPathToFile(path), dataBytes);
-            //try
-            //{
-            //    File.WriteAllBytes(GetFullPathToFile(path), dataBytes);
-
-            //}
-            //catch (DirectoryNotFoundException ex)
-            //{
-            //    this.CreateDirectory(path);
-            //    File.WriteAllBytes(_basePath + path, dataBytes);
-            //}
-            //File.SetAttributes(GetFullPathToFile(path), File.GetAttributes(GetFullPathToFile(path)) & ~FileAttributes.ReadOnly);
+            FileManager.SaveFile(GetFullPathToFile(path), stream);
         }
 
         public void CreateDirectory(string path)

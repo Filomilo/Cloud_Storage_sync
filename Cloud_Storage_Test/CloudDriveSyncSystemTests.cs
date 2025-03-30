@@ -41,35 +41,36 @@ namespace Cloud_Storage_Desktop_lib.Tests
         }
 
         [Test()]
+        [Ignore("Depracted")]
         public void UploudDownloadFilesTest()
         {
-            CloudDriveSyncSystem.Instance.Configuration.StorageLocation =
-                TestHelpers.ExampleDataDirectory;
-            Assert.DoesNotThrow(() =>
-            {
-                CloudDriveSyncSystem.Instance.UploudFiles();
-            });
-            List<UploudFileData> fileInLocaiton = FileManager.GetAllFilesInLocationRelative(
-                TestHelpers.ExampleDataDirectory
-            );
-            List<FileData> files = CloudDriveSyncSystem.Instance.GetListOfFilesOnCloud();
-            Assert.That(fileInLocaiton.Count == files.Count);
+            //CloudDriveSyncSystem.Instance.Configuration.StorageLocation =
+            //    TestHelpers.ExampleDataDirectory;
+            //Assert.DoesNotThrow(() =>
+            //{
+            //    CloudDriveSyncSystem.Instance.UploudFiles();
+            //});
+            //List<UploudFileData> fileInLocaiton = FileManager.GetAllFilesInLocationRelative(
+            //    TestHelpers.ExampleDataDirectory
+            //);
+            //List<SyncFileData> files = CloudDriveSyncSystem.Instance.GetListOfFilesOnCloud();
+            //Assert.That(fileInLocaiton.Count == files.Count);
 
-            CloudDriveSyncSystem.Instance.Configuration.StorageLocation = TestHelpers.TmpDirecotry;
-            CloudDriveSyncSystem.Instance.DownloadFiles();
+            //CloudDriveSyncSystem.Instance.Configuration.StorageLocation = TestHelpers.TmpDirecotry;
+            //CloudDriveSyncSystem.Instance.DownloadFiles();
 
-            List<UploudFileData> savedFiles = FileManager.GetAllFilesInLocationRelative(
-                TestHelpers.TmpDirecotry
-            );
+            //List<UploudFileData> savedFiles = FileManager.GetAllFilesInLocationRelative(
+            //    TestHelpers.TmpDirecotry
+            //);
 
-            foreach (UploudFileData uploudFileData in fileInLocaiton)
-            {
-                UploudFileData match = savedFiles.First(x => x.Name == uploudFileData.Name);
-                Assert.That(match != null);
-                Assert.That(match.Hash == uploudFileData.Hash);
-                Assert.That(match.Extenstion == uploudFileData.Extenstion);
-                Assert.That(match.Path == uploudFileData.Path);
-            }
+            //foreach (UploudFileData uploudFileData in fileInLocaiton)
+            //{
+            //    UploudFileData match = savedFiles.First(x => x.Name == uploudFileData.Name);
+            //    Assert.That(match != null);
+            //    Assert.That(match.Hash == uploudFileData.Hash);
+            //    Assert.That(match.Extenstion == uploudFileData.Extenstion);
+            //    Assert.That(match.Path == uploudFileData.Path);
+            //}
         }
     }
 }

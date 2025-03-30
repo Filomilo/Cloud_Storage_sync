@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics.Arm;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Cloud_Storage_Common.Models;
@@ -14,22 +18,25 @@ namespace Cloud_Storage_Common
         public const string RegexRelativePathValidation =
             "^(?:\\.|[a-zA-Z0-9_-]+(?:\\\\[a-zA-Z0-9_-]+)*)$";
 
-        public static List<UploudFileData> GetAllFilesInLocation(string path)
+        public static List<string> GetAllFilePathInLocaation(string storageLocation)
         {
-            List<UploudFileData> listOfFIles = new List<UploudFileData>();
+            return Directory.GetFiles(storageLocation, "*.*", SearchOption.AllDirectories).ToList();
+        }
+
+        public static List<FileData> GetAllFilesInLocation(string path)
+        {
+            List<FileData> listOfFIles = new List<FileData>();
 
             foreach (string file in Directory.GetFiles(path, "*.*", SearchOption.AllDirectories))
             {
                 FileInfo fileinfo = new FileInfo(file);
 
                 listOfFIles.Add(
-                    new UploudFileData()
+                    new FileData()
                     {
                         Path = Path.GetDirectoryName(file),
                         Name = Path.GetFileNameWithoutExtension(file),
                         Extenstion = Path.GetExtension(file),
-                        Hash = GetHashOfFile(file),
-                        SyncDate = DateTime.Now,
                     }
                 );
             }
@@ -37,9 +44,45 @@ namespace Cloud_Storage_Common
             return listOfFIles;
         }
 
-        public static List<UploudFileData> GetAllFilesInLocationRelative(string path)
+        public static List<UploudFileData> GetUploadFileDataInLocation(string path)
         {
-            List<UploudFileData> listOfFIles = new List<UploudFileData>();
+            List<FileData> files = GetAllFilesInLocation(path);
+            List<UploudFileData> uploudFiles = new List<UploudFileData>();
+            foreach (FileData fileData in files)
+            {
+                uploudFiles.Add(
+                    FileManager.GetUploadFileData(fileData.getFullFilePathForBasePath(path), path)
+                );
+            }
+
+            return uploudFiles;
+        }
+
+        public static string GetRealtivePathToFile(string filePath, string realativeTo)
+        {
+            string relativePath = Path.GetRelativePath(
+                realativeTo,
+                Path.GetDirectoryName(filePath)
+            );
+            relativePath = relativePath.Length == 0 ? "." : relativePath;
+            return relativePath;
+        }
+
+        public static UploudFileData GetUploadFileData(string FullFilePath, string storageLocation)
+        {
+            return new UploudFileData()
+            {
+                Path = GetRealtivePathToFile(FullFilePath, storageLocation),
+                Name = Path.GetFileNameWithoutExtension(FullFilePath),
+                Extenstion =
+                    Path.GetExtension(FullFilePath) == null ? "" : Path.GetExtension(FullFilePath),
+                Hash = GetHashOfFile(FullFilePath),
+            };
+        }
+
+        public static List<FileData> GetAllFilesInLocationRelative(string path)
+        {
+            List<FileData> listOfFIles = new List<FileData>();
 
             foreach (string file in Directory.GetFiles(path, "*.*", SearchOption.AllDirectories))
             {
@@ -47,13 +90,11 @@ namespace Cloud_Storage_Common
                 string relativePath = Path.GetRelativePath(path, Path.GetDirectoryName(file));
                 relativePath = relativePath.Length == 0 ? "." : relativePath;
                 listOfFIles.Add(
-                    new UploudFileData()
+                    new FileData()
                     {
                         Path = relativePath,
                         Name = Path.GetFileNameWithoutExtension(file),
                         Extenstion = Path.GetExtension(file) == null ? "" : Path.GetExtension(file),
-                        Hash = GetHashOfFile(file),
-                        SyncDate = DateTime.Now,
                     }
                 );
             }
@@ -69,38 +110,44 @@ namespace Cloud_Storage_Common
 
         public static string getHashOfArrayBytes(byte[] bytes)
         {
-            using (var md5 = MD5.Create())
+            using (var sha256 = SHA256.Create())
             {
                 using (var stream = new MemoryStream((bytes)))
                 {
-                    return Convert.ToBase64String(md5.ComputeHash(stream));
+                    return Convert.ToBase64String(sha256.ComputeHash(stream));
                 }
             }
         }
 
         public static string GetHashOfFile(string filename)
         {
-            using (var md5 = MD5.Create())
+            using (var sha256 = SHA256.Create())
             {
                 using (var stream = File.OpenRead(filename))
                 {
-                    return Convert.ToBase64String(md5.ComputeHash(stream));
+                    return Convert.ToBase64String(sha256.ComputeHash(stream));
+                    ;
                 }
             }
         }
 
-        public static void SaveFile(string path, byte[] bytes)
+        public static void SaveFile(string path, Stream stream)
         {
-            try
-            {
-                File.WriteAllBytes(path, bytes);
-            }
-            catch (DirectoryNotFoundException ex)
+            if (!Directory.Exists(Path.GetDirectoryName(path)))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
-                File.WriteAllBytes(path, bytes);
             }
-            File.SetAttributes(path, File.GetAttributes(path) & ~FileAttributes.ReadOnly);
+
+            using (FileStream wStream = File.Open(path, FileMode.Create, FileAccess.Write))
+            {
+                stream.CopyTo(wStream);
+                File.SetAttributes(path, File.GetAttributes(path) & ~FileAttributes.ReadOnly);
+            }
+        }
+
+        public static FileStream GetStreamForFile(string fiePath)
+        {
+            return File.Open(fiePath, FileMode.Open, FileAccess.Read);
         }
     }
 }

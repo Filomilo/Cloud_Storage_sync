@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Database;
 using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Database.Repositories;
@@ -37,7 +38,7 @@ public class FileRepositoryTest
     {
         int amountOfFilesBefore = context.Files.ToList().Count;
         FileRepository.SaveNewFile(
-            new FileData()
+            new SyncFileData()
             {
                 Extenstion = "jpg",
                 Hash = "1234567",
@@ -61,16 +62,15 @@ public class FileRepositoryTest
                 () =>
                 {
                     FileRepository.SaveNewFile(
-                        (FileData)
-                            new FileData()
-                            {
-                                Extenstion = "jpg",
-                                Hash = "45678",
-                                Name = "File",
-                                Path = "location1\\location2\\location\\3",
-                                SyncDate = DateTime.Now,
-                                OwnerId = -1,
-                            }
+                        new SyncFileData()
+                        {
+                            Extenstion = "jpg",
+                            Hash = "45678",
+                            Name = "File",
+                            Path = "location1\\location2\\location\\3",
+                            SyncDate = DateTime.Now,
+                            OwnerId = -1,
+                        }
                     );
                 }
             )
@@ -92,16 +92,15 @@ public class FileRepositoryTest
                     () =>
                     {
                         FileRepository.SaveNewFile(
-                            (FileData)
-                                new FileData()
-                                {
-                                    Extenstion = "jpg",
-                                    Hash = "",
-                                    Name = "File",
-                                    Path = inocorrectPathName,
-                                    SyncDate = DateTime.Now,
-                                    OwnerId = _savedUser.id,
-                                }
+                            new SyncFileData()
+                            {
+                                Extenstion = "jpg",
+                                Hash = "",
+                                Name = "File",
+                                Path = inocorrectPathName,
+                                SyncDate = DateTime.Now,
+                                OwnerId = _savedUser.id,
+                            }
                         );
                     }
                 )
@@ -115,7 +114,7 @@ public class FileRepositoryTest
     [Test]
     public void SaveNewFile_fileAlreadyExist()
     {
-        FileData fileToSave = new FileData()
+        SyncFileData fileToSave = new SyncFileData()
         {
             Extenstion = "jpg",
             Hash = "3546",
@@ -124,7 +123,7 @@ public class FileRepositoryTest
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
         };
-        FileData fileToSaveCopy = new FileData()
+        SyncFileData fileToSaveCopy = new SyncFileData()
         {
             Extenstion = "jpg",
             Hash = "3456",
@@ -151,7 +150,7 @@ public class FileRepositoryTest
     [Test]
     public void UpdateFile_correct()
     {
-        FileData fileToSave = new FileData()
+        SyncFileData fileToSave = new SyncFileData()
         {
             Extenstion = "jpg",
             Hash = "23re",
@@ -161,7 +160,7 @@ public class FileRepositoryTest
             OwnerId = _savedUser.id,
         };
 
-        FileData fileUpdateData = new FileData()
+        SyncFileData fileUpdateData = new SyncFileData()
         {
             Extenstion = "png",
             Hash = "234567",
@@ -171,16 +170,17 @@ public class FileRepositoryTest
             OwnerId = _savedUser.id,
         };
 
-        FileData savedFile = FileRepository.SaveNewFile(fileToSave);
+        SyncFileData savedFile = FileRepository.SaveNewFile(fileToSave);
 
-        FileRepository.UpdateFile(fileToSave, fileUpdateData);
+        FileRepository.UpdateFile(
+            (Cloud_Storage_Common.Models.FileData)fileToSave,
+            (Cloud_Storage_Common.Models.FileData)fileUpdateData
+        );
 
-        FileData fileInRepository = FileRepository.GetFileOfID(savedFile.Id);
+        SyncFileData fileInRepository = FileRepository.GetFileOfID(savedFile.Id);
         Assert.That(fileUpdateData.Extenstion == fileInRepository.Extenstion);
-        Assert.That(fileUpdateData.Hash == fileInRepository.Hash);
         Assert.That(fileUpdateData.Name == fileInRepository.Name);
         Assert.That(fileUpdateData.Path == fileInRepository.Path);
-        Assert.That(fileUpdateData.SyncDate == fileInRepository.SyncDate);
     }
 
     [Test]
@@ -191,7 +191,7 @@ public class FileRepositoryTest
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
 
-            FileData fileToSave = new FileData()
+            SyncFileData fileToSave = new SyncFileData()
             {
                 Extenstion = "jpg",
                 Hash = "",
@@ -201,7 +201,7 @@ public class FileRepositoryTest
                 OwnerId = _savedUser.id,
             };
 
-            FileData fileUpdateData = new FileData()
+            SyncFileData fileUpdateData = new SyncFileData()
             {
                 Extenstion = "png",
                 Hash = "234567",
@@ -214,7 +214,7 @@ public class FileRepositoryTest
                 typeof(KeyNotFoundException),
                 () =>
                 {
-                    FileRepository.UpdateFile(fileToSave, fileUpdateData);
+                    FileRepository.UpdateFile((FileData)fileToSave, (FileData)fileUpdateData);
                 }
             );
         }
@@ -223,19 +223,18 @@ public class FileRepositoryTest
     [Test]
     public void GetFileOfID_correct()
     {
-        FileData fileToSave = new FileData()
+        SyncFileData fileToSave = new SyncFileData()
         {
             Extenstion = "jpg",
-            Hash = "23456",
             Name = "File",
             Path = ".",
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
         };
 
-        FileData savedFile = FileRepository.SaveNewFile(fileToSave);
+        SyncFileData savedFile = FileRepository.SaveNewFile(fileToSave);
 
-        FileData fileInRepository = FileRepository.GetFileOfID(savedFile.Id);
+        SyncFileData fileInRepository = FileRepository.GetFileOfID(savedFile.Id);
         Assert.That(fileToSave.Extenstion == fileInRepository.Extenstion);
         Assert.That(fileToSave.Hash == fileInRepository.Hash);
         Assert.That(fileToSave.Name == fileInRepository.Name);
@@ -250,7 +249,7 @@ public class FileRepositoryTest
             typeof(KeyNotFoundException),
             () =>
             {
-                FileData fileInRepository = FileRepository.GetFileOfID(new Guid());
+                SyncFileData fileInRepository = FileRepository.GetFileOfID(new Guid());
             }
         );
     }
@@ -258,7 +257,7 @@ public class FileRepositoryTest
     [Test]
     public void getFileByPathNameAndExtension_correct()
     {
-        FileData fileToSave = new FileData()
+        SyncFileData fileToSave = new SyncFileData()
         {
             Extenstion = "jpg",
             Hash = "567890-",
@@ -268,9 +267,9 @@ public class FileRepositoryTest
             OwnerId = _savedUser.id,
         };
 
-        FileData savedFile = FileRepository.SaveNewFile(fileToSave);
+        SyncFileData savedFile = FileRepository.SaveNewFile(fileToSave);
 
-        FileData fileInRepository = FileRepository.getFileByPathNameExtensionAndUser(
+        SyncFileData fileInRepository = FileRepository.getFileByPathNameExtensionAndUser(
             path: savedFile.Path,
             name: savedFile.Name,
             extension: savedFile.Extenstion,
@@ -291,7 +290,7 @@ public class FileRepositoryTest
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
 
-            FileData fileToSave = new FileData()
+            SyncFileData fileToSave = new SyncFileData()
             {
                 Extenstion = "jpg",
                 Hash = "",
@@ -303,12 +302,13 @@ public class FileRepositoryTest
                 typeof(KeyNotFoundException),
                 () =>
                 {
-                    FileData fileInRepository = FileRepository.getFileByPathNameExtensionAndUser(
-                        path: fileToSave.Path,
-                        name: fileToSave.Name,
-                        extension: fileToSave.Extenstion,
-                        ownerId: _savedUser.id
-                    );
+                    SyncFileData fileInRepository =
+                        FileRepository.getFileByPathNameExtensionAndUser(
+                            path: fileToSave.Path,
+                            name: fileToSave.Name,
+                            extension: fileToSave.Extenstion,
+                            ownerId: _savedUser.id
+                        );
                 }
             );
         }
@@ -320,7 +320,7 @@ public class FileRepositoryTest
         int amountOfFile = 10;
         for (int i = 0; i < amountOfFile; i++)
         {
-            FileData fileToSave = new FileData()
+            SyncFileData fileToSave = new SyncFileData()
             {
                 Extenstion = "jpg",
                 Hash = "1234",
@@ -330,10 +330,10 @@ public class FileRepositoryTest
                 OwnerId = _savedUser.id,
             };
 
-            FileData savedFile = FileRepository.SaveNewFile(fileToSave);
+            SyncFileData savedFile = FileRepository.SaveNewFile(fileToSave);
         }
 
-        List<FileData> files = FileRepository.GetAllUserFiles(_savedUser.id);
+        List<SyncFileData> files = FileRepository.GetAllUserFiles(_savedUser.id);
         Assert.That(files.Count == amountOfFile);
     }
 }

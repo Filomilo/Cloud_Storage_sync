@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
@@ -38,7 +39,7 @@ namespace Cloud_Storage_Server.Controllers
             User user = UserRepository.getUserByMail(
                 AuthService.GetEmailFromToken(Request.Headers.Authorization)
             );
-            List<FileData> files = FileRepository.GetAllUserFiles(user.id);
+            List<SyncFileData> files = FileRepository.GetAllUserFiles(user.id);
             return Ok(files);
         }
 
@@ -49,7 +50,7 @@ namespace Cloud_Storage_Server.Controllers
             return Ok();
         }
 
-        FileUploudRequest santizeFileUploudRequest(FileUploudRequest fileUploudRequest)
+        FileUploudRequest santizeFileUploudRequest([NotNull] FileUploudRequest fileUploudRequest)
         {
             fileUploudRequest.fileData.Extenstion =
                 fileUploudRequest.fileData.Extenstion == null
@@ -62,21 +63,21 @@ namespace Cloud_Storage_Server.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadFile([FromForm] FileUploudRequest filerequest)
         {
-            filerequest = santizeFileUploudRequest(filerequest);
             try
             {
+                if (filerequest == null)
+                {
+                    return BadRequest("Request cannot be null");
+                }
+                filerequest = santizeFileUploudRequest(filerequest);
                 User user = UserRepository.getUserByMail(
                     AuthService.GetEmailFromToken(Request.Headers.Authorization)
                 );
                 if (_FileSyncService.DoesFileAlreadyExist(user, filerequest.fileData))
                     return Ok("File like this already exist");
-                using (var memoryStream = new MemoryStream())
+                using (Stream stream = filerequest.file.OpenReadStream())
                 {
-                    await filerequest.file.CopyToAsync(memoryStream);
-
-                    byte[] content = memoryStream.ToArray();
-
-                    _FileSyncService.AddNewFile(user, filerequest.fileData, content);
+                    _FileSyncService.AddNewFile(user, filerequest.fileData, stream);
                     return Ok("Succsesfully added file");
                 }
             }
@@ -88,6 +89,7 @@ namespace Cloud_Storage_Server.Controllers
             {
                 return BadRequest(ex.Message);
             }
+            return BadRequest("Not implmented");
         }
 
         [Route("delete")]
@@ -105,9 +107,9 @@ namespace Cloud_Storage_Server.Controllers
             User user = UserRepository.getUserByMail(
                 AuthService.GetEmailFromToken(Request.Headers.Authorization)
             );
-            FileData fileData = FileRepository.GetFileOfID(guid);
+            SyncFileData fileData = FileRepository.GetFileOfID(guid);
 
-            byte[] data = _FileSyncService.DownloadFile(user, fileData);
+            Stream data = _FileSyncService.DownloadFile(user, fileData);
 
             return File(data, "application/octet-stream", fileData.Name);
         }

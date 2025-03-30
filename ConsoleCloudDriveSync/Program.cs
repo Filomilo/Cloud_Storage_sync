@@ -41,7 +41,7 @@ namespace ConsoleCloudDriveSync
 
         private static bool Login()
         {
-            Console.Clear();
+            //Console.Clear();
             Console.WriteLine("Provide email adress you would like to login with: ");
             string email = Console.ReadLine();
 
@@ -62,7 +62,7 @@ namespace ConsoleCloudDriveSync
 
         private static bool Registration()
         {
-            Console.Clear();
+            //Console.Clear();
             Console.WriteLine("Provide email adress you would like to register with: ");
             string email = Console.ReadLine();
 
@@ -97,7 +97,7 @@ namespace ConsoleCloudDriveSync
         {
             while (true)
             {
-                Console.Clear();
+                //Console.Clear();
                 Console.WriteLine(
                     $"Current configuration:\n {{\n {CloudDriveSyncSystem.Instance.Configuration}\n}}"
                 );
@@ -123,17 +123,6 @@ namespace ConsoleCloudDriveSync
                 },
             };
 
-            choices.Add(
-                'C',
-                new Operation(
-                    "Configure path to be sync",
-                    () =>
-                    {
-                        RepeatAction(SetSyncPath);
-                    }
-                )
-            );
-
             if (!CloudDriveSyncSystem.Instance.ServerConnection.CheckIfAuthirized())
             {
                 choices.Add(
@@ -158,7 +147,16 @@ namespace ConsoleCloudDriveSync
                 );
                 return choices;
             }
-
+            choices.Add(
+                'C',
+                new Operation(
+                    "Configure path to be sync",
+                    () =>
+                    {
+                        RepeatAction(SetSyncPath);
+                    }
+                )
+            );
             choices.Add(
                 'L',
                 new Operation(
@@ -170,29 +168,19 @@ namespace ConsoleCloudDriveSync
                 )
             );
 
-            if (CloudDriveSyncSystem.Instance.Configuration.StorageLocation.Length > 0)
-            {
-                choices.Add(
-                    'P',
-                    new Operation(
-                        "Upload files to server",
-                        () =>
-                        {
-                            CloudDriveSyncSystem.Instance.UploudFiles();
-                        }
-                    )
-                );
-                choices.Add(
-                    'D',
-                    new Operation(
-                        "Download files from sever",
-                        () =>
-                        {
-                            CloudDriveSyncSystem.Instance.DownloadFiles();
-                        }
-                    )
-                );
-            }
+            //if (CloudDriveSyncSystem.Instance.Configuration.StorageLocation.Length > 0)
+            //{
+            //    choices.Add(
+            //        'P',
+            //        new Operation(
+            //            "Sync",
+            //            () =>
+            //            {
+            //                CloudDriveSyncSystem.Instance.SyncFiles();
+            //            }
+            //        )
+            //    );
+            //}
 
             return choices;
         }
@@ -204,7 +192,7 @@ namespace ConsoleCloudDriveSync
 
             if (Directory.Exists(path))
             {
-                CloudDriveSyncSystem.Instance.Configuration.StorageLocation = path;
+                CloudDriveSyncSystem.Instance.SetStorageLocation(path);
             }
             else
             {

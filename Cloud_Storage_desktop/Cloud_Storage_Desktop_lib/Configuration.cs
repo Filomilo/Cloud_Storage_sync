@@ -5,12 +5,13 @@ using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Cloud_Storage_Desktop_lib.Interfaces;
 using Lombok.NET;
 
 namespace Cloud_Storage_Desktop_lib
 {
     [ToString]
-    public partial class Configuration
+    public partial class Configuration : IConfiguration
     {
         private const string _ApiUrl = "http://localhost:5087";
 
@@ -19,6 +20,17 @@ namespace Cloud_Storage_Desktop_lib
             get { return _ApiUrl; }
         }
         private string _StorageLocation = "";
+
+
+        private const int _MaxStimulationsFileSync = 5;
+
+        public int MaxStimulationsFileSync
+        {
+            get
+            {
+                return _MaxStimulationsFileSync;
+            }
+        }
 
         //[RegularExpression(
         //    @"^@""^[a-zA-Z]:\\(?:[a-zA-Z0-9 _-]+\\)*[a-zA-Z0-9 _-]+\.txt$""",

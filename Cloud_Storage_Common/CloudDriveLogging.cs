@@ -14,6 +14,7 @@ namespace Cloud_Storage_Common
         public ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
         {
             builder.AddConsole();
+            builder.SetMinimumLevel(LogLevel.Debug);
         });
     }
 }

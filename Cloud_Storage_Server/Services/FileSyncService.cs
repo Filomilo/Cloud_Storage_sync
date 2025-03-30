@@ -1,4 +1,8 @@
-﻿using Cloud_Storage_Common.Models;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Transactions;
+using Cloud_Storage_Common;
+using Cloud_Storage_Common.Models;
+using Cloud_Storage_Server.Database;
 using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Database.Repositories;
 
@@ -6,41 +10,66 @@ namespace Cloud_Storage_Server.Services
 {
     public interface IFileSyncService
     {
-        public void AddNewFile(User user, UploudFileData data, byte[] file);
-        public byte[] DownloadFile(User user, FileData data);
-        public List<FileData> ListFilesForUser(User user);
+        public void AddNewFile(User user, UploudFileData data, Stream file);
+        public Stream DownloadFile(User user, SyncFileData data);
+        public List<SyncFileData> ListFilesForUser(User user);
         public bool DoesFileAlreadyExist(User user, UploudFileData data);
     }
 
     public class FileSyncService : IFileSyncService
     {
         private IFileSystemService _fileSystemService;
+        private ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger(
+            "FileSyncService"
+        );
 
         public FileSyncService(IFileSystemService fileSystemService)
         {
             _fileSystemService = fileSystemService;
         }
 
-        private static string GetRealtivePathForFile(User user, FileData data)
+        private static string GetRealtivePathForFile(User user, SyncFileData data)
         {
+            //throw new NotImplementedException();
             return $"{user.id}\\{data.Id}";
         }
 
-        public void AddNewFile(User user, UploudFileData data, byte[] file)
+        public void AddNewFile(User user, UploudFileData data, Stream file)
         {
-            FileData fileData = new FileData(data);
+            SyncFileData fileData = new SyncFileData(data);
             fileData.OwnerId = user.id;
-            FileData saved = FileRepository.SaveNewFile(fileData);
 
-            this._fileSystemService.SaveFile(GetRealtivePathForFile(user, saved), file);
-            //todo: save actual file
+            try
+            {
+                SyncFileData saved;
+                using (DatabaseContext context = new DatabaseContext())
+                {
+                    using (var transaction = context.Database.BeginTransaction())
+                    {
+                        var validationContext = new ValidationContext(file);
+                        Validator.ValidateObject(file, validationContext, true);
+
+                        saved = context.Files.Add(fileData).Entity;
+                        context.SaveChanges();
+
+                        this._fileSystemService.SaveFile(GetRealtivePathForFile(user, saved), file);
+
+                        transaction.Commit();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Error saving file to server: [[]{ex.Message}]");
+                throw ex;
+            }
         }
 
         public bool DoesFileAlreadyExist(User user, UploudFileData data)
         {
             try
             {
-                FileData fileInRepo = FileRepository.getFileByPathNameExtensionAndUser(
+                SyncFileData fileInRepo = FileRepository.getFileByPathNameExtensionAndUser(
                     data.Path,
                     data.Name,
                     data.Extenstion,
@@ -58,15 +87,15 @@ namespace Cloud_Storage_Server.Services
             return false;
         }
 
-        public byte[] DownloadFile(User user, FileData data)
+        public Stream DownloadFile(User user, SyncFileData data)
         {
-            byte[] RawData = this._fileSystemService.GetFile(GetRealtivePathForFile(user, data));
+            Stream RawData = this._fileSystemService.GetFile(GetRealtivePathForFile(user, data));
             return RawData;
         }
 
-        public List<FileData> ListFilesForUser(User user)
+        public List<SyncFileData> ListFilesForUser(User user)
         {
-            List<FileData> files = FileRepository.GetAllUserFiles(user.id);
+            List<SyncFileData> files = FileRepository.GetAllUserFiles(user.id);
             return files;
         }
     }
