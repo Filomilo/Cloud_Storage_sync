@@ -7,19 +7,17 @@ namespace Cloud_Storage_Server.Database.Repositories
 {
     public static class FileRepository
     {
-        public static FileData SaveNewFile(FileData file)
+        public static SyncFileData SaveNewFile(SyncFileData file)
         {
-            throw new NotImplementedException();
-
-            //FileData savedFile = null;
-            //using (DatabaseContext context = new DatabaseContext())
-            //{
-            //    var validationContext = new ValidationContext(file);
-            //    Validator.ValidateObject(file, validationContext, true);
-            //    savedFile = context.Files.Add(file).Entity;
-            //    context.SaveChanges();
-            //}
-            //return savedFile;
+            SyncFileData savedFile = null;
+            using (DatabaseContext context = new DatabaseContext())
+            {
+                var validationContext = new ValidationContext(file);
+                Validator.ValidateObject(file, validationContext, true);
+                savedFile = context.Files.Add(file).Entity;
+                context.SaveChanges();
+            }
+            return savedFile;
         }
 
         public static FileData UpdateFile(FileData previousFileDataa, FileData newFileData)
@@ -49,42 +47,39 @@ namespace Cloud_Storage_Server.Database.Repositories
             throw new NotImplementedException();
         }
 
-        public static FileData GetFileOfID(Guid id)
+        public static SyncFileData GetFileOfID(Guid id)
         {
-            throw new NotImplementedException();
-
-            //using (DatabaseContext context = new DatabaseContext())
-            //{
-            //    FileData file = context.Files.Find(id);
-            //    if (file == null)
-            //        throw new KeyNotFoundException("No file iwth this guuid");
-            //    return file;
-            //}
+            using (DatabaseContext context = new DatabaseContext())
+            {
+                SyncFileData file = context.Files.Find(id);
+                if (file == null)
+                    throw new KeyNotFoundException("No file iwth this guuid");
+                return file;
+            }
         }
 
-        public static FileData getFileByPathNameExtensionAndUser(
+        public static SyncFileData getFileByPathNameExtensionAndUser(
             string path,
             string name,
             string extension,
             long ownerId
         )
         {
-            //using (DatabaseContext context = new DatabaseContext())
-            //{
-            //        FileData file = context.Files.FirstOrDefault(
-            //                                            x =>
-            //                                                x.Path == path &&
-            //                                                x.Name == name &&
-            //                                                x.Extenstion == extension &&
-            //                                                 x.OwnerId == ownerId
+            using (DatabaseContext context = new DatabaseContext())
+            {
+                SyncFileData file = context.Files.FirstOrDefault(x =>
+                    x.Path == path
+                    && x.Name == name
+                    && x.Extenstion == extension
+                    && x.OwnerId == ownerId
+                );
+                if (file == null)
+                    throw new KeyNotFoundException(
+                        "File specofied by provieded paramaters doesnt exists"
+                    );
 
-            //                                                    );
-            //                                                    if (file == null)
-            //                                                        throw new KeyNotFoundException("File specofied by provieded paramaters doesnt exists");
-
-            //    return file;
-            //}
-            throw new NotImplementedException();
+                return file;
+            }
         }
 
         public static List<SyncFileData> GetAllUserFiles(long userId)

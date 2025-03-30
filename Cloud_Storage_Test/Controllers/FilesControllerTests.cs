@@ -6,6 +6,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_Desktop_lib.Services;
@@ -54,10 +55,10 @@ namespace Cloud_Storage_Server.Controllers.Tests
         [Test()]
         public void UploudFileTest()
         {
-            byte[] exmpaleData = File.ReadAllBytes(exampleDataImageDirector);
+            Stream exmpaleData = FileManager.GetStreamForFile(exampleDataImageDirector);
 
             var form = FileMangamentSerivce.GetFormDatForFile(
-                new FileData()
+                new SyncFileData()
                 {
                     Name = "file",
                     Extenstion = "jpg",

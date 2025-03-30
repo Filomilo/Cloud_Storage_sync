@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
+using Cloud_Storage_Desktop_lib.Actions;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -41,19 +42,7 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
             }
             UploudFileData uploudFileData = (UploudFileData)request;
             _taskRunController.AddTask(
-                new SyncTask(
-                    uploudFileData.getFullFilePathForBasePath(_configuration.StorageLocation),
-                    () =>
-                    {
-                        logger.LogInformation(
-                            $"---------------- Start UPLOAD::: {uploudFileData.getFullFilePathForBasePath(_configuration.StorageLocation)}"
-                        );
-                        Thread.Sleep(500);
-                        logger.LogInformation(
-                            $"***************************s STOP UPLOAD::: {uploudFileData.getFullFilePathForBasePath(_configuration.StorageLocation)}"
-                        );
-                    }
-                )
+                new UploadAction(this._connection, this._configuration, uploudFileData)
             );
 
             logger.LogWarning(

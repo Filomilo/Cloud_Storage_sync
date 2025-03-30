@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
+using Cloud_Storage_Desktop_lib.Actions;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -15,17 +16,35 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
     {
         private IConfiguration _configuration;
         private IServerConnection _connection;
+        private ITaskRunController _taskRunController;
         private ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger(
             "DownloadMissingFilesHandler"
         );
 
         public DownloadMissingFilesHandler(
             IConfiguration configuration,
-            IServerConnection serverConnection
+            IServerConnection serverConnection,
+            ITaskRunController taskRunController
         )
         {
             _configuration = configuration;
             _connection = serverConnection;
+            _taskRunController = taskRunController;
+        }
+
+        private List<SyncFileData> getExclusieFileData(
+            LocalAndServerFileData LocalAndServerFileData
+        )
+        {
+            List<SyncFileData> filterd = LocalAndServerFileData
+                .CloudFiles.Where(x =>
+                    LocalAndServerFileData
+                        .LocalFiles.Where(y => y.GetRealativePath().Equals(x.GetRealativePath()))
+                        .Count() == 0
+                )
+                .ToList();
+            return filterd;
+            ;
         }
 
         public override object Handle(object request)
@@ -37,9 +56,15 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
                 );
             }
 
-            logger.LogWarning(
-                "DownloadMissingFilesHandler Not implemented, it should delete local files that were deleted on server"
-            );
+            LocalAndServerFileData req = (LocalAndServerFileData)request;
+            List<SyncFileData> filesToDownload = this.getExclusieFileData(req);
+            foreach (SyncFileData syncFileData in filesToDownload)
+            {
+                _taskRunController.AddTask(
+                    new DownloadAction(_connection, _configuration, syncFileData)
+                );
+            }
+
             if (this._nextHandler != null)
                 this._nextHandler.Handle(request);
             return null;

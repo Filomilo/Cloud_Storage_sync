@@ -44,6 +44,20 @@ namespace Cloud_Storage_Common
             return listOfFIles;
         }
 
+        public static List<UploudFileData> GetUploadFileDataInLocation(string path)
+        {
+            List<FileData> files = GetAllFilesInLocation(path);
+            List<UploudFileData> uploudFiles = new List<UploudFileData>();
+            foreach (FileData fileData in files)
+            {
+                uploudFiles.Add(
+                    FileManager.GetUploadFileData(fileData.getFullFilePathForBasePath(path), path)
+                );
+            }
+
+            return uploudFiles;
+        }
+
         public static string GetRealtivePathToFile(string filePath, string realativeTo)
         {
             string relativePath = Path.GetRelativePath(
@@ -54,14 +68,15 @@ namespace Cloud_Storage_Common
             return relativePath;
         }
 
-        public static UploudFileData GetUploadFileData(string filePath, string storageLocation)
+        public static UploudFileData GetUploadFileData(string FullFilePath, string storageLocation)
         {
             return new UploudFileData()
             {
-                Path = GetRealtivePathToFile(filePath, storageLocation),
-                Name = Path.GetFileNameWithoutExtension(filePath),
-                Extenstion = Path.GetExtension(filePath) == null ? "" : Path.GetExtension(filePath),
-                Hash = GetHashOfFile(filePath),
+                Path = GetRealtivePathToFile(FullFilePath, storageLocation),
+                Name = Path.GetFileNameWithoutExtension(FullFilePath),
+                Extenstion =
+                    Path.GetExtension(FullFilePath) == null ? "" : Path.GetExtension(FullFilePath),
+                Hash = GetHashOfFile(FullFilePath),
             };
         }
 
@@ -95,11 +110,11 @@ namespace Cloud_Storage_Common
 
         public static string getHashOfArrayBytes(byte[] bytes)
         {
-            using (var md5 = MD5.Create())
+            using (var sha256 = SHA256.Create())
             {
                 using (var stream = new MemoryStream((bytes)))
                 {
-                    return Convert.ToBase64String(md5.ComputeHash(stream));
+                    return Convert.ToBase64String(sha256.ComputeHash(stream));
                 }
             }
         }
@@ -110,24 +125,29 @@ namespace Cloud_Storage_Common
             {
                 using (var stream = File.OpenRead(filename))
                 {
-                    return BitConverter.ToString(sha256.ComputeHash(stream)).Replace("-", "");
+                    return Convert.ToBase64String(sha256.ComputeHash(stream));
                     ;
                 }
             }
         }
 
-        public static void SaveFile(string path, byte[] bytes)
+        public static void SaveFile(string path, Stream stream)
         {
-            try
-            {
-                File.WriteAllBytes(path, bytes);
-            }
-            catch (DirectoryNotFoundException ex)
+            if (!Directory.Exists(Path.GetDirectoryName(path)))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
-                File.WriteAllBytes(path, bytes);
             }
-            File.SetAttributes(path, File.GetAttributes(path) & ~FileAttributes.ReadOnly);
+
+            using (FileStream wStream = File.Open(path, FileMode.Create, FileAccess.Write))
+            {
+                stream.CopyTo(wStream);
+                File.SetAttributes(path, File.GetAttributes(path) & ~FileAttributes.ReadOnly);
+            }
+        }
+
+        public static FileStream GetStreamForFile(string fiePath)
+        {
+            return File.Open(fiePath, FileMode.Open, FileAccess.Read);
         }
     }
 }

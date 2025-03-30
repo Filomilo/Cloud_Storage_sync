@@ -122,9 +122,9 @@ namespace Cloud_Storage_Desktop_lib
             CredentialManager.removeToken();
         }
 
-        public void uploudFile(UploudFileData file, byte[] data)
+        public void UploudFile(UploudFileData fileData, Stream stream)
         {
-            var form = FileMangamentSerivce.GetFormDatForFile(file, data);
+            var form = FileMangamentSerivce.GetFormDatForFile(fileData, stream);
             var response = this.client.PostAsync("api/Files/upload", form).Result;
 
             if (response.IsSuccessStatusCode)
@@ -138,11 +138,11 @@ namespace Cloud_Storage_Desktop_lib
             }
         }
 
-        public List<FileData> GetListOfFiles()
+        public List<SyncFileData> GetListOfFiles()
         {
             var response = this.client.GetAsync("api/Files/list").Result;
             var raw = response.Content.ReadAsStringAsync().Result;
-            List<FileData> parsed = JsonConvert.DeserializeObject<List<FileData>>(raw);
+            List<SyncFileData> parsed = JsonConvert.DeserializeObject<List<SyncFileData>>(raw);
             //var parsed = JsonSerializer.Deserialize<List<SyncFileData>>(raw);
 
             return parsed;
@@ -153,21 +153,6 @@ namespace Cloud_Storage_Desktop_lib
             public Guid guid { get; set; }
         }
 
-        public byte[] DownloadFlie(Guid guid)
-        {
-            var response = this
-                .client.GetAsync($"api/Files/download?guid={guid.ToString()}")
-                .Result;
-            if (!response.IsSuccessStatusCode)
-                throw new Exception("Couldn't get File form server");
-            //MemoryStream stream = new MemoryStream(0);
-            //response.Content.CopyToAsync(stream).Wait();
-            Stream stream = response.Content.ReadAsStream();
-            byte[] buff = new byte[stream.Length];
-            stream.Read(buff, 0, (int)stream.Length);
-            return buff;
-        }
-
         public List<SyncFileData> GetAllCloudFilesInfo()
         {
             var response = this.client.GetAsync("api/Files/list").Result;
@@ -175,6 +160,17 @@ namespace Cloud_Storage_Desktop_lib
             List<SyncFileData> parsed = JsonConvert.DeserializeObject<List<SyncFileData>>(raw);
             //var parsed = JsonSerializer.Deserialize<List<SyncFileData>>(raw)
             return parsed;
+        }
+
+        public Stream DownloadFile(Guid guid)
+        {
+            var response = this
+                .client.GetAsync($"api/Files/download?guid={guid.ToString()}")
+                .Result;
+            if (!response.IsSuccessStatusCode)
+                throw new Exception("Couldn't get File form server");
+            Stream stream = response.Content.ReadAsStream();
+            return stream;
         }
     }
 }

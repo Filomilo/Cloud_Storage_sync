@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib;
+using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Server;
 using Cloud_Storage_Server.Controllers;
 using Cloud_Storage_Server.Database.Models;
@@ -17,6 +18,7 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.TestPlatform.TestHost;
 using NUnit.Framework;
@@ -35,7 +37,7 @@ namespace Cloud_Storage_Desktop_lib.Tests
     public class ServerConnectionTest
     {
         private HttpClient _testServer;
-        private ServerConnection server;
+        private IServerConnection server;
 
         [SetUp]
         public void Setup()
@@ -60,7 +62,7 @@ namespace Cloud_Storage_Desktop_lib.Tests
         [Test()]
         public void ServerConnectionTest_correct()
         {
-            ServerConnection server = new ServerConnection(_testServer);
+            IServerConnection server = new ServerConnection(_testServer);
             Assert.That(server.CheckIfHelathy());
         }
 
@@ -101,37 +103,58 @@ namespace Cloud_Storage_Desktop_lib.Tests
         [Test]
         public void uploudAndDownloadFile()
         {
-            List<UploudFileData> files = FileManager.GetAllFilesInLocation(
+            List<FileData> files = FileManager.GetAllFilesInLocation(
                 TestHelpers.ExampleDataDirectory
             );
+            List<UploudFileData> uploudFiles = new List<UploudFileData>();
             files.ForEach(x =>
                 x.Path = Path.GetRelativePath(TestHelpers.ExampleDataDirectory, x.Path)
             );
             List<byte[]> bytArrays = new List<byte[]>();
-            foreach (UploudFileData file in files)
+            foreach (FileData file in files)
             {
-                byte[] data = File.ReadAllBytes(
-                    file.getFullFilePathForBasePath(TestHelpers.ExampleDataDirectory)
+                string fullFilePath = file.getFullFilePathForBasePath(
+                    TestHelpers.ExampleDataDirectory
                 );
-                bytArrays.Add(data);
-                Assert.DoesNotThrow(() =>
+
+                UploudFileData uploudFileData = FileManager.GetUploadFileData(
+                    fullFilePath,
+                    TestHelpers.ExampleDataDirectory
+                );
+                using (Stream stream = FileManager.GetStreamForFile(fullFilePath))
                 {
-                    this.server.uploudFile(file, data);
-                });
+                    byte[] buffer = new byte[stream.Length];
+                    stream.Read(buffer);
+                    bytArrays.Add(buffer);
+                }
+
+                using (Stream stream = FileManager.GetStreamForFile(fullFilePath))
+                {
+                    uploudFiles.Add(uploudFileData);
+                    Assert.DoesNotThrow(() =>
+                    {
+                        this.server.UploudFile(uploudFileData, stream);
+                    });
+                }
             }
 
-            List<FileData> filesOnServer = this.server.GetListOfFiles();
+            List<SyncFileData> filesOnServer = this.server.GetListOfFiles();
             Assert.That(filesOnServer.Count == files.Count);
             for (var i = 0; i < filesOnServer.Count; i++)
             {
-                UploudFileData uploudFileData = files.First(x => x.Hash == filesOnServer[i].Hash);
+                UploudFileData uploudFileData = uploudFiles.First(x =>
+                    x.Hash == filesOnServer[i].Hash
+                );
                 Assert.That(uploudFileData.Name == filesOnServer[i].Name);
                 Assert.That(uploudFileData.Path == filesOnServer[i].Path);
                 Assert.That(uploudFileData.Extenstion == filesOnServer[i].Extenstion);
-                byte[] bytes = this.server.DownloadFlie(filesOnServer[i].Id);
+                Stream stream = this.server.DownloadFile(filesOnServer[i].Id);
+                byte[] bytes = new byte[stream.Length];
+                stream.Read(bytes);
                 Assert.That(Enumerable.SequenceEqual(bytes, bytArrays[i]));
+
                 string hash = FileManager.getHashOfArrayBytes(bytes);
-                Assert.That(filesOnServer[i].Hash == hash);
+                Assert.That(filesOnServer[i].Hash.Equals(hash));
             }
         }
     }

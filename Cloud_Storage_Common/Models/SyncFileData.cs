@@ -37,9 +37,14 @@ namespace Cloud_Storage_Common.Models
         {
             return $"{Path}{Name}{Extenstion}";
         }
+
+        public string GetRealativePath()
+        {
+            return $"{this.Path}{this.Name}{this.Extenstion}";
+        }
     }
 
-    public class UploudFileData
+    public class UploudFileData : FileData
     {
         [Required]
         [RegularExpression(

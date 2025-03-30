@@ -33,7 +33,13 @@ namespace Cloud_Storage_Desktop_lib.Services
             );
             _InitialSyncHandler
                 .SetNext(new DeleteCloudLocalFilesHandler())
-                .SetNext(new DownloadMissingFilesHandler(configuration, serverConnection))
+                .SetNext(
+                    new DownloadMissingFilesHandler(
+                        configuration,
+                        serverConnection,
+                        _taskRunController
+                    )
+                )
                 .SetNext(
                     new PerFileInitialSyncHandler(
                         configuration,
@@ -55,17 +61,17 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         public void OnLocallyOnRenamed(RenamedEventArgs args)
         {
-            throw new NotImplementedException();
+            logger.LogWarning($"OnLocallyOnRenamed Not Implemented:: {args.ToString()}");
         }
 
         public void OnLocallyDeleted(FileSystemEventArgs args)
         {
-            throw new NotImplementedException();
+            logger.LogWarning($"OnLocallyDeleted Not Implemented:: {args.ToString()}");
         }
 
         public void OnLocallyCreated(FileSystemEventArgs args)
         {
-            throw new NotImplementedException();
+            logger.LogWarning($"OnLocallyCreated Not Implemented:: {args.ToString()}");
         }
 
         public void OnLocallyChanged(FileSystemEventArgs args)

@@ -30,5 +30,18 @@ namespace Cloud_Storage_Server.Database.Repositories
                 return user;
             }
         }
+
+        public static bool DoesUserWithMailExist(string mail)
+        {
+            try
+            {
+                User user = getUserByMail(mail);
+                return true;
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return false;
+            }
+        }
     }
 }
