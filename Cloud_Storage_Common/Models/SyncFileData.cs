@@ -7,8 +7,39 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cloud_Storage_Common.Models
 {
+    public class FileData
+    {
+        [Required]
+        [RegularExpression(
+            $"{FileManager.RegexRelativePathValidation}",
+            ErrorMessage = "Path string doesn't match path syntax"
+        )]
+        public string Path { get; set; }
 
-     public class UploudFileData
+        [Required]
+        public string Name { get; set; }
+
+        [NotNull]
+        public string Extenstion { get; set; }
+
+        public string getFullPathForBasePath(string basepath)
+        {
+            return System.IO.Path.GetFullPath(this.Path, basepath);
+        }
+
+        public string getFullFilePathForBasePath(string basepath)
+        {
+            return System.IO.Path.GetFullPath(this.Path, basepath)
+                + $"\\{this.Name}{this.Extenstion}";
+        }
+
+        public override string ToString()
+        {
+            return $"{Path}{Name}{Extenstion}";
+        }
+    }
+
+    public class UploudFileData
     {
         [Required]
         [RegularExpression(
@@ -25,8 +56,6 @@ namespace Cloud_Storage_Common.Models
 
         [Required]
         public string Hash { get; set; }
-
-    
 
         public string getFullPathForBasePath(string basepath)
         {
@@ -45,13 +74,13 @@ namespace Cloud_Storage_Common.Models
         }
     }
 
-    public class FileData : UploudFileData
+    public class SyncFileData : UploudFileData
     {
         private UploudFileData data;
 
-        public FileData() { }
+        public SyncFileData() { }
 
-        public FileData(UploudFileData data)
+        public SyncFileData(UploudFileData data)
         {
             this.Path = data.Path;
             this.Name = data.Name == null ? "" : data.Name;

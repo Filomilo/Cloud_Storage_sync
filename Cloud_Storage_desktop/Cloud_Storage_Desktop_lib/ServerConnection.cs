@@ -8,6 +8,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using Cloud_Storage_Common.Models;
+using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Services;
 using log4net;
 using log4net.Repository.Hierarchy;
@@ -15,7 +16,7 @@ using Newtonsoft.Json;
 
 namespace Cloud_Storage_Desktop_lib
 {
-    public class ServerConnection
+    public class ServerConnection : IServerConnection
     {
         private static ILog logger = LogManager.GetLogger(typeof(ServerConnection));
         HttpClient client = new HttpClient();
@@ -142,7 +143,7 @@ namespace Cloud_Storage_Desktop_lib
             var response = this.client.GetAsync("api/Files/list").Result;
             var raw = response.Content.ReadAsStringAsync().Result;
             List<FileData> parsed = JsonConvert.DeserializeObject<List<FileData>>(raw);
-            //var parsed = JsonSerializer.Deserialize<List<FileData>>(raw);
+            //var parsed = JsonSerializer.Deserialize<List<SyncFileData>>(raw);
 
             return parsed;
         }
@@ -165,6 +166,15 @@ namespace Cloud_Storage_Desktop_lib
             byte[] buff = new byte[stream.Length];
             stream.Read(buff, 0, (int)stream.Length);
             return buff;
+        }
+
+        public List<SyncFileData> GetAllCloudFilesInfo()
+        {
+            var response = this.client.GetAsync("api/Files/list").Result;
+            var raw = response.Content.ReadAsStringAsync().Result;
+            List<SyncFileData> parsed = JsonConvert.DeserializeObject<List<SyncFileData>>(raw);
+            //var parsed = JsonSerializer.Deserialize<List<SyncFileData>>(raw)
+            return parsed;
         }
     }
 }

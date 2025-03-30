@@ -8,7 +8,7 @@ namespace Cloud_Storage_Server.Services
     {
         public void AddNewFile(User user, UploudFileData data, byte[] file);
         public byte[] DownloadFile(User user, FileData data);
-        public List<FileData> ListFilesForUser(User user);
+        public List<SyncFileData> ListFilesForUser(User user);
         public bool DoesFileAlreadyExist(User user, UploudFileData data);
     }
 
@@ -23,39 +23,42 @@ namespace Cloud_Storage_Server.Services
 
         private static string GetRealtivePathForFile(User user, FileData data)
         {
-            return $"{user.id}\\{data.Id}";
+            throw new NotImplementedException();
+            //return $"{user.id}\\{data.Id}";
         }
 
         public void AddNewFile(User user, UploudFileData data, byte[] file)
         {
-            FileData fileData = new FileData(data);
-            fileData.OwnerId = user.id;
-            FileData saved = FileRepository.SaveNewFile(fileData);
+            throw new NotImplementedException();
+            //FileData fileData = new FileData(data);
+            //fileData.OwnerId = user.id;
+            //FileData saved = FileRepository.SaveNewFile(fileData);
 
-            this._fileSystemService.SaveFile(GetRealtivePathForFile(user, saved), file);
+            //this._fileSystemService.SaveFile(GetRealtivePathForFile(user, saved), file);
             //todo: save actual file
         }
 
         public bool DoesFileAlreadyExist(User user, UploudFileData data)
         {
-            try
-            {
-                FileData fileInRepo = FileRepository.getFileByPathNameExtensionAndUser(
-                    data.Path,
-                    data.Name,
-                    data.Extenstion,
-                    user.id
-                );
-                if (fileInRepo == null || fileInRepo.Hash == data.Hash)
-                {
-                    return true;
-                }
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return false;
-            }
-            return false;
+            //try
+            //{
+            //    FileData fileInRepo = FileRepository.getFileByPathNameExtensionAndUser(
+            //        data.Path,
+            //        data.Name,
+            //        data.Extenstion,
+            //        user.id
+            //    );
+            //    if (fileInRepo == null || fileInRepo.Hash == data.Hash)
+            //    {
+            //        return true;
+            //    }
+            //}
+            //catch (KeyNotFoundException ex)
+            //{
+            //    return false;
+            //}
+            //return false;
+            throw new NotImplementedException();
         }
 
         public byte[] DownloadFile(User user, FileData data)
@@ -64,9 +67,9 @@ namespace Cloud_Storage_Server.Services
             return RawData;
         }
 
-        public List<FileData> ListFilesForUser(User user)
+        public List<SyncFileData> ListFilesForUser(User user)
         {
-            List<FileData> files = FileRepository.GetAllUserFiles(user.id);
+            List<SyncFileData> files = FileRepository.GetAllUserFiles(user.id);
             return files;
         }
     }

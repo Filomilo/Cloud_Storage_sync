@@ -18,6 +18,7 @@ using Cloud_Storage_Desktop_lib.SyncingHandlers;
 using Lombok.NET;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using FileSystemWatcher = Cloud_Storage_Desktop_lib.Services.FileSystemWatcher;
 
 namespace Cloud_Storage_Desktop_lib
 {
@@ -27,23 +28,17 @@ namespace Cloud_Storage_Desktop_lib
         private Action action;
         public object Id
         {
-            get
-            {
-                return file;
-            }
+            get { return file; }
         }
 
         public Action ActionToRun
         {
-            get
-            {
-                return action;
-            }
+            get { return action; }
         }
 
         public SyncTask(String file, Action action)
         {
-            this.file=file;
+            this.file = file;
             this.action = action;
         }
     }
@@ -72,23 +67,34 @@ namespace Cloud_Storage_Desktop_lib
             get { return _ServerConnection; }
         }
 
-        private IConfiguration _Configuration = new Configuration();
         public IConfiguration Configuration
         {
             get { return _Configuration; }
         }
+        private IConfiguration _Configuration = new Configuration();
 
-        private ITaskRunController _TaskRunnerController;
+        //public IConfiguration Configuration
+        //{
+        //    get { return _Configuration; }
+        //}
+
+        //private ITaskRunController _TaskRunnerController;
+        public IFileSyncService FileSyncService;
+        public IFIleSystemWatcher SystemWatcher;
+
         private CloudDriveSyncSystem()
         {
-            this._ServerConnection = new ServerConnection(this.Configuration.ApiUrl);
-            this._TaskRunnerController=new RunningTaskController(this.Configuration);
-            _FileSyncHandler = new PrepareFileSyncData(_Configuration);
+            this._ServerConnection = new ServerConnection(this._Configuration.ApiUrl);
+            this.SystemWatcher = new FileSystemWatcher();
+
+            this.FileSyncService = new SyncFileService(this.Configuration, this._ServerConnection);
+            this.SystemWatcher.OnDeletedEventHandler += this.FileSyncService.OnLocallyDeleted;
+            this.SystemWatcher.OnChangedEventHandler += this.FileSyncService.OnLocallyChanged;
+            this.SystemWatcher.OnCreatedEventHandler += this.FileSyncService.OnLocallyCreated;
+            this.SystemWatcher.OnRenamedEventHandler += this.FileSyncService.OnLocallyOnRenamed;
         }
 
-
-        private IHandler _FileSyncHandler;
-
+        //private IHandler _FileSyncHandler;
 
         //Testt only do not use
         public CloudDriveSyncSystem(HttpClient client)
@@ -98,41 +104,47 @@ namespace Cloud_Storage_Desktop_lib
             _instance = this;
         }
 
-
-    
-        public void SyncFiles()
+        public void SetStorageLocation(string dir)
         {
-            logger.Log(LogLevel.Information,$"Retrving files in location:{this.Configuration.StorageLocation} ");
-            List<String> files = FileManager.GetAllFilePathInLocaation(this._Configuration.StorageLocation);
-            foreach (String file in files)
-            {
-                CancellationTokenSource token = new CancellationTokenSource();
-                this._TaskRunnerController.AddTask(new SyncTask(
-                    file, () =>
-                    {
-                        try
-                        {
-                            this.SyncFile(file);
-                        }
-                        catch (Exception exception)
-                        {
-                            logger.Log(LogLevel.Error, $"Error while syncing file {exception.Message}");
-                        }
-                    })
-                    );
-
-            }
-
+            this._Configuration.StorageLocation = dir;
+            this.SystemWatcher.Directory = dir;
+            this.FileSyncService.StopAllSync();
+            this.FileSyncService.StartSync();
         }
 
-        private void SyncFile(string filePath)
-        {
-            logger.Log(LogLevel.Information,$"Start sync: {filePath}");
-            Thread.Sleep(5000);
-            object res = this._FileSyncHandler.Handle(filePath);
-            logger.LogDebug("FileSyync Handler result: "+ res.ToString());
-            logger.Log(LogLevel.Information, $"Finished sync: {filePath}");
-        }
+        //public void SyncFiles()
+        //{
+        //    logger.Log(LogLevel.Information,$"Retrving files in location:{this.Configuration.StorageLocation} ");
+        //    List<String> files = FileManager.GetAllFilePathInLocaation(this._Configuration.StorageLocation);
+        //    foreach (String file in files)
+        //    {
+        //        CancellationTokenSource token = new CancellationTokenSource();
+        //        this._TaskRunnerController.AddTask(new SyncTask(
+        //            file, () =>
+        //            {
+        //                try
+        //                {
+        //                    this.SyncFile(file);
+        //                }
+        //                catch (Exception exception)
+        //                {
+        //                    logger.Log(LogLevel.Error, $"Error while syncing file {exception.Message}");
+        //                }
+        //            })
+        //            );
+
+        //    }
+
+        //}
+
+        //private void SyncFile(string filePath)
+        //{
+        //    logger.Log(LogLevel.Information,$"Start sync: {filePath}");
+        //    Thread.Sleep(5000);
+        //    object res = this._FileSyncHandler.Handle(filePath);
+        //    logger.LogDebug("FileSyync Handler result: "+ res.ToString());
+        //    logger.Log(LogLevel.Information, $"Finished sync: {filePath}");
+        //}
 
         //public void UploudFiles()
         //{
@@ -167,8 +179,8 @@ namespace Cloud_Storage_Desktop_lib
 
         //public void DownloadFiles()
         //{
-        //    List<FileData> filesOnCloud = this.GetListOfFilesOnCloud();
-        //    foreach (FileData file in filesOnCloud)
+        //    List<SyncFileData> filesOnCloud = this.GetListOfFilesOnCloud();
+        //    foreach (SyncFileData file in filesOnCloud)
         //    {
         //        FileManager.SaveFile(
         //            file.getFullFilePathForBasePath(this.Configuration.StorageLocation),
@@ -177,9 +189,9 @@ namespace Cloud_Storage_Desktop_lib
         //    }
         //}
 
-        public List<FileData> GetListOfFilesOnCloud()
-        {
-            return this.ServerConnection.GetListOfFiles();
-        }
+        //public List<SyncFileData> GetListOfFilesOnCloud()
+        //{
+        //    return this.ServerConnection.GetListOfFiles();
+        //}
     }
 }

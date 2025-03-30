@@ -11,15 +11,19 @@ using Microsoft.Extensions.Logging;
 
 namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 {
-    class PrepareFileSyncData: AbstactHandler
+    class PrepareFileSyncData : AbstactHandler
     {
         private IConfiguration _configuration;
 
         public PrepareFileSyncData(IConfiguration configuration)
         {
-            _configuration=configuration;
+            _configuration = configuration;
         }
-        private ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger("PrepareFileSyncData");
+
+        private ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger(
+            "PrepareFileSyncData"
+        );
+
         public override object Handle(object request)
         {
             logger.LogDebug($"Begin PrepareFileSyncData for  {request.ToString()}");
@@ -28,16 +32,15 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
                 if (request.GetType() != typeof(String))
                     throw new ArgumentException("This handler exepts String");
 
-                UploudFileData upcloudFileData =
-                    FileManager.GetUploadFileData(request.ToString(), _configuration.StorageLocation);
-                
+                UploudFileData upcloudFileData = FileManager.GetUploadFileData(
+                    request.ToString(),
+                    _configuration.StorageLocation
+                );
 
                 if (this._nextHandler != null)
                     return this._nextHandler.Handle(upcloudFileData);
                 else
                     return upcloudFileData;
-
-
             }
             catch (Exception ex)
             {

@@ -38,7 +38,7 @@ namespace Cloud_Storage_Server.Controllers
             User user = UserRepository.getUserByMail(
                 AuthService.GetEmailFromToken(Request.Headers.Authorization)
             );
-            List<FileData> files = FileRepository.GetAllUserFiles(user.id);
+            List<SyncFileData> files = FileRepository.GetAllUserFiles(user.id);
             return Ok(files);
         }
 

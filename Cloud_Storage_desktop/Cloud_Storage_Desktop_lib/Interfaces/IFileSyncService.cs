@@ -6,30 +6,22 @@ using System.Threading.Tasks;
 
 namespace Cloud_Storage_Desktop_lib.Interfaces
 {
+    public interface ISyncProcess { }
 
-    public interface ISyncProcess
-    {
-
-    }
-
-    public interface ISyncProcessEventArgs
-    {
-
-    }
+    public interface ISyncProcessEventArgs { }
 
     public interface IFileSyncService
     {
         void StartSync();
-        void OnRenamed(RenamedEventArgs args);
-        void OnDeleted(FileSystemEventArgs args);
-        void OnCreated(FileSystemEventArgs args);
-        void OnChanged(FileSystemEventArgs args);
+        void OnLocallyOnRenamed(RenamedEventArgs args);
+        void OnLocallyDeleted(FileSystemEventArgs args);
+        void OnLocallyCreated(FileSystemEventArgs args);
+        void OnLocallyChanged(FileSystemEventArgs args);
 
-        void PauseAllSync();
+        void StopAllSync();
 
         IEnumerable<ISyncProcess> GetAllSyncProcesses();
 
         delegate void OnSyncProcessUpdate(ISyncProcessEventArgs args);
-
     }
 }

@@ -53,7 +53,7 @@ namespace Cloud_Storage_Desktop_lib.Tests
             //List<UploudFileData> fileInLocaiton = FileManager.GetAllFilesInLocationRelative(
             //    TestHelpers.ExampleDataDirectory
             //);
-            //List<FileData> files = CloudDriveSyncSystem.Instance.GetListOfFilesOnCloud();
+            //List<SyncFileData> files = CloudDriveSyncSystem.Instance.GetListOfFilesOnCloud();
             //Assert.That(fileInLocaiton.Count == files.Count);
 
             //CloudDriveSyncSystem.Instance.Configuration.StorageLocation = TestHelpers.TmpDirecotry;

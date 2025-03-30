@@ -123,17 +123,6 @@ namespace ConsoleCloudDriveSync
                 },
             };
 
-            choices.Add(
-                'C',
-                new Operation(
-                    "Configure path to be sync",
-                    () =>
-                    {
-                        RepeatAction(SetSyncPath);
-                    }
-                )
-            );
-
             if (!CloudDriveSyncSystem.Instance.ServerConnection.CheckIfAuthirized())
             {
                 choices.Add(
@@ -158,7 +147,16 @@ namespace ConsoleCloudDriveSync
                 );
                 return choices;
             }
-
+            choices.Add(
+                'C',
+                new Operation(
+                    "Configure path to be sync",
+                    () =>
+                    {
+                        RepeatAction(SetSyncPath);
+                    }
+                )
+            );
             choices.Add(
                 'L',
                 new Operation(
@@ -170,19 +168,19 @@ namespace ConsoleCloudDriveSync
                 )
             );
 
-            if (CloudDriveSyncSystem.Instance.Configuration.StorageLocation.Length > 0)
-            {
-                choices.Add(
-                    'P',
-                    new Operation(
-                        "Sync",
-                        () =>
-                        {
-                            CloudDriveSyncSystem.Instance.SyncFiles();
-                        }
-                    )
-                );
-            }
+            //if (CloudDriveSyncSystem.Instance.Configuration.StorageLocation.Length > 0)
+            //{
+            //    choices.Add(
+            //        'P',
+            //        new Operation(
+            //            "Sync",
+            //            () =>
+            //            {
+            //                CloudDriveSyncSystem.Instance.SyncFiles();
+            //            }
+            //        )
+            //    );
+            //}
 
             return choices;
         }
@@ -194,7 +192,7 @@ namespace ConsoleCloudDriveSync
 
             if (Directory.Exists(path))
             {
-                CloudDriveSyncSystem.Instance.Configuration.StorageLocation = path;
+                CloudDriveSyncSystem.Instance.SetStorageLocation(path);
             }
             else
             {

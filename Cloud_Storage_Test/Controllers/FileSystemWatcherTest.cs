@@ -9,12 +9,13 @@ using NUnit.Framework;
 
 namespace Cloud_Storage_Desktop_lib.Services
 {
-
     [TestFixture]
     class FileSystemWatcherTest
     {
-        IFIleSystemWatcher fIleSystemWatcher = new Cloud_Storage_Desktop_lib.Services.FileSystemWatcher();
+        IFIleSystemWatcher fIleSystemWatcher =
+            new Cloud_Storage_Desktop_lib.Services.FileSystemWatcher();
         private string _Directory = TestHelpers.TmpDirecotry;
+
         [SetUp]
         public void Setup()
         {
@@ -24,8 +25,9 @@ namespace Cloud_Storage_Desktop_lib.Services
         [TearDown]
         public void TearDown()
         {
-            Directory.Delete(_Directory,true);
+            Directory.Delete(_Directory, true);
         }
+
         [Test]
         public void FileOpartionWatch()
         {
@@ -35,46 +37,41 @@ namespace Cloud_Storage_Desktop_lib.Services
             bool wasOnCreatedEventHandler = false;
             bool wasOnChangeEventHadnler = false;
             bool wasOnDeltedeEventHadnler = false;
-            this.fIleSystemWatcher.OnCreatedEventHandler += (args =>
-            {
-                wasOnCreatedEventHandler = true;
-                Assert.That(args.Name == fileToCreate);
-            });
-            this.fIleSystemWatcher.OnChangedEventHandler += (args =>
-            {
-                if (args.ChangeType == WatcherChangeTypes.Changed)
+            this.fIleSystemWatcher.OnCreatedEventHandler += (
+                args =>
                 {
-             wasOnChangeEventHadnler = true;
+                    wasOnCreatedEventHandler = true;
+                    Assert.That(args.Name == fileToCreate);
                 }
-               
-         
-            });
+            );
+            this.fIleSystemWatcher.OnChangedEventHandler += (
+                args =>
+                {
+                    if (args.ChangeType == WatcherChangeTypes.Changed)
+                    {
+                        wasOnChangeEventHadnler = true;
+                    }
+                }
+            );
 
-            this.fIleSystemWatcher.OnDeletedEventHandler += (args =>
-            {
-     
+            this.fIleSystemWatcher.OnDeletedEventHandler += (
+                args =>
+                {
                     wasOnDeltedeEventHadnler = true;
 
                     Assert.That(args.Name == fileToCreate);
+                }
+            );
 
-            });
+            this.fIleSystemWatcher.Directory = _Directory;
 
-
-            this.fIleSystemWatcher.Directory= _Directory;
-     
-
-          
-
-            File.WriteAllText( $"{_Directory}{fileToCreate}",fileInitalContent);
+            File.WriteAllText($"{_Directory}{fileToCreate}", fileInitalContent);
             File.WriteAllText($"{_Directory}{fileToCreate}", "    ");
             File.Delete($"{_Directory}{fileToCreate}");
             Thread.Sleep(100);
             Assert.That(wasOnCreatedEventHandler);
             Assert.That(wasOnChangeEventHadnler);
             Assert.That(wasOnDeltedeEventHadnler);
-
-
         }
-
     }
 }
