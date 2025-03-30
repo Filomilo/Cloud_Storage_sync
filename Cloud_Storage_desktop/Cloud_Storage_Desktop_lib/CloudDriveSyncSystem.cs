@@ -132,7 +132,6 @@ namespace Cloud_Storage_Desktop_lib
             object res = this._FileSyncHandler.Handle(filePath);
             logger.LogDebug("FileSyync Handler result: "+ res.ToString());
             logger.Log(LogLevel.Information, $"Finished sync: {filePath}");
-
         }
 
         //public void UploudFiles()
