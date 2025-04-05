@@ -12,6 +12,7 @@ using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Tests;
 using Cloud_Storage_Server.Database.Repositories;
 using Cloud_Storage_Server.Services;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Options;
@@ -101,7 +102,6 @@ namespace Cloud_Storage_Test
 
             #endregion
 
-
             #region Create New File
             string fileContent = "Exmaple File Content_" + Guid.NewGuid();
             String createdFileName = TestHelpers.CreateTmpFile(
@@ -148,5 +148,193 @@ namespace Cloud_Storage_Test
 
             #endregion
         }
+
+        [Test]
+        public void Connect_With_Files_Already_OnDisk()
+        {
+            #region Ensure not connected and 3 files
+
+            int amountOfFiles = 3;
+            var getFileContent = (int num) =>
+            {
+                return $"Content_{num}";
+            };
+
+            List<string> filesAdded = new List<string>();
+            for (int i = 0; i < amountOfFiles; i++)
+            {
+                filesAdded.Add(
+                    TestHelpers.CreateTmpFile(
+                        this._Client1Config.StorageLocation,
+                        getFileContent(i)
+                    )
+                );
+            }
+
+            Assert.That(
+                FileRepository.GetAllUserFiles(UserRepository.getUserByMail(email).id).Count == 0,
+                "File for user in reposirotry not 0"
+            );
+
+            #endregion
+
+
+            #region Connect to server
+            this._cloudDriveSyncSystemClient1.ServerConnection.login(email, pass);
+
+            Assert.That(
+                this._cloudDriveSyncSystemClient1.ServerConnection.CheckIfAuthirized,
+                "cloud drive system 1 is no authorized"
+            );
+
+            #endregion
+
+            #region Ensure the same data on server and clinet
+
+            Assert.DoesNotThrow(
+                () =>
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        return FileRepository
+                                .GetAllUserFiles(UserRepository.getUserByMail(email).id)
+                                .Count == amountOfFiles;
+                    })
+            );
+
+            CheckIfTheSameContentOnClinetsAndServer(
+                new List<CloudDriveSyncSystem>() { this._cloudDriveSyncSystemClient1 }
+            );
+
+            #endregion
+        }
+
+        [Test]
+        public void Connect_With_Files_On_Server()
+        {
+            throw new NotImplementedException("test not implemented");
+
+            #region Ensure nor connected and 3 files on server
+
+
+            #endregion
+
+
+            #region Connect to server
+
+
+            #endregion
+
+            #region Esnure correct file ownership
+
+
+            #endregion
+
+            #region Ensure the same data on server and clinet
+
+
+            #endregion
+        }
+
+        [Test]
+        public void Connect_With_Diffrent_Files_On_Server_And_Device()
+        {
+            throw new NotImplementedException("test not implemented");
+
+            #region Ensure diffrent files on server and device
+
+
+            #endregion
+
+
+            #region Connect to server
+            this._cloudDriveSyncSystemClient1.ServerConnection.login(email, pass);
+
+            #endregion
+
+            #region Esnure correct file ownership
+
+
+            #endregion
+
+            #region Ensure the same data on server and clinet
+
+
+            #endregion
+        }
+
+        [Test]
+        public void Delete_File_Located_On_Both_Devices()
+        {
+            throw new NotImplementedException("test not implemented");
+
+            #region Ensure The same file
+
+
+            #endregion
+
+
+            #region Connect to server
+
+
+            #endregion
+
+            #region Esnure correct file ownership
+
+
+            #endregion
+
+            #region Ensure the same data on server and clinet
+
+
+            #endregion
+        }
+
+        #region HelpersMethod
+
+        private string AddFileToBothServerAndClients()
+        {
+            throw new NotImplementedException("AddFileToBothServerAndClients not implemented");
+        }
+
+        private void CheckIfTheSameContentOnClinetsAndServer(List<CloudDriveSyncSystem> systems)
+        {
+            List<SyncFileData> filesOnTheServer = FileRepository.GetAllUserFiles(
+                UserRepository.getUserByMail(email).id
+            );
+            foreach (CloudDriveSyncSystem cloudDriveSyncSystem in systems)
+            {
+                List<FileData> filesInUserLocation = FileManager.GetAllFilesInLocationRelative(
+                    cloudDriveSyncSystem.Configuration.StorageLocation
+                );
+                Assert.That(
+                    filesInUserLocation.Count == filesOnTheServer.Count,
+                    $"Files on device {cloudDriveSyncSystem.Configuration.DeviceUUID}"
+                );
+                foreach (SyncFileData syncFileData in filesOnTheServer)
+                {
+                    string serverFileHash = FileManager.GetHashOfFile(
+                        this._fileSystemService.GetFullPathToFile(syncFileData)
+                    );
+
+                    FileData correspoidingFile = filesInUserLocation.Find(x =>
+                        x.Name == syncFileData.Name
+                        && x.Path == syncFileData.Path
+                        && x.Extenstion == syncFileData.Extenstion
+                    );
+
+                    string loacalHash = FileManager.GetHashOfFile(
+                        correspoidingFile.getFullFilePathForBasePath(
+                            cloudDriveSyncSystem.Configuration.StorageLocation
+                        )
+                    );
+                    Assert.That(
+                        loacalHash == serverFileHash,
+                        "Content of file {correspoidingFile} diffrent from server and device"
+                    );
+                }
+            }
+        }
+
+        #endregion
     }
 }

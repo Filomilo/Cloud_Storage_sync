@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,6 +31,7 @@ namespace Cloud_Storage_Desktop_lib.Services
         private object Locker = new object();
         private Dictionary<object, TaskObject> _RunningTask = new Dictionary<object, TaskObject>();
         private Queue<ITaskToRun> _QueuedTasks = new Queue<ITaskToRun>();
+        public bool Active { get; set; } = false;
 
         private delegate void TaskFinished(object id);
 
@@ -86,7 +88,7 @@ namespace Cloud_Storage_Desktop_lib.Services
         {
             lock (Locker)
             {
-                if (_RunningTask.Count < this._configuration.MaxStimulationsFileSync)
+                if (_RunningTask.Count < this._configuration.MaxStimulationsFileSync || this.Active)
                 {
                     _AddAndActivateTaskObject(TaskToRun);
                 }

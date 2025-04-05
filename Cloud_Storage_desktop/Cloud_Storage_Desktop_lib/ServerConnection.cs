@@ -101,6 +101,14 @@ namespace Cloud_Storage_Desktop_lib
             _LoadToken();
         }
 
+        private void InovkeConnectionChange(bool state)
+        {
+            if (this.ConnectionChangeHandler != null)
+            {
+                this.ConnectionChangeHandler.Invoke(state);
+            }
+        }
+
         private void _LoadToken()
         {
             string token = this._credentialManager.GetToken();
@@ -117,6 +125,7 @@ namespace Cloud_Storage_Desktop_lib
                         logger.LogWarning("Token authirzation failed");
                         this._credentialManager.RemoveToken();
                     }
+                    InovkeConnectionChange(true);
                 }
                 catch (Exception e)
                 {
@@ -130,6 +139,7 @@ namespace Cloud_Storage_Desktop_lib
         {
             this.client.DefaultRequestHeaders.Authorization = null;
             this._credentialManager.RemoveToken();
+            InovkeConnectionChange(false);
         }
 
         public void UploudFile(UploudFileData fileData, Stream stream)
@@ -145,10 +155,13 @@ namespace Cloud_Storage_Desktop_lib
             }
             else
             {
-                logger.LogError($"Failed to upload data: {response.StatusCode}");
+                string responseMesage = response.Content.ReadAsStringAsync().Result;
+                logger.LogError($"Failed to upload data: {responseMesage}");
                 throw new Exception($"{response.Content.ReadAsStringAsync().Result}");
             }
         }
+
+        public event OnConnectionStateChange? ConnectionChangeHandler;
 
         public List<SyncFileData> GetListOfFiles()
         {

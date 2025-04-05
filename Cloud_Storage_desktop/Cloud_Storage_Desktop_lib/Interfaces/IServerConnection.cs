@@ -7,6 +7,8 @@ using Cloud_Storage_Common.Models;
 
 namespace Cloud_Storage_Desktop_lib.Interfaces
 {
+    public delegate void OnConnectionStateChange(bool isConnected);
+
     public interface IServerConnection
     {
         bool CheckIfAuthirized();
@@ -18,5 +20,6 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
         void Logout();
         void Register(string email, string pass);
         void UploudFile(UploudFileData fileData, Stream value);
+        event OnConnectionStateChange ConnectionChangeHandler;
     }
 }

@@ -49,21 +49,57 @@ namespace Cloud_Storage_Desktop_lib.Services
                         _taskRunController
                     )
                 );
+            this._serverConnection.ConnectionChangeHandler += onConnnetionChange;
+        }
+
+        private void onConnnetionChange(bool state)
+        {
+            logger.LogInformation($"Connection For sync file serviece change to {state}");
+            if (state)
+            {
+                this._state = SyncState.CONNECTED;
+                this.StartSync();
+            }
+            else
+            {
+                this._state = SyncState.DISCONNECTED;
+                this.StopAllSync();
+            }
         }
 
         public bool Active
         {
-            get { return this._serverConnection.CheckIfAuthirized(); }
+            get { return this.State == SyncState.CONNECTED; }
         }
 
         public void StartSync()
         {
+            logger.LogInformation("Start Syncing");
             _InitialSyncHandler.Handle(null);
         }
 
         public IEnumerable<ISyncProcess> GetAllSyncProcesses()
         {
             throw new NotImplementedException();
+        }
+
+        public void ResumeAllSync()
+        {
+            if (this._serverConnection.CheckIfAuthirized())
+            {
+                _state = SyncState.CONNECTED;
+            }
+            else
+            {
+                this._state = SyncState.DISCONNECTED;
+            }
+        }
+
+        private SyncState _state = SyncState.NOT_SETUP;
+
+        public SyncState State
+        {
+            get { return _state; }
         }
 
         public void OnLocallyOnRenamed(RenamedEventArgs args)
@@ -78,16 +114,17 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         public void OnLocallyCreated(FileSystemEventArgs args)
         {
-            _taskRunController.AddTask(
-                new UploadAction(
-                    this._serverConnection,
-                    this._configuration,
-                    FileManager.GetUploadFileData(
-                        args.FullPath,
-                        this._configuration.StorageLocation
+            if (Active)
+                _taskRunController.AddTask(
+                    new UploadAction(
+                        this._serverConnection,
+                        this._configuration,
+                        FileManager.GetUploadFileData(
+                            args.FullPath,
+                            this._configuration.StorageLocation
+                        )
                     )
-                )
-            );
+                );
         }
 
         public void OnLocallyChanged(FileSystemEventArgs args)
@@ -97,7 +134,13 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         public void StopAllSync()
         {
-            logger.LogWarning("StopAllSync Not Implemented");
+            logger.LogInformation("STOP all sync");
+            _state = SyncState.STOPPED;
+        }
+
+        public void PauseAllSync()
+        {
+            _state = SyncState.PAUSED;
         }
     }
 }

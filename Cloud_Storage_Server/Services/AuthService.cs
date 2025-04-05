@@ -80,6 +80,10 @@ namespace Cloud_Storage_Server.Services
 
         internal static string GetEmailFromToken(string authorization)
         {
+            if (authorization == null)
+            {
+                throw new ArgumentException($"jwt token can not be null");
+            }
             authorization = authorization.Replace("Bearer ", "");
             var handler = new JwtSecurityTokenHandler();
             var token = handler.ReadJwtToken(authorization);
