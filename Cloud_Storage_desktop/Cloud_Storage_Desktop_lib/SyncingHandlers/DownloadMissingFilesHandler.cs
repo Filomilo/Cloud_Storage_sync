@@ -17,7 +17,7 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
         private IConfiguration _configuration;
         private IServerConnection _connection;
         private ITaskRunController _taskRunController;
-        private ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger(
+        private ILogger logger = CloudDriveLogging.Instance.GetLogger(
             "DownloadMissingFilesHandler"
         );
 

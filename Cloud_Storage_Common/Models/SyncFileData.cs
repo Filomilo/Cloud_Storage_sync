@@ -42,6 +42,11 @@ namespace Cloud_Storage_Common.Models
         {
             return $"{this.Path}{this.Name}{this.Extenstion}";
         }
+
+        public string GetFileNameANdExtenstion()
+        {
+            return $"{this.Name}{this.Extenstion}";
+        }
     }
 
     public class UploudFileData : FileData

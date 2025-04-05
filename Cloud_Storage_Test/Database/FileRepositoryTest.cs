@@ -225,11 +225,12 @@ public class FileRepositoryTest
     {
         SyncFileData fileToSave = new SyncFileData()
         {
-            Extenstion = "jpg",
+            Extenstion = ".jpg",
             Name = "File",
-            Path = ".",
+            Path = "folder",
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
+            Hash = "123",
         };
 
         SyncFileData savedFile = FileRepository.SaveNewFile(fileToSave);

@@ -13,7 +13,7 @@ namespace Cloud_Storage_Desktop_lib.Actions
 {
     public class UploadAction : AbstactAction
     {
-        private ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger(
+        private ILogger logger = CloudDriveLogging.Instance.GetLogger(
             "UploadAction"
         );
 

@@ -15,22 +15,26 @@ namespace Cloud_Storage_Desktop_lib.Services
         public ITaskToRun taksTaskToRun;
         public Task task;
     }
-    public class RunningTaskController: ITaskRunController
+
+    public class RunningTaskController : ITaskRunController
     {
-        private ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger("RunningTaskController");
+        private ILogger logger = CloudDriveLogging.Instance.GetLogger("RunningTaskController");
+
         public RunningTaskController(IConfiguration configuration)
         {
-            _configuration=configuration;
+            _configuration = configuration;
             _taskFinished += _OnTaskFinished;
         }
+
         private IConfiguration _configuration;
         private object Locker = new object();
-        private Dictionary<object,TaskObject> _RunningTask=new Dictionary<object, TaskObject>();
+        private Dictionary<object, TaskObject> _RunningTask = new Dictionary<object, TaskObject>();
         private Queue<ITaskToRun> _QueuedTasks = new Queue<ITaskToRun>();
 
         private delegate void TaskFinished(object id);
 
         private TaskFinished _taskFinished;
+
         private TaskObject _CreateTaskObject(ITaskToRun taskToRun)
         {
             CancellationTokenSource tokenSource = new CancellationTokenSource();
@@ -38,16 +42,18 @@ namespace Cloud_Storage_Desktop_lib.Services
             {
                 token = tokenSource,
                 taksTaskToRun = taskToRun,
-                task = new Task(() =>
-                {
-                    logger.LogDebug($"Activated task {taskToRun.Id}");
-                    taskToRun.ActionToRun.Invoke();
-                    Task.Run(() =>
+                task = new Task(
+                    () =>
                     {
-                        _taskFinished.Invoke(taskToRun.Id);
-                    });
-
-                }, tokenSource.Token)
+                        logger.LogDebug($"Activated task {taskToRun.Id}");
+                        taskToRun.ActionToRun.Invoke();
+                        Task.Run(() =>
+                        {
+                            _taskFinished.Invoke(taskToRun.Id);
+                        });
+                    },
+                    tokenSource.Token
+                ),
             };
             return task;
         }
@@ -58,8 +64,10 @@ namespace Cloud_Storage_Desktop_lib.Services
             lock (Locker)
             {
                 this._RunningTask.Remove(id);
-                if (this._RunningTask.Count < this._configuration.MaxStimulationsFileSync &&
-                    this._QueuedTasks.Count > 0)
+                if (
+                    this._RunningTask.Count < this._configuration.MaxStimulationsFileSync
+                    && this._QueuedTasks.Count > 0
+                )
                 {
                     ITaskToRun dequeued = this._QueuedTasks.Dequeue();
                     _AddAndActivateTaskObject(dequeued);
@@ -69,12 +77,10 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         private void _AddAndActivateTaskObject(ITaskToRun task)
         {
-           
             TaskObject takTaskObject = _CreateTaskObject(task);
             _RunningTask.Add(task.Id, takTaskObject);
             takTaskObject.task.Start();
         }
-
 
         public void AddTask(ITaskToRun TaskToRun)
         {
@@ -91,19 +97,17 @@ namespace Cloud_Storage_Desktop_lib.Services
             }
         }
 
-
         public void CancelAllTasks()
         {
             lock (Locker)
             {
                 this._QueuedTasks.Clear();
-            foreach (TaskObject taskToRun in this._QueuedTasks)
-            {
-                taskToRun.token.Cancel();
+                foreach (TaskObject taskToRun in this._QueuedTasks)
+                {
+                    taskToRun.token.Cancel();
+                }
+                this._QueuedTasks.Clear();
             }
-            this._QueuedTasks.Clear(); 
-            }
-           
         }
 
         public void CancelTask(object key)
@@ -122,7 +126,8 @@ namespace Cloud_Storage_Desktop_lib.Services
             }
         }
 
-        public int QueuedTasksCount {
+        public int QueuedTasksCount
+        {
             get
             {
                 lock (Locker)
@@ -137,7 +142,7 @@ namespace Cloud_Storage_Desktop_lib.Services
             {
                 lock (Locker)
                 {
-                    return this._QueuedTasks.Count+this.ActiveTasksCount;
+                    return this._QueuedTasks.Count + this.ActiveTasksCount;
                 }
             }
         }

@@ -12,9 +12,7 @@ namespace Cloud_Storage_Desktop_lib.Actions
 {
     public class DownloadAction : AbstactAction
     {
-        private ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger(
-            "DownloadAction"
-        );
+        private ILogger logger = CloudDriveLogging.Instance.GetLogger("DownloadAction");
 
         private Action _downloadAction;
 

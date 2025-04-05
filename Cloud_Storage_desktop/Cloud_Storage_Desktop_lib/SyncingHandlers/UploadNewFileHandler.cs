@@ -17,9 +17,7 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
         private IConfiguration _configuration;
         private IServerConnection _connection;
         private ITaskRunController _taskRunController;
-        private ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger(
-            "UploadNewFileHandler"
-        );
+        private ILogger logger = CloudDriveLogging.Instance.GetLogger("UploadNewFileHandler");
 
         public UploadNewFileHandler(
             IConfiguration configuration,

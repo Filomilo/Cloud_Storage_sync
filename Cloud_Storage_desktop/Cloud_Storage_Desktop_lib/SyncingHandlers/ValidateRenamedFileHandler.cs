@@ -15,9 +15,7 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
     {
         private IConfiguration _configuration;
         private IServerConnection _connection;
-        private ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger(
-            "ValidateRenamedFileHandler"
-        );
+        private ILogger logger = CloudDriveLogging.Instance.GetLogger("ValidateRenamedFileHandler");
 
         public ValidateRenamedFileHandler(
             IConfiguration configuration,

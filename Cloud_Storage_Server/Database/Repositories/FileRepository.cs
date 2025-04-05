@@ -20,33 +20,6 @@ namespace Cloud_Storage_Server.Database.Repositories
             return savedFile;
         }
 
-        public static FileData UpdateFile(FileData previousFileDataa, FileData newFileData)
-        {
-            FileData updatedFile;
-            //            using (DatabaseContext context = new DatabaseContext())
-            //            {
-            //                var validationContext = new ValidationContext(newFileData);
-            //                Validator.ValidateObject(newFileData, validationContext, true);
-            //                FileData found= context.Files.FirstOrDefault(
-            //                    x => x.Path == previousFileDataa.Path && x.Name == previousFileDataa.Name && x.Extenstion == previousFileDataa.Extenstion
-            //                );
-            //                if (found == null)
-            //                {
-            //                    throw new KeyNotFoundException("No File like provided to update");
-            //;                }
-
-            //                found.Path = newFileData.Path;
-            //                found.Extenstion = newFileData.Extenstion;
-            //                found.Hash= newFileData.Hash;
-            //                found.SyncDate=newFileData.SyncDate;
-            //                found.Name=newFileData.Name;
-            //                updatedFile=context.Files.Update(found).Entity;
-            //                context.SaveChanges();
-            //            }
-            //            return updatedFile;
-            throw new NotImplementedException();
-        }
-
         public static SyncFileData GetFileOfID(Guid id)
         {
             using (DatabaseContext context = new DatabaseContext())
@@ -89,6 +62,11 @@ namespace Cloud_Storage_Server.Database.Repositories
                 List<SyncFileData> files = context.Files.Where(x => x.OwnerId == userId).ToList();
                 return files;
             }
+        }
+
+        internal static void UpdateFile(FileData fileToSave, FileData fileUpdateData)
+        {
+            throw new NotImplementedException();
         }
     }
 }

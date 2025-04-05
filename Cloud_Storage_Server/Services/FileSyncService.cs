@@ -19,9 +19,7 @@ namespace Cloud_Storage_Server.Services
     public class FileSyncService : IFileSyncService
     {
         private IFileSystemService _fileSystemService;
-        private ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger(
-            "FileSyncService"
-        );
+        private ILogger logger = CloudDriveLogging.Instance.GetLogger("FileSyncService");
 
         public FileSyncService(IFileSystemService fileSystemService)
         {

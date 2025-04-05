@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Interfaces;
+using Cloud_Storage_Desktop_lib.Actions;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.SyncingHandlers;
 using Microsoft.Extensions.Logging;
@@ -14,10 +15,9 @@ namespace Cloud_Storage_Desktop_lib.Services
 {
     class SyncFileService : IFileSyncService
     {
-        private ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger(
-            "SyncFileService"
-        );
+        private ILogger logger = CloudDriveLogging.Instance.GetLogger("SyncFileService");
 
+        private IServerConnection _serverConnection;
         private IConfiguration _configuration;
 
         private IHandler _InitialSyncHandler;
@@ -29,8 +29,10 @@ namespace Cloud_Storage_Desktop_lib.Services
             _taskRunController = new RunningTaskController(configuration);
             _InitialSyncHandler = new GetLocalAndServerFileListHadndler(
                 configuration,
-                serverConnection
+                serverConnection,
+                this
             );
+            this._serverConnection = serverConnection;
             _InitialSyncHandler
                 .SetNext(new DeleteCloudLocalFilesHandler())
                 .SetNext(
@@ -47,6 +49,11 @@ namespace Cloud_Storage_Desktop_lib.Services
                         _taskRunController
                     )
                 );
+        }
+
+        public bool Active
+        {
+            get { return this._serverConnection.CheckIfAuthirized(); }
         }
 
         public void StartSync()
@@ -71,7 +78,16 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         public void OnLocallyCreated(FileSystemEventArgs args)
         {
-            logger.LogWarning($"OnLocallyCreated Not Implemented:: {args.ToString()}");
+            _taskRunController.AddTask(
+                new UploadAction(
+                    this._serverConnection,
+                    this._configuration,
+                    FileManager.GetUploadFileData(
+                        args.FullPath,
+                        this._configuration.StorageLocation
+                    )
+                )
+            );
         }
 
         public void OnLocallyChanged(FileSystemEventArgs args)

@@ -11,7 +11,7 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 {
     public class DeleteCloudLocalFilesHandler : AbstactHandler
     {
-        private ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger(
+        private ILogger logger = CloudDriveLogging.Instance.GetLogger(
             "DeleteCloudLocalFilesHandler"
         );
 

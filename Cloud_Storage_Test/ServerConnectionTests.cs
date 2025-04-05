@@ -43,7 +43,7 @@ namespace Cloud_Storage_Desktop_lib.Tests
         public void Setup()
         {
             _testServer = new MyWebApplication().CreateDefaultClient();
-            this.server = new ServerConnection(_testServer);
+            this.server = new ServerConnection(_testServer, new TestCredentialMangager());
 
             string email = $"{Guid.NewGuid().ToString()}@mail.mail";
             string pass = "1234567890asdASD++";
@@ -62,7 +62,10 @@ namespace Cloud_Storage_Desktop_lib.Tests
         [Test()]
         public void ServerConnectionTest_correct()
         {
-            IServerConnection server = new ServerConnection(_testServer);
+            IServerConnection server = new ServerConnection(
+                _testServer,
+                new TestCredentialMangager()
+            );
             Assert.That(server.CheckIfHelathy());
         }
 
@@ -73,7 +76,10 @@ namespace Cloud_Storage_Desktop_lib.Tests
                 Is.TypeOf(typeof(AggregateException)),
                 () =>
                 {
-                    ServerConnection server = new ServerConnection("http://localhost:1234");
+                    ServerConnection server = new ServerConnection(
+                        "http://localhost:1234",
+                        new TestCredentialMangager()
+                    );
                 }
             );
         }

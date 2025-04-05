@@ -16,9 +16,7 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
         private IConfiguration _configuration;
         private IServerConnection _connection;
         private IHandler _Handler;
-        private ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger(
-            "PerFileInitialSyncHandler"
-        );
+        private ILogger logger = CloudDriveLogging.Instance.GetLogger("PerFileInitialSyncHandler");
 
         public PerFileInitialSyncHandler(
             IConfiguration configuration,

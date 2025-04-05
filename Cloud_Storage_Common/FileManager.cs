@@ -10,11 +10,13 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Cloud_Storage_Common.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Cloud_Storage_Common
 {
     public static class FileManager
     {
+        private static ILogger Logger = CloudDriveLogging.Instance.GetLogger("FileManager");
         public const string RegexRelativePathValidation =
             "^(?:\\.|[a-zA-Z0-9_-]+(?:\\\\[a-zA-Z0-9_-]+)*)$";
 
@@ -125,6 +127,7 @@ namespace Cloud_Storage_Common
             {
                 using (var stream = File.OpenRead(filename))
                 {
+                    Logger.LogDebug($"Gettign hash for file [[{filename}]]");
                     return Convert.ToBase64String(sha256.ComputeHash(stream));
                     ;
                 }

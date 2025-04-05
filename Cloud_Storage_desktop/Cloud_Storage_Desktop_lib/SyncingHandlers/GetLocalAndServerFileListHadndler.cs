@@ -28,17 +28,18 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
     {
         private IConfiguration _configuration;
         private IServerConnection _connection;
-        private ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger(
-            "PerFileInitialSyncHandler"
-        );
+        private IFileSyncService _fileSyncService;
+        private ILogger logger = CloudDriveLogging.Instance.GetLogger("PerFileInitialSyncHandler");
 
         public GetLocalAndServerFileListHadndler(
             IConfiguration configuration,
-            IServerConnection serverConnection
+            IServerConnection serverConnection,
+            IFileSyncService fileSyncService
         )
         {
             this._configuration = configuration;
             this._connection = serverConnection;
+            this._fileSyncService = fileSyncService;
         }
 
         public override object Handle(object request)
@@ -46,7 +47,11 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
             List<FileData> LocalFileData = FileManager.GetAllFilesInLocationRelative(
                 this._configuration.StorageLocation
             );
-            List<SyncFileData> CloudFilesData = _connection.GetAllCloudFilesInfo();
+            List<SyncFileData> CloudFilesData = new List<SyncFileData>();
+            if (this._fileSyncService.Active)
+            {
+                CloudFilesData = _connection.GetAllCloudFilesInfo();
+            }
             LocalAndServerFileData LocalAndServerFileData = new LocalAndServerFileData(
                 LocalFileData,
                 CloudFilesData

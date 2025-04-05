@@ -12,6 +12,8 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
 
     public interface IFileSyncService
     {
+        bool Active { get; }
+
         void StartSync();
         void OnLocallyOnRenamed(RenamedEventArgs args);
         void OnLocallyDeleted(FileSystemEventArgs args);

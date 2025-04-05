@@ -6,6 +6,7 @@
     {
         string ApiUrl { get; }
         int MaxStimulationsFileSync { get; }
+        string DeviceUUID { get; }
         string StorageLocation { get; set; }
         string ToString();
     }

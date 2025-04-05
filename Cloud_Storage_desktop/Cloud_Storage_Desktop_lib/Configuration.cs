@@ -21,14 +21,19 @@ namespace Cloud_Storage_Desktop_lib
         }
         private string _StorageLocation = "";
 
-
         private const int _MaxStimulationsFileSync = 5;
 
         public int MaxStimulationsFileSync
         {
+            get { return _MaxStimulationsFileSync; }
+        }
+
+        public string DeviceUUID
+        {
             get
             {
-                return _MaxStimulationsFileSync;
+                throw new NotImplementedException("not  yet implemned");
+                return "Not implented";
             }
         }
 
