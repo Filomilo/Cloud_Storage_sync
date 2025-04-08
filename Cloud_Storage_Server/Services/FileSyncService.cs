@@ -1,13 +1,27 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Transactions;
 using Cloud_Storage_Common;
+using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Database;
 using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Database.Repositories;
+using Cloud_Storage_Server.Handlers;
 
 namespace Cloud_Storage_Server.Services
 {
+    public class FileUploadRequest
+    {
+        public SyncFileData syncFileData;
+        public Stream fileStream;
+
+        public FileUploadRequest(SyncFileData syncFileData, Stream fileStream)
+        {
+            this.syncFileData = syncFileData;
+            this.fileStream = fileStream;
+        }
+    }
+
     public interface IFileSyncService
     {
         public void AddNewFile(User user, string deviceId, UploudFileData data, Stream file);
@@ -20,16 +34,15 @@ namespace Cloud_Storage_Server.Services
     {
         private IFileSystemService _fileSystemService;
         private ILogger logger = CloudDriveLogging.Instance.GetLogger("FileSyncService");
+        private IHandler _AddNewFileHandler;
 
         public FileSyncService(IFileSystemService fileSystemService)
         {
             _fileSystemService = fileSystemService;
-        }
-
-        private static string GetRealtivePathForFile(User user, SyncFileData data)
-        {
-            //throw new NotImplementedException();
-            return $"{user.id}\\{data.Id}";
+            _AddNewFileHandler = new SkipIfTheSameFileAlreadyExist();
+            _AddNewFileHandler
+                .SetNext(new UpdateIfOnlyOwnerChanged())
+                .SetNext(new SaveAndUpdateNewVersionOfFile(this._fileSystemService));
         }
 
         public void AddNewFile(User user, string deviceId, UploudFileData data, Stream file)
@@ -38,25 +51,10 @@ namespace Cloud_Storage_Server.Services
             fileData.OwnerId = user.id;
             fileData.DeviceOwner = new List<string>();
             fileData.DeviceOwner.Add(deviceId);
-
+            FileUploadRequest fileUploadRequest = new FileUploadRequest(fileData, file);
             try
             {
-                SyncFileData saved;
-                using (DatabaseContext context = new DatabaseContext())
-                {
-                    using (var transaction = context.Database.BeginTransaction())
-                    {
-                        var validationContext = new ValidationContext(file);
-                        Validator.ValidateObject(file, validationContext, true);
-
-                        saved = context.Files.Add(fileData).Entity;
-                        context.SaveChanges();
-
-                        this._fileSystemService.SaveFile(GetRealtivePathForFile(user, saved), file);
-
-                        transaction.Commit();
-                    }
-                }
+                _AddNewFileHandler.Handle(fileUploadRequest);
             }
             catch (Exception ex)
             {
@@ -85,6 +83,11 @@ namespace Cloud_Storage_Server.Services
                 return false;
             }
             return false;
+        }
+
+        private static string GetRealtivePathForFile(User user, SyncFileData data)
+        {
+            return $"{user.id}\\{data.Id}";
         }
 
         public Stream DownloadFile(User user, SyncFileData data)

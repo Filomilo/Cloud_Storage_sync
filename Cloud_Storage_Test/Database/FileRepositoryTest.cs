@@ -172,10 +172,7 @@ public class FileRepositoryTest
 
         SyncFileData savedFile = FileRepository.SaveNewFile(fileToSave);
 
-        FileRepository.UpdateFile(
-            (Cloud_Storage_Common.Models.FileData)fileToSave,
-            (Cloud_Storage_Common.Models.FileData)fileUpdateData
-        );
+        FileRepository.UpdateFile(fileToSave, fileUpdateData);
 
         SyncFileData fileInRepository = FileRepository.GetFileOfID(savedFile.Id);
         Assert.That(fileUpdateData.Extenstion == fileInRepository.Extenstion);
@@ -214,7 +211,7 @@ public class FileRepositoryTest
                 typeof(KeyNotFoundException),
                 () =>
                 {
-                    FileRepository.UpdateFile((FileData)fileToSave, (FileData)fileUpdateData);
+                    FileRepository.UpdateFile(fileToSave, fileUpdateData);
                 }
             );
         }

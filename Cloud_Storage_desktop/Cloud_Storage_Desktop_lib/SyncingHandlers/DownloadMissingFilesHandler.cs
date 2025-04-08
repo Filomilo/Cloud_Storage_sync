@@ -17,6 +17,7 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
         private IConfiguration _configuration;
         private IServerConnection _connection;
         private ITaskRunController _taskRunController;
+        private IFileRepositoryService _fileRepositoryService;
         private ILogger logger = CloudDriveLogging.Instance.GetLogger(
             "DownloadMissingFilesHandler"
         );
@@ -24,12 +25,14 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
         public DownloadMissingFilesHandler(
             IConfiguration configuration,
             IServerConnection serverConnection,
-            ITaskRunController taskRunController
+            ITaskRunController taskRunController,
+            IFileRepositoryService fileRepositoryService
         )
         {
             _configuration = configuration;
             _connection = serverConnection;
             _taskRunController = taskRunController;
+            _fileRepositoryService = fileRepositoryService;
         }
 
         private List<SyncFileData> getExclusieFileData(
@@ -61,7 +64,12 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
             foreach (SyncFileData syncFileData in filesToDownload)
             {
                 _taskRunController.AddTask(
-                    new DownloadAction(_connection, _configuration, syncFileData)
+                    new DownloadAction(
+                        _connection,
+                        _configuration,
+                        syncFileData,
+                        this._fileRepositoryService
+                    )
                 );
             }
 

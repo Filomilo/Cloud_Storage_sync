@@ -46,14 +46,16 @@ namespace Cloud_Storage_Desktop_lib.Actions
                             )
                         )
                         {
-                            fileRepositoryService.AddNewFile((LocalFileData)fileData);
+                            fileRepositoryService.AddNewFile(new LocalFileData(fileData));
                             serverConnection.UploudFile(fileData, stream);
                         }
                     }
                     catch (Exception EX)
                     {
                         //TODO: ADD ERROR HADNLER
-                        logger.LogError($"Exception while uplound file:: [{this.file}]");
+                        logger.LogError(
+                            $"Exception while uplound file:: [{this.file}] [[{EX.Message}]]"
+                        );
                     }
                 }
             );

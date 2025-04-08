@@ -556,6 +556,7 @@ namespace Cloud_Storage_Test
                 0,
                 Encoding.ASCII.GetByteCount("Example file content")
             );
+            memoryStream.Position = 0;
             string newfileName = Path.GetFileName(Path.GetTempFileName());
             TestHelpers
                 .GetDeafultFileSystemService()

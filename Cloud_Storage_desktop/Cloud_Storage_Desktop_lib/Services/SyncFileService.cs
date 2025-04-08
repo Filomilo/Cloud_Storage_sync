@@ -46,7 +46,8 @@ namespace Cloud_Storage_Desktop_lib.Services
                     new DownloadMissingFilesHandler(
                         configuration,
                         serverConnection,
-                        _taskRunController
+                        _taskRunController,
+                        fileRepositoryService
                     )
                 )
                 .SetNext(

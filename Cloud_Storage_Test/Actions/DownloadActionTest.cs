@@ -72,7 +72,8 @@ namespace Cloud_Storage_Test.Actions
                 DownloadAction downloadAction = new DownloadAction(
                     this.server,
                     this.Configuration,
-                    syncFileData
+                    syncFileData,
+                    new FileRepositoryService()
                 );
                 downloadAction.ActionToRun.Invoke();
             }

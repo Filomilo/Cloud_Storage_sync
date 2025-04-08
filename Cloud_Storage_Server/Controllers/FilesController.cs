@@ -77,9 +77,6 @@ namespace Cloud_Storage_Server.Controllers
                     Request.Headers.Authorization
                 );
 
-                if (_FileSyncService.DoesFileAlreadyExist(user, filerequest.fileData))
-                    return Ok("File like this already exist");
-
                 using (Stream stream = filerequest.file.OpenReadStream())
                 {
                     _FileSyncService.AddNewFile(user, deviceId, filerequest.fileData, stream);
@@ -126,7 +123,7 @@ namespace Cloud_Storage_Server.Controllers
         [Route("update")]
         [Authorize]
         [HttpPost]
-        public IActionResult update([FromBody] FileData file)
+        public IActionResult update([FromBody] UploudFileData file)
         {
             return BadRequest("no itmpelmetned");
         }

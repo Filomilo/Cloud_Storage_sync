@@ -72,7 +72,28 @@ namespace Cloud_Storage_Common.Models
     }
 
     [PrimaryKey(nameof(Path), nameof(Name), nameof(Extenstion))]
-    public class LocalFileData : UploudFileData { }
+    public class LocalFileData : UploudFileData
+    {
+        public LocalFileData() { }
+
+        public LocalFileData(SyncFileData syncFileData)
+        {
+            this.Path = syncFileData.Path;
+            this.Name = syncFileData.Name == null ? "" : syncFileData.Name;
+            this.Hash = syncFileData.Hash;
+            this.Extenstion = syncFileData.Extenstion == null ? "" : syncFileData.Extenstion;
+            this.Version = syncFileData.Version;
+        }
+
+        public LocalFileData(UploudFileData syncFileData)
+        {
+            this.Path = syncFileData.Path;
+            this.Name = syncFileData.Name == null ? "" : syncFileData.Name;
+            this.Hash = syncFileData.Hash;
+            this.Extenstion = syncFileData.Extenstion == null ? "" : syncFileData.Extenstion;
+            this.Version = syncFileData.Version;
+        }
+    }
 
     [PrimaryKey(nameof(Id))]
     public class SyncFileData : UploudFileData

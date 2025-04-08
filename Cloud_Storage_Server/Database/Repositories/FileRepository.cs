@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Cloud_Storage_Common.Models;
+using Cloud_Storage_Server.Database.Models;
 using Microsoft.AspNetCore.Mvc.Diagnostics;
 using FileData = Cloud_Storage_Common.Models.FileData;
 
@@ -46,10 +47,6 @@ namespace Cloud_Storage_Server.Database.Repositories
                     && x.Extenstion == extension
                     && x.OwnerId == ownerId
                 );
-                if (file == null)
-                    throw new KeyNotFoundException(
-                        "File specofied by provieded paramaters doesnt exists"
-                    );
 
                 return file;
             }
@@ -64,9 +61,21 @@ namespace Cloud_Storage_Server.Database.Repositories
             }
         }
 
-        internal static void UpdateFile(FileData fileToSave, FileData fileUpdateData)
+        internal static void UpdateFile(SyncFileData fileInRepositry, SyncFileData fileUpdateData)
         {
-            throw new NotImplementedException();
+            using (DatabaseContext context = new DatabaseContext())
+            {
+                SyncFileData file = context.Files.Find(fileInRepositry.Id);
+                file.Name = fileUpdateData.Name;
+                file.Path = fileUpdateData.Path;
+                file.Extenstion = fileUpdateData.Extenstion;
+                file.Hash = fileUpdateData.Hash;
+                file.DeviceOwner = fileUpdateData.DeviceOwner;
+                file.SyncDate = fileUpdateData.SyncDate;
+                file.Version = fileUpdateData.Version;
+                context.Files.Update(file);
+                context.SaveChanges();
+            }
         }
     }
 }

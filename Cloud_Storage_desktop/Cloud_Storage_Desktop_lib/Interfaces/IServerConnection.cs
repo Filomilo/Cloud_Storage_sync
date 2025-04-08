@@ -20,6 +20,7 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
         void Logout();
         void Register(string email, string pass);
         void UploudFile(UploudFileData fileData, Stream value);
+        void UpdateFileData(UploudFileData file);
         event OnConnectionStateChange ConnectionChangeHandler;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
@@ -157,6 +158,22 @@ namespace Cloud_Storage_Desktop_lib
             {
                 string responseMesage = response.Content.ReadAsStringAsync().Result;
                 logger.LogError($"Failed to upload data: {responseMesage}");
+                throw new Exception($"{response.Content.ReadAsStringAsync().Result}");
+            }
+        }
+
+        public void UpdateFileData(UploudFileData file)
+        {
+            var response = this.client.PostAsJsonAsync("api/Files/update", file).Result;
+
+            if (response.IsSuccessStatusCode)
+            {
+                logger.LogInformation($"File {file.GetRealativePath()} data updated successfully!");
+            }
+            else
+            {
+                string responseMesage = response.Content.ReadAsStringAsync().Result;
+                logger.LogError($"Failed to update file  data [[{file}]]: {responseMesage}");
                 throw new Exception($"{response.Content.ReadAsStringAsync().Result}");
             }
         }

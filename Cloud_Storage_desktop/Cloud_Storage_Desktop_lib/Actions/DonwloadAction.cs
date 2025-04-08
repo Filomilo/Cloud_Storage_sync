@@ -29,7 +29,8 @@ namespace Cloud_Storage_Desktop_lib.Actions
         public DownloadAction(
             IServerConnection serverConnection,
             IConfiguration configuration,
-            SyncFileData syncFileData
+            SyncFileData syncFileData,
+            IFileRepositoryService fileRepositoryService
         )
         {
             this.file = syncFileData.getFullFilePathForBasePath(configuration.StorageLocation);
@@ -43,6 +44,20 @@ namespace Cloud_Storage_Desktop_lib.Actions
                             syncFileData.getFullFilePathForBasePath(configuration.StorageLocation),
                             stream
                         );
+                        // update file data
+                        //LocalFileData newData = new LocalFileData(syncFileData);
+                        //LocalFileData oldData = fileRepositoryService
+                        //    .GetAllFiles()
+                        //    .FirstOrDefault(x =>
+                        //        x.GetRealativePath().Equals(syncFileData.GetRealativePath())
+                        //    );
+                        //if (oldData == null)
+                        //    fileRepositoryService.UpdateFile(oldData, newData);
+                        //else
+                        //{
+                        //    fileRepositoryService.AddNewFile(newData);
+                        //}
+                        //serverConnection.UpdateFileData(newData);
                     }
                     catch (Exception EX)
                     {

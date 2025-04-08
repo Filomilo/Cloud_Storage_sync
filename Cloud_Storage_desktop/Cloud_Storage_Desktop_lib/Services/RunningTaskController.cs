@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Cloud_Storage_Common;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Microsoft.Extensions.Logging;
+using NUnit.Framework;
 
 namespace Cloud_Storage_Desktop_lib.Services
 {
@@ -31,7 +32,7 @@ namespace Cloud_Storage_Desktop_lib.Services
         private object Locker = new object();
         private Dictionary<object, TaskObject> _RunningTask = new Dictionary<object, TaskObject>();
         private Queue<ITaskToRun> _QueuedTasks = new Queue<ITaskToRun>();
-        public bool Active { get; set; } = false;
+        public bool Active { get; set; } = true;
 
         private delegate void TaskFinished(object id);
 
@@ -71,8 +72,21 @@ namespace Cloud_Storage_Desktop_lib.Services
                     && this._QueuedTasks.Count > 0
                 )
                 {
-                    ITaskToRun dequeued = this._QueuedTasks.Dequeue();
-                    _AddAndActivateTaskObject(dequeued);
+                    List<ITaskToRun> allTaks = this._QueuedTasks.ToList();
+                    List<ITaskToRun> readyToRun = this
+                        ._QueuedTasks.Where(x => !this._RunningTask.ContainsKey(x.Id))
+                        .ToList();
+                    if (readyToRun.Count > 0)
+                    {
+                        int freeSpace =
+                            this._configuration.MaxStimulationsFileSync - this._RunningTask.Count;
+                        for (int i = 0; i < freeSpace && i < readyToRun.Count; i++)
+                        {
+                            allTaks.Remove(readyToRun[i]);
+                            _AddAndActivateTaskObject(readyToRun[i]);
+                        }
+                        this._QueuedTasks = new Queue<ITaskToRun>(allTaks);
+                    }
                 }
             }
         }
@@ -80,15 +94,35 @@ namespace Cloud_Storage_Desktop_lib.Services
         private void _AddAndActivateTaskObject(ITaskToRun task)
         {
             TaskObject takTaskObject = _CreateTaskObject(task);
-            _RunningTask.Add(task.Id, takTaskObject);
-            takTaskObject.task.Start();
+            ITaskToRun taskWIthTheSameId = this._RunningTask.ContainsKey(task.Id)
+                ? this._RunningTask[task.Id].taksTaskToRun
+                : null;
+            if (taskWIthTheSameId != null)
+            {
+                this._QueuedTasks.Enqueue(task);
+            }
+            else
+            {
+                _RunningTask.Add(task.Id, takTaskObject);
+
+                takTaskObject.task.Start();
+            }
+        }
+
+        private bool isTaksWithTheSameIDAlreadyRunning(ITaskToRun task)
+        {
+            return this._RunningTask.ContainsKey(task.Id);
         }
 
         public void AddTask(ITaskToRun TaskToRun)
         {
             lock (Locker)
             {
-                if (_RunningTask.Count < this._configuration.MaxStimulationsFileSync || this.Active)
+                if (
+                    _RunningTask.Count < this._configuration.MaxStimulationsFileSync
+                    && this.Active
+                    && !isTaksWithTheSameIDAlreadyRunning(TaskToRun)
+                )
                 {
                     _AddAndActivateTaskObject(TaskToRun);
                 }
