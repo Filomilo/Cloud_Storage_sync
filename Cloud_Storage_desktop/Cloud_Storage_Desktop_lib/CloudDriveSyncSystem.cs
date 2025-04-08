@@ -22,29 +22,10 @@ using FileSystemWatcher = Cloud_Storage_Desktop_lib.Services.FileSystemWatcher;
 
 namespace Cloud_Storage_Desktop_lib
 {
-    internal class SyncTask : ITaskToRun
-    {
-        private String file;
-        private Action action;
-        public object Id
-        {
-            get { return file; }
-        }
-
-        public Action ActionToRun
-        {
-            get { return action; }
-        }
-
-        public SyncTask(String file, Action action)
-        {
-            this.file = file;
-            this.action = action;
-        }
-    }
-
     public partial class CloudDriveSyncSystem
     {
+        #region INterfaces
+
         private static ILogger logger = CloudDriveLogging.Instance.GetLogger(
             "CloudDriveSyncSystem"
         );
@@ -73,21 +54,17 @@ namespace Cloud_Storage_Desktop_lib
         }
         private IConfiguration _Configuration = new Configuration();
 
+        private IFileRepositoryService _FileRepositoryService = new FileRepositoryService();
+
         public ICredentialManager CredentialManager
         {
             get { return _CredentialManager; }
         }
         private ICredentialManager _CredentialManager = new CredentialManager();
 
-        //public IConfiguration Configuration
-        //{
-        //    get { return _Configuration; }
-        //}
-
-        //private ITaskRunController _TaskRunnerController;
         public IFileSyncService FileSyncService;
         public IFIleSystemWatcher SystemWatcher;
-
+        #endregion
         private CloudDriveSyncSystem()
         {
             this._ServerConnection = new ServerConnection(
@@ -101,7 +78,11 @@ namespace Cloud_Storage_Desktop_lib
         {
             this.SystemWatcher = new FileSystemWatcher();
 
-            this.FileSyncService = new SyncFileService(this.Configuration, this._ServerConnection);
+            this.FileSyncService = new SyncFileService(
+                this.Configuration,
+                this._ServerConnection,
+                this._FileRepositoryService
+            );
             this.SystemWatcher.OnDeletedEventHandler += this.FileSyncService.OnLocallyDeleted;
             this.SystemWatcher.OnChangedEventHandler += this.FileSyncService.OnLocallyChanged;
             this.SystemWatcher.OnCreatedEventHandler += this.FileSyncService.OnLocallyCreated;
@@ -121,11 +102,14 @@ namespace Cloud_Storage_Desktop_lib
         public CloudDriveSyncSystem(
             HttpClient client,
             IConfiguration configuration,
-            ICredentialManager credentialManager
+            ICredentialManager credentialManager,
+            IFileRepositoryService localFileRepositoryService
         )
         {
+            this._CredentialManager = credentialManager;
             this._ServerConnection = new ServerConnection(client, credentialManager);
             this._Configuration = configuration;
+            this._FileRepositoryService = localFileRepositoryService;
             _init();
             _setupStorgeDir();
 

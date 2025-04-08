@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Interfaces;
+using Cloud_Storage_Desktop_lib.Services;
 using Cloud_Storage_Desktop_lib.Tests;
 using Cloud_Storage_Test;
 using NUnit.Framework;
@@ -47,7 +48,12 @@ namespace Cloud_Storage_Desktop_lib.Actions
                     fileData.getFullFilePathForBasePath(Configuration.StorageLocation),
                     Configuration.StorageLocation
                 );
-                UploadAction uploadAction = new UploadAction(this.server, this.Configuration, file);
+                UploadAction uploadAction = new UploadAction(
+                    this.server,
+                    this.Configuration,
+                    new Services.FileRepositoryService(),
+                    file
+                );
                 Assert.DoesNotThrow(() =>
                 {
                     uploadAction.ActionToRun.Invoke();

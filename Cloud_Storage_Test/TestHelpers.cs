@@ -37,19 +37,11 @@ public class TestConfig : IConfiguration
         set { TmpDirecotry = value; }
     }
 
-    public string _DeviceUUID = "0";
-
-    public string DeviceUUID
-    {
-        get { return _DeviceUUID; }
-    }
-
     public TestConfig() { }
 
-    public TestConfig(string storageLocation, string deviceUuid)
+    public TestConfig(string storageLocation)
     {
         this.StorageLocation = storageLocation;
-        this._DeviceUUID = deviceUuid;
     }
 }
 
@@ -70,6 +62,11 @@ public class TestCredentialMangager : ICredentialManager
     public void RemoveToken()
     {
         _token = "";
+    }
+
+    public string GetDeviceID()
+    {
+        return JwtHelpers.GetDeviceIDFromToken(_token);
     }
 }
 
@@ -106,7 +103,8 @@ namespace Cloud_Storage_Test
 
         public static void UploudAccontDataToLoggedUser(
             IServerConnection serverConnection,
-            IConfiguration Configuration
+            IConfiguration Configuration,
+            IFileRepositoryService fileRepositoryService
         )
         {
             Configuration.StorageLocation = TestHelpers.ExampleDataDirectory;
@@ -119,7 +117,12 @@ namespace Cloud_Storage_Test
                     fileData.getFullFilePathForBasePath(Configuration.StorageLocation),
                     Configuration.StorageLocation
                 );
-                UploadAction uploadAction = new UploadAction(serverConnection, Configuration, file);
+                UploadAction uploadAction = new UploadAction(
+                    serverConnection,
+                    Configuration,
+                    fileRepositoryService,
+                    file
+                );
                 Assert.DoesNotThrow(() =>
                 {
                     uploadAction.ActionToRun.Invoke();
@@ -129,7 +132,8 @@ namespace Cloud_Storage_Test
 
         public static void RemoveTmpDirectory()
         {
-            Directory.Delete(TmpDirecotry, true);
+            if (Directory.Exists(TmpDirecotry))
+                Directory.Delete(TmpDirecotry, true);
         }
 
         public static string CreateTmpFile(string dir, string fileContent)

@@ -14,24 +14,13 @@ namespace Cloud_Storage_Common.Models
             $"{FileManager.RegexRelativePathValidation}",
             ErrorMessage = "Path string doesn't match path syntax"
         )]
-        public string Path { get; set; }
+        public virtual string Path { get; set; }
 
         [Required]
-        public string Name { get; set; }
+        public virtual string Name { get; set; }
 
         [NotNull]
-        public string Extenstion { get; set; }
-
-        public string getFullPathForBasePath(string basepath)
-        {
-            return System.IO.Path.GetFullPath(this.Path, basepath);
-        }
-
-        public string getFullFilePathForBasePath(string basepath)
-        {
-            return System.IO.Path.GetFullPath(this.Path, basepath)
-                + $"\\{this.Name}{this.Extenstion}";
-        }
+        public virtual string Extenstion { get; set; }
 
         public override string ToString()
         {
@@ -47,25 +36,6 @@ namespace Cloud_Storage_Common.Models
         {
             return $"{this.Name}{this.Extenstion}";
         }
-    }
-
-    public class UploudFileData : FileData
-    {
-        [Required]
-        [RegularExpression(
-            $"{FileManager.RegexRelativePathValidation}",
-            ErrorMessage = "Path string doesn't match path syntax"
-        )]
-        public string Path { get; set; }
-
-        [Required]
-        public string Name { get; set; }
-
-        [NotNull]
-        public string Extenstion { get; set; }
-
-        [Required]
-        public string Hash { get; set; }
 
         public string getFullPathForBasePath(string basepath)
         {
@@ -77,17 +47,36 @@ namespace Cloud_Storage_Common.Models
             return System.IO.Path.GetFullPath(this.Path, basepath)
                 + $"\\{this.Name}{this.Extenstion}";
         }
-
-        public override string ToString()
-        {
-            return $"{Path}{Name}{Extenstion} >>>> {Hash}";
-        }
     }
 
+    public class UploudFileData : FileData
+    {
+        [Required]
+        [RegularExpression(
+            $"{FileManager.RegexRelativePathValidation}",
+            ErrorMessage = "Path string doesn't match path syntax"
+        )]
+        public override string Path { get; set; }
+
+        [Required]
+        public override string Name { get; set; }
+
+        [NotNull]
+        public override string Extenstion { get; set; }
+
+        [Required]
+        public string Hash { get; set; }
+
+        [Required]
+        public ulong Version { get; set; } = 0;
+    }
+
+    [PrimaryKey(nameof(Path), nameof(Name), nameof(Extenstion))]
+    public class LocalFileData : UploudFileData { }
+
+    [PrimaryKey(nameof(Id))]
     public class SyncFileData : UploudFileData
     {
-        private UploudFileData data;
-
         public SyncFileData() { }
 
         public SyncFileData(UploudFileData data)
@@ -99,7 +88,7 @@ namespace Cloud_Storage_Common.Models
         }
 
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Required]
         [NotNull]
@@ -109,5 +98,9 @@ namespace Cloud_Storage_Common.Models
 
         [Required]
         public DateTime SyncDate { get; set; }
+
+        [ForeignKey("Devices")]
+        public List<string> DeviceOwner { get; set; }
+        public virtual List<Device> OwnersDevices { get; set; }
     }
 }

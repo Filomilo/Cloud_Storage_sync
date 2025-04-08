@@ -13,9 +13,7 @@ namespace Cloud_Storage_Desktop_lib.Actions
 {
     public class UploadAction : AbstactAction
     {
-        private ILogger logger = CloudDriveLogging.Instance.GetLogger(
-            "UploadAction"
-        );
+        private ILogger logger = CloudDriveLogging.Instance.GetLogger("UploadAction");
 
         private Action _uploudAction;
 
@@ -32,6 +30,7 @@ namespace Cloud_Storage_Desktop_lib.Actions
         public UploadAction(
             IServerConnection serverConnection,
             IConfiguration configuration,
+            IFileRepositoryService fileRepositoryService,
             UploudFileData fileData
         )
         {
@@ -47,6 +46,7 @@ namespace Cloud_Storage_Desktop_lib.Actions
                             )
                         )
                         {
+                            fileRepositoryService.AddNewFile((LocalFileData)fileData);
                             serverConnection.UploudFile(fileData, stream);
                         }
                     }

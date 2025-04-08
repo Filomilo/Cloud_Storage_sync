@@ -17,17 +17,20 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
         private IConfiguration _configuration;
         private IServerConnection _connection;
         private ITaskRunController _taskRunController;
+        private IFileRepositoryService _fileRepositoryService;
         private ILogger logger = CloudDriveLogging.Instance.GetLogger("UploadNewFileHandler");
 
         public UploadNewFileHandler(
             IConfiguration configuration,
             IServerConnection serverConnection,
-            ITaskRunController taskRunController
+            ITaskRunController taskRunController,
+            IFileRepositoryService fileRepositoryService
         )
         {
             _configuration = configuration;
             _connection = serverConnection;
             _taskRunController = taskRunController;
+            _fileRepositoryService = fileRepositoryService;
         }
 
         public override object Handle(object request)
@@ -40,7 +43,12 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
             }
             UploudFileData uploudFileData = (UploudFileData)request;
             _taskRunController.AddTask(
-                new UploadAction(this._connection, this._configuration, uploudFileData)
+                new UploadAction(
+                    this._connection,
+                    this._configuration,
+                    this._fileRepositoryService,
+                    uploudFileData
+                )
             );
 
             logger.LogWarning(

@@ -51,7 +51,8 @@ namespace Cloud_Storage_Desktop_lib.Services
         {
             if (this.OnChangedEventHandler != null)
             {
-                this.OnChangedEventHandler.Invoke(e);
+                if (e.ChangeType == WatcherChangeTypes.Changed)
+                    this.OnChangedEventHandler.Invoke(e);
             }
         }
 

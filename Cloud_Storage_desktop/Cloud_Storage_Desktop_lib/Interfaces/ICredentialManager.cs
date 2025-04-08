@@ -12,5 +12,6 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
         void SaveToken(string token);
         string GetToken();
         void RemoveToken();
+        string GetDeviceID();
     }
 }

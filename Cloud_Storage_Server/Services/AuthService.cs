@@ -2,6 +2,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_Server.Configurations;
 using Cloud_Storage_Server.Controllers;
@@ -19,7 +20,7 @@ namespace Cloud_Storage_Server.Services
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(AuthService));
 
-        public static string GenerateToken(User user)
+        public static string GenerateToken(User user, Device device)
         {
             var handler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(AuthConfiguration.PrivateKey);
@@ -30,18 +31,20 @@ namespace Cloud_Storage_Server.Services
 
             var tokenDescriptor = new SecurityTokenDescriptor()
             {
-                Subject = GenerateClaims(user),
+                Subject = GenerateClaims(user, device),
                 Expires = DateTime.UtcNow.AddMonths(12),
                 SigningCredentials = credentials,
             };
+
             var token = handler.CreateToken(tokenDescriptor);
             return handler.WriteToken(token);
         }
 
-        private static ClaimsIdentity GenerateClaims(User user)
+        private static ClaimsIdentity GenerateClaims(User user, Device device)
         {
             var claims = new ClaimsIdentity();
             claims.AddClaim(new Claim(ClaimTypes.Name, user.mail));
+            claims.AddClaim(new Claim(ClaimTypes.Actor, device.Id.ToString()));
             return claims;
         }
 
@@ -76,18 +79,6 @@ namespace Cloud_Storage_Server.Services
                 throw new ValidationException("Password should have at least 12 characters");
             }
             return true;
-        }
-
-        internal static string GetEmailFromToken(string authorization)
-        {
-            if (authorization == null)
-            {
-                throw new ArgumentException($"jwt token can not be null");
-            }
-            authorization = authorization.Replace("Bearer ", "");
-            var handler = new JwtSecurityTokenHandler();
-            var token = handler.ReadJwtToken(authorization);
-            return token.Claims.First(x => x.Type == "unique_name").Value;
         }
     }
 }

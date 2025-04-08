@@ -22,8 +22,13 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         private IHandler _InitialSyncHandler;
         private ITaskRunController _taskRunController;
+        private IFileRepositoryService _fileRepositoryService;
 
-        public SyncFileService(IConfiguration configuration, IServerConnection serverConnection)
+        public SyncFileService(
+            IConfiguration configuration,
+            IServerConnection serverConnection,
+            IFileRepositoryService fileRepositoryService
+        )
         {
             _configuration = configuration;
             _taskRunController = new RunningTaskController(configuration);
@@ -33,6 +38,8 @@ namespace Cloud_Storage_Desktop_lib.Services
                 this
             );
             this._serverConnection = serverConnection;
+            this._fileRepositoryService = fileRepositoryService;
+            _taskRunController = new RunningTaskController(configuration);
             _InitialSyncHandler
                 .SetNext(new DeleteCloudLocalFilesHandler())
                 .SetNext(
@@ -46,7 +53,8 @@ namespace Cloud_Storage_Desktop_lib.Services
                     new PerFileInitialSyncHandler(
                         configuration,
                         serverConnection,
-                        _taskRunController
+                        _taskRunController,
+                        fileRepositoryService
                     )
                 );
             this._serverConnection.ConnectionChangeHandler += onConnnetionChange;
@@ -119,6 +127,7 @@ namespace Cloud_Storage_Desktop_lib.Services
                     new UploadAction(
                         this._serverConnection,
                         this._configuration,
+                        this._fileRepositoryService,
                         FileManager.GetUploadFileData(
                             args.FullPath,
                             this._configuration.StorageLocation

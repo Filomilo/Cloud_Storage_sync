@@ -37,7 +37,7 @@ namespace Cloud_Storage_Server.Controllers
         public IActionResult listOfFiles()
         {
             User user = UserRepository.getUserByMail(
-                AuthService.GetEmailFromToken(Request.Headers.Authorization)
+                JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
             );
             List<SyncFileData> files = FileRepository.GetAllUserFiles(user.id);
             return Ok(files);
@@ -71,13 +71,18 @@ namespace Cloud_Storage_Server.Controllers
                 }
                 filerequest = santizeFileUploudRequest(filerequest);
                 User user = UserRepository.getUserByMail(
-                    AuthService.GetEmailFromToken(Request.Headers.Authorization)
+                    JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
                 );
+                string deviceId = JwtHelpers.GetDeviceIDFromAuthString(
+                    Request.Headers.Authorization
+                );
+
                 if (_FileSyncService.DoesFileAlreadyExist(user, filerequest.fileData))
                     return Ok("File like this already exist");
+
                 using (Stream stream = filerequest.file.OpenReadStream())
                 {
-                    _FileSyncService.AddNewFile(user, filerequest.fileData, stream);
+                    _FileSyncService.AddNewFile(user, deviceId, filerequest.fileData, stream);
                     return Ok("Succsesfully added file");
                 }
             }
@@ -89,7 +94,6 @@ namespace Cloud_Storage_Server.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            return BadRequest("Not implmented");
         }
 
         [Route("delete")]
@@ -105,7 +109,7 @@ namespace Cloud_Storage_Server.Controllers
         public IActionResult DownlaodFile([FromQuery] Guid guid)
         {
             User user = UserRepository.getUserByMail(
-                AuthService.GetEmailFromToken(Request.Headers.Authorization)
+                JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
             );
             SyncFileData fileData = FileRepository.GetFileOfID(guid);
 

@@ -152,5 +152,10 @@ namespace Cloud_Storage_Common
         {
             return File.Open(fiePath, FileMode.Open, FileAccess.Read);
         }
+
+        public static void DeleteFile(string v)
+        {
+            File.Delete(v);
+        }
     }
 }

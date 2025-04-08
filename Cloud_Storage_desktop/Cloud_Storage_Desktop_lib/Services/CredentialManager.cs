@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Cloud_Storage_Common;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using CredentialManagement;
 
@@ -37,6 +38,11 @@ namespace Cloud_Storage_Desktop_lib.Services
             Credential cd = new Credential() { Target = target };
             cd.Load();
             cd.Delete();
+        }
+
+        public string GetDeviceID()
+        {
+            return JwtHelpers.GetDeviceIDFromToken(this.GetToken());
         }
     }
 }

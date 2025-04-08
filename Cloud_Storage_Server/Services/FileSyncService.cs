@@ -10,7 +10,7 @@ namespace Cloud_Storage_Server.Services
 {
     public interface IFileSyncService
     {
-        public void AddNewFile(User user, UploudFileData data, Stream file);
+        public void AddNewFile(User user, string deviceId, UploudFileData data, Stream file);
         public Stream DownloadFile(User user, SyncFileData data);
         public List<SyncFileData> ListFilesForUser(User user);
         public bool DoesFileAlreadyExist(User user, UploudFileData data);
@@ -32,10 +32,12 @@ namespace Cloud_Storage_Server.Services
             return $"{user.id}\\{data.Id}";
         }
 
-        public void AddNewFile(User user, UploudFileData data, Stream file)
+        public void AddNewFile(User user, string deviceId, UploudFileData data, Stream file)
         {
             SyncFileData fileData = new SyncFileData(data);
             fileData.OwnerId = user.id;
+            fileData.DeviceOwner = new List<string>();
+            fileData.DeviceOwner.Add(deviceId);
 
             try
             {
