@@ -383,14 +383,14 @@ namespace Cloud_Storage_Test
                         );
                         foreach (SyncFileData syncFileData in filesOnServer)
                         {
+                            if (syncFileData.DeviceOwner.Count == 0)
+                            {
+                                return false;
+                            }
                             if (
                                 !syncFileData.DeviceOwner.Contains(
                                     this._cloudDriveSyncSystemClient1.CredentialManager.GetDeviceID()
                                 )
-                                && !syncFileData.DeviceOwner.Contains(
-                                    this._cloudDriveSyncSystemClient2.CredentialManager.GetDeviceID()
-                                )
-                                && syncFileData.OwnerId != UserRepository.getUserByMail(email).id
                             )
                                 return false;
                         }
@@ -551,10 +551,11 @@ namespace Cloud_Storage_Test
             Guid guid = Guid.NewGuid();
             long userID = UserRepository.getUserByMail(email).id;
             MemoryStream memoryStream = new MemoryStream();
+            string content = "Example file content______" + Guid.NewGuid();
             memoryStream.Write(
-                Encoding.ASCII.GetBytes("Example file content"),
+                Encoding.ASCII.GetBytes(content),
                 0,
-                Encoding.ASCII.GetByteCount("Example file content")
+                Encoding.ASCII.GetByteCount(content)
             );
             memoryStream.Position = 0;
             string newfileName = Path.GetFileName(Path.GetTempFileName());

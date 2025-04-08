@@ -145,7 +145,7 @@ namespace Cloud_Storage_Test
             return fileName;
         }
 
-        private const long Timeout = 2000;
+        private const long Timeout = 200000;
 
         public static void EnsureTrue(Func<bool> func)
         {

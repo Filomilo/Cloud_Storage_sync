@@ -25,6 +25,29 @@ namespace Cloud_Storage_Common
             return Directory.GetFiles(storageLocation, "*.*", SearchOption.AllDirectories).ToList();
         }
 
+        public static FileStream WaitForFile(
+            string filename,
+            int retryCount = 10,
+            int delayMilliseconds = 500
+        )
+        {
+            for (int i = 0; i < retryCount; i++)
+            {
+                try
+                {
+                    return File.OpenRead(filename);
+                }
+                catch (IOException)
+                {
+                    Thread.Sleep(delayMilliseconds);
+                }
+            }
+
+            throw new IOException(
+                $"Unable to access file '{filename}' after {retryCount} attempts."
+            );
+        }
+
         public static List<FileData> GetAllFilesInLocation(string path)
         {
             List<FileData> listOfFIles = new List<FileData>();
@@ -125,7 +148,7 @@ namespace Cloud_Storage_Common
         {
             using (var sha256 = SHA256.Create())
             {
-                using (var stream = File.OpenRead(filename))
+                using (var stream = FileManager.WaitForFile(filename))
                 {
                     Logger.LogDebug($"Gettign hash for file [[{filename}]]");
                     return Convert.ToBase64String(sha256.ComputeHash(stream));
