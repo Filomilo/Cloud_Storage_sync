@@ -13,7 +13,10 @@ using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Services;
 using Cloud_Storage_Desktop_lib.Tests;
 using Cloud_Storage_Server.Database.Repositories;
+using Cloud_Storage_Server.Interfaces;
 using Cloud_Storage_Server.Services;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Logging;
@@ -36,7 +39,7 @@ namespace Cloud_Storage_Test
             new Cloud_Storage_Desktop_lib.Services.FileRepositoryService();
         private IFileRepositoryService _localFileRepositoryService2 =
             new Cloud_Storage_Desktop_lib.Services.FileRepositoryService();
-
+        private IWebsocketConnectedController websocketConnectedController;
         private string email;
         string pass = "1234567890asdASD++";
 
@@ -48,7 +51,12 @@ namespace Cloud_Storage_Test
             logger.LogInformation("Test log-------------------------------------");
             CloudDriveLogging.Instance.SetTestLogger(logger);
             MyWebApplication webApplication = new MyWebApplication();
+
             _testServer = webApplication.CreateDefaultClient();
+
+            websocketConnectedController = (IWebsocketConnectedController)
+                webApplication.Server.Services.GetService(typeof(IWebsocketConnectedController));
+
             WebSocketClient webSocketClient = webApplication.Server.CreateWebSocketClient();
             email = $"{Guid.NewGuid().ToString()}@mail.mail";
 
@@ -435,6 +443,21 @@ namespace Cloud_Storage_Test
                 this._cloudDriveSyncSystemClient2.ServerConnection.CheckIfAuthirized(),
                 "cloud drive system 2 is no authorized"
             );
+            Assert.That(
+                this._cloudDriveSyncSystemClient1.ServerConnection.WebSocketState
+                    == WebSocketState.Open,
+                $"_cloudDriveSyncSystemClient1 Conenction not opened but {this._cloudDriveSyncSystemClient1.ServerConnection.WebSocketState}"
+            );
+            Assert.That(
+                this._cloudDriveSyncSystemClient2.ServerConnection.WebSocketState
+                    == WebSocketState.Open,
+                $"_cloudDriveSyncSystemClient2 Conenction not opened but {this._cloudDriveSyncSystemClient2.ServerConnection.WebSocketState}"
+            );
+            Assert.That(
+                websocketConnectedController.GetAllConnectedDevices().Count() == 2,
+                $"Server doenst all have all 2 wbe scoket connetions but [[{websocketConnectedController.GetAllConnectedDevices().Count()}]]"
+            );
+
             int amountOfFiles = 3;
             var getFileContent = (int num) =>
             {
@@ -476,7 +499,9 @@ namespace Cloud_Storage_Test
                         ;
                     });
                 },
-                "Files on device 2 not 3"
+                $"Files on device2 not 3 but {FileManager
+                    .GetAllFilesInLocation(this._Client2Config.StorageLocation)
+                    .Count}"
             );
 
             Assert.DoesNotThrow(

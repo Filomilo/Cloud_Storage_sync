@@ -311,6 +311,11 @@ namespace Cloud_Storage_Desktop_lib
         public event OnConnectionStateChange? ConnectionChangeHandler;
         public event OnServerWebSockerMessage? ServerWerbsocketHadnler;
 
+        public WebSocketState WebSocketState
+        {
+            get { return this._webSocket.State; }
+        }
+
         public List<SyncFileData> GetListOfFiles()
         {
             var response = this.client.GetAsync("api/Files/list").Result;

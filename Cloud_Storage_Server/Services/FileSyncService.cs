@@ -66,7 +66,7 @@ namespace Cloud_Storage_Server.Services
             try
             {
                 SyncFileData sync = (SyncFileData)_AddNewFileHandler.Handle(fileUploadRequest);
-                if (!fileData.Equals(sync) && FileUpdated != null)
+                if (FileUpdated != null)
                 {
                     FileUpdated.Invoke(sync);
                 }

@@ -42,7 +42,9 @@ builder.Services.AddSwaggerGen(setup =>
 });
 builder.Services.AddDbContext<DatabaseContext>();
 WebsocketConnectedController WebsocketConnectedController = new WebsocketConnectedController();
-builder.Services.AddSingleton<IWebsocketConnectedController, WebsocketConnectedController>();
+builder.Services.AddSingleton<IWebsocketConnectedController, WebsocketConnectedController>(
+    provider => WebsocketConnectedController
+);
 FileSystemService fileSystemService = new FileSystemService("dataStorage\\");
 builder.Services.AddSingleton<IFileSystemService>(provider => fileSystemService);
 builder.Services.AddSingleton<IFileSyncService>(provider => new FileSyncService(

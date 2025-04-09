@@ -43,7 +43,7 @@ namespace Cloud_Storage_Desktop_lib
             }
         }
         private ServerConnection _ServerConnection;
-        public ServerConnection ServerConnection
+        public IServerConnection ServerConnection
         {
             get { return _ServerConnection; }
         }

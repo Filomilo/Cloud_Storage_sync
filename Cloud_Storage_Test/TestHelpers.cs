@@ -14,6 +14,7 @@ using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Services;
 using Cloud_Storage_Desktop_lib.Tests;
 using Cloud_Storage_Server.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
@@ -128,7 +129,7 @@ public class TestWebScoket : IWebSocketWrapper
                 | this._webSocket.State != WebSocketState.Closed
             )
                 this._webSocket.CloseAsync(closeStatus, statusDescription, cancellationToken)
-                    .Wait(cancellationToken);
+                    .Dispose();
         }
         catch (Exception ex)
         {
@@ -225,8 +226,13 @@ namespace Cloud_Storage_Test
 
         private const long Timeout = 2000;
 
-        public static void EnsureTrue(Func<bool> func)
+        public static void EnsureTrue(Func<bool> func, long timeout = Timeout)
         {
+            if (Debugger.IsAttached)
+            {
+                timeout *= 100;
+            }
+
             bool state = false;
             Stopwatch stopwatch = Stopwatch.StartNew();
             while (true)
@@ -235,8 +241,8 @@ namespace Cloud_Storage_Test
                 if (state == true)
                     break;
                 Thread.Sleep(100);
-                if (stopwatch.ElapsedMilliseconds > Timeout)
-                    throw new TimeoutException($"Ensure true timouet {Timeout}");
+                if (stopwatch.ElapsedMilliseconds > timeout)
+                    throw new TimeoutException($"Ensure true timouet {timeout}");
             }
         }
 
