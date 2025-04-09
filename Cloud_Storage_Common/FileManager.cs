@@ -150,7 +150,7 @@ namespace Cloud_Storage_Common
             {
                 using (var stream = FileManager.WaitForFile(filename))
                 {
-                    Logger.LogDebug($"Gettign hash for file [[{filename}]]");
+                    Logger.LogTrace($"Gettign hash for file [[{filename}]]");
                     return Convert.ToBase64String(sha256.ComputeHash(stream));
                     ;
                 }

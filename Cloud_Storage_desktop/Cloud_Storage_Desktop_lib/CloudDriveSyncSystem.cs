@@ -69,7 +69,8 @@ namespace Cloud_Storage_Desktop_lib
         {
             this._ServerConnection = new ServerConnection(
                 this._Configuration.ApiUrl,
-                this.CredentialManager
+                this.CredentialManager,
+                new WebSocketWrapper()
             );
             _init();
         }
@@ -94,20 +95,29 @@ namespace Cloud_Storage_Desktop_lib
         #region Test only constuctors
         public CloudDriveSyncSystem(HttpClient client)
         {
-            this._ServerConnection = new ServerConnection(client, this.CredentialManager);
+            this._ServerConnection = new ServerConnection(
+                client,
+                this.CredentialManager,
+                new WebSocketWrapper()
+            );
 
             _instance = this;
         }
 
         public CloudDriveSyncSystem(
             HttpClient client,
+            IWebSocketWrapper WebSocketWrapper,
             IConfiguration configuration,
             ICredentialManager credentialManager,
             IFileRepositoryService localFileRepositoryService
         )
         {
             this._CredentialManager = credentialManager;
-            this._ServerConnection = new ServerConnection(client, credentialManager);
+            this._ServerConnection = new ServerConnection(
+                client,
+                credentialManager,
+                WebSocketWrapper
+            );
             this._Configuration = configuration;
             this._FileRepositoryService = localFileRepositoryService;
             _init();

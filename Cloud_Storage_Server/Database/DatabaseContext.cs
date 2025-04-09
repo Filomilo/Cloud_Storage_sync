@@ -32,5 +32,10 @@ namespace Cloud_Storage_Server.Database
                 })
                 .IsUnique();
         }
+
+        internal Device Find(string id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

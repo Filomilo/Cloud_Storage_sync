@@ -5,7 +5,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
+using System.Security.Policy;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,6 +19,7 @@ using log4net;
 using log4net.Repository.Hierarchy;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
 namespace Cloud_Storage_Desktop_lib
@@ -25,24 +28,151 @@ namespace Cloud_Storage_Desktop_lib
     {
         private static ILogger logger = CloudDriveLogging.Instance.GetLogger("ServerConnection");
         HttpClient client = new HttpClient();
+        private IWebSocketWrapper _webSocket;
+        private Thread WsThread;
+        private CancellationTokenSource _cts = new CancellationTokenSource();
         private ICredentialManager _credentialManager;
 
-        public ServerConnection(string ConnetionAdress, ICredentialManager credentialManager)
+        public ServerConnection(
+            string ConnetionAdress,
+            ICredentialManager credentialManager,
+            IWebSocketWrapper webSocketWrapper
+        )
         {
             this._credentialManager = credentialManager;
             client.BaseAddress = new Uri(ConnetionAdress);
+            this._webSocket = webSocketWrapper;
             if (!CheckIfHelathy())
             {
                 throw new ArgumentException("Server is not healthy");
             }
             _LoadToken();
+            this.ConnectionChangeHandler += UpdateWebsocketOnConnetionChange;
         }
 
-        public ServerConnection(HttpClient client, ICredentialManager credentialManager)
+        public ServerConnection(
+            HttpClient client,
+            ICredentialManager credentialManager,
+            IWebSocketWrapper webSocketWrapper
+        )
         {
             this.client = client;
             this._credentialManager = credentialManager;
+            this.ConnectionChangeHandler += UpdateWebsocketOnConnetionChange;
+            this._webSocket = webSocketWrapper;
             _LoadToken();
+        }
+
+        private void UpdateWebsocketOnConnetionChange(bool state)
+        {
+            if (state)
+            {
+                StartWebScoketLisitingThread();
+            }
+            else
+            {
+                StopWebSocket();
+            }
+        }
+
+        private void StopWebSocket()
+        {
+            if (_webSocket != null && _webSocket.State == WebSocketState.Open)
+            {
+                _webSocket.Close(
+                    WebSocketCloseStatus.NormalClosure,
+                    "Resetting",
+                    CancellationToken.None
+                );
+            }
+        }
+
+        private async void StartWebScoketLisitingThread()
+        {
+            if (_webSocket != null && _webSocket.State == WebSocketState.Open)
+            {
+                _webSocket.Close(
+                    WebSocketCloseStatus.NormalClosure,
+                    "Resetting",
+                    CancellationToken.None
+                );
+            }
+            this._cts = new CancellationTokenSource();
+            string baseAdress = this.client.BaseAddress.ToString().Replace("http://", "");
+            string uri = $"ws://{baseAdress}ws";
+            string token = this._credentialManager.GetToken();
+            if (token != null && token.Length > 0)
+            {
+                WsThread = new Thread(() => ConnectAndListen(uri, token));
+                WsThread.Start();
+            }
+        }
+
+        private void ConnectAndListen(string uri, string token)
+        {
+            try
+            {
+                _webSocket.SetRequestHeader("Authorization", $"Bearer {token}");
+                _webSocket.Connect(new Uri(uri), _cts.Token);
+                while (_webSocket.State == WebSocketState.Open)
+                {
+                    try
+                    {
+                        byte[] buffer = new byte[4096];
+                        WebSocketReceiveResult result = _webSocket.ReceiveAsync(
+                            new ArraySegment<byte>(buffer),
+                            _cts.Token
+                        );
+                        string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                        logger.LogInformation($"Received: {message}");
+                        WebSocketMessage webSocketMessage =
+                            JsonOperations.ObjectFromJSon<WebSocketMessage>(message);
+                        if (this.ServerWerbsocketHadnler != null)
+                        {
+                            this.ServerWerbsocketHadnler.Invoke(webSocketMessage);
+                        }
+                    }
+                    catch (WebSocketException ex)
+                    {
+                        logger.LogError(
+                            $"WebSocketException Error reciving webscoket messages [[ {ex.Message}  ]]"
+                        );
+                    }
+                    catch (ObjectDisposedException ex)
+                    {
+                        logger.LogTrace("Webscoket dispodees");
+                        break;
+                    }
+                    catch (AggregateException ex)
+                    {
+                        if (ex.InnerExceptions.Any(e => e is IOException))
+                        {
+                            logger.LogError(
+                                $"IOException occurred while receiving WebSocket messages: [[ {ex.Message} ]]"
+                            );
+                            break;
+                        }
+                        else
+                        {
+                            logger.LogError($"Unhandled AggregateException: [[ {ex.Message} ]]");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(
+                            $"Unkwon Error reciving webscoket messages [[ {ex.Message}  ]]"
+                        );
+                    }
+                }
+            }
+            catch (ThreadInterruptedException ex)
+            {
+                logger.LogDebug($"Webscoket interrupted {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Error webscoket conneiton :: {ex.Message}");
+            }
         }
 
         public bool CheckIfHelathy()
@@ -179,6 +309,7 @@ namespace Cloud_Storage_Desktop_lib
         }
 
         public event OnConnectionStateChange? ConnectionChangeHandler;
+        public event OnServerWebSockerMessage? ServerWerbsocketHadnler;
 
         public List<SyncFileData> GetListOfFiles()
         {

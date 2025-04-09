@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,15 +11,17 @@ using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_Desktop_lib.Actions;
 using Cloud_Storage_Desktop_lib.Interfaces;
+using Cloud_Storage_Desktop_lib.Services;
 using Cloud_Storage_Desktop_lib.Tests;
 using Cloud_Storage_Server.Services;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using NUnit.Framework;
 
 public class TestConfig : IConfiguration
 {
-    public static string TmpDirecotry =
+    public string TmpDirecotry =
         AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin")) + "tmp\\";
 
     public string ApiUrl
@@ -68,6 +71,77 @@ public class TestCredentialMangager : ICredentialManager
     {
         return JwtHelpers.GetDeviceIDFromToken(_token);
     }
+
+    internal string GetUserEmail()
+    {
+        return JwtHelpers.GetEmailFromToken(_token);
+    }
+}
+
+public class TestWebScoket : IWebSocketWrapper
+{
+    private ILogger logger = CloudDriveLogging.Instance.GetLogger("TestWebScoket");
+    private WebSocketClient _webSocketClient;
+    private WebSocket _webSocket = new ClientWebSocket();
+    private Dictionary<string, string> _headers = new Dictionary<string, string>();
+
+    public TestWebScoket(WebSocketClient webSocketClient)
+    {
+        _webSocketClient = webSocketClient;
+    }
+
+    public void Connect(Uri url, CancellationToken cancellationToken)
+    {
+        _webSocketClient.ConfigureRequest = (request) =>
+        {
+            foreach (var keyValuePair in _headers)
+            {
+                request.Headers.Add(keyValuePair.Key, keyValuePair.Value);
+            }
+        };
+        _webSocket = _webSocketClient.ConnectAsync(url, cancellationToken).Result;
+    }
+
+    public WebSocketReceiveResult ReceiveAsync(
+        ArraySegment<byte> buffer,
+        CancellationToken cancellationToken
+    )
+    {
+        return this._webSocket.ReceiveAsync(buffer, cancellationToken).Result;
+    }
+
+    public WebSocketState State
+    {
+        get { return this._webSocket.State; }
+    }
+
+    public void Close(
+        WebSocketCloseStatus closeStatus,
+        string? statusDescription,
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            if (
+                this._webSocket.State != WebSocketState.Aborted
+                | this._webSocket.State != WebSocketState.Closed
+            )
+                this._webSocket.CloseAsync(closeStatus, statusDescription, cancellationToken)
+                    .Wait(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex.Message);
+        }
+    }
+
+    public void SetRequestHeader(string str1, string value)
+    {
+        if (this._headers.ContainsKey(str1))
+            _headers.Remove(str1);
+        _headers.Add(str1, value);
+    }
 }
 
 namespace Cloud_Storage_Test
@@ -93,7 +167,11 @@ namespace Cloud_Storage_Test
         public static IServerConnection getTestServerConnetion()
         {
             HttpClient _testServer = new MyWebApplication().CreateDefaultClient();
-            return new ServerConnection(_testServer, new TestCredentialMangager());
+            return new ServerConnection(
+                _testServer,
+                new TestCredentialMangager(),
+                new WebSocketWrapper()
+            );
         }
 
         public static IConfiguration GetTestConfig()
@@ -145,7 +223,7 @@ namespace Cloud_Storage_Test
             return fileName;
         }
 
-        private const long Timeout = 200000;
+        private const long Timeout = 2000;
 
         public static void EnsureTrue(Func<bool> func)
         {

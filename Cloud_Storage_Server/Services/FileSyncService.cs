@@ -7,6 +7,7 @@ using Cloud_Storage_Server.Database;
 using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Database.Repositories;
 using Cloud_Storage_Server.Handlers;
+using Cloud_Storage_Server.Interfaces;
 
 namespace Cloud_Storage_Server.Services
 {
@@ -22,12 +23,15 @@ namespace Cloud_Storage_Server.Services
         }
     }
 
+    public delegate void FileUpdateHandler(SyncFileData uploudFile);
+
     public interface IFileSyncService
     {
         public void AddNewFile(User user, string deviceId, UploudFileData data, Stream file);
         public Stream DownloadFile(User user, SyncFileData data);
         public List<SyncFileData> ListFilesForUser(User user);
         public bool DoesFileAlreadyExist(User user, UploudFileData data);
+        event FileUpdateHandler FileUpdated;
     }
 
     public class FileSyncService : IFileSyncService
@@ -36,13 +40,20 @@ namespace Cloud_Storage_Server.Services
         private ILogger logger = CloudDriveLogging.Instance.GetLogger("FileSyncService");
         private IHandler _AddNewFileHandler;
 
-        public FileSyncService(IFileSystemService fileSystemService)
+        public FileSyncService(
+            IFileSystemService fileSystemService,
+            IWebsocketConnectedController websocketConnectedController
+        )
         {
             _fileSystemService = fileSystemService;
             _AddNewFileHandler = new SkipIfTheSameFileAlreadyExist();
             _AddNewFileHandler
                 .SetNext(new UpdateIfOnlyOwnerChanged())
                 .SetNext(new SaveAndUpdateNewVersionOfFile(this._fileSystemService));
+            this.FileUpdated += (SyncFileData file) =>
+            {
+                websocketConnectedController.SendMessageToUser(file.OwnerId, file);
+            };
         }
 
         public void AddNewFile(User user, string deviceId, UploudFileData data, Stream file)
@@ -54,7 +65,11 @@ namespace Cloud_Storage_Server.Services
             FileUploadRequest fileUploadRequest = new FileUploadRequest(fileData, file);
             try
             {
-                _AddNewFileHandler.Handle(fileUploadRequest);
+                SyncFileData sync = (SyncFileData)_AddNewFileHandler.Handle(fileUploadRequest);
+                if (!fileData.Equals(sync) && FileUpdated != null)
+                {
+                    FileUpdated.Invoke(sync);
+                }
             }
             catch (Exception ex)
             {
@@ -84,6 +99,8 @@ namespace Cloud_Storage_Server.Services
             }
             return false;
         }
+
+        public event FileUpdateHandler? FileUpdated;
 
         private static string GetRealtivePathForFile(User user, SyncFileData data)
         {

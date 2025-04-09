@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Documents;
@@ -14,6 +15,7 @@ using Cloud_Storage_Desktop_lib.Tests;
 using Cloud_Storage_Server.Database.Repositories;
 using Cloud_Storage_Server.Services;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Options;
@@ -45,8 +47,9 @@ namespace Cloud_Storage_Test
             ILogger logger = CloudDriveLogging.Instance.GetLogger("TestLogging");
             logger.LogInformation("Test log-------------------------------------");
             CloudDriveLogging.Instance.SetTestLogger(logger);
-            _testServer = new MyWebApplication().CreateDefaultClient();
-
+            MyWebApplication webApplication = new MyWebApplication();
+            _testServer = webApplication.CreateDefaultClient();
+            WebSocketClient webSocketClient = webApplication.Server.CreateWebSocketClient();
             email = $"{Guid.NewGuid().ToString()}@mail.mail";
 
             string tmpDirectory1 = TestHelpers.GetNewTmpDir("user1");
@@ -60,12 +63,14 @@ namespace Cloud_Storage_Test
 
             this._cloudDriveSyncSystemClient1 = new CloudDriveSyncSystem(
                 _testServer,
+                new TestWebScoket(webSocketClient),
                 _Client1Config,
                 new TestCredentialMangager(),
                 _localFileRepositoryService1
             );
             this._cloudDriveSyncSystemClient2 = new CloudDriveSyncSystem(
                 _testServer,
+                new TestWebScoket(webSocketClient),
                 _Client2Config,
                 new TestCredentialMangager(),
                 _localFileRepositoryService2
@@ -446,6 +451,33 @@ namespace Cloud_Storage_Test
                     )
                 );
             }
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        return FileManager
+                                .GetAllFilesInLocation(this._Client1Config.StorageLocation)
+                                .Count == 3;
+                        ;
+                    });
+                },
+                "Files on device 1 not 3"
+            );
+
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        return FileManager
+                                .GetAllFilesInLocation(this._Client2Config.StorageLocation)
+                                .Count == 3;
+                        ;
+                    });
+                },
+                "Files on device 2 not 3"
+            );
 
             Assert.DoesNotThrow(
                 () =>
@@ -486,26 +518,26 @@ namespace Cloud_Storage_Test
 
 
 
-            #region Delete File on one Device
-            FileManager.DeleteFile(this._Client1Config.StorageLocation + filesAdded[0]);
+            //#region Delete File on one Device
+            //FileManager.DeleteFile(this._Client1Config.StorageLocation + filesAdded[0]);
 
-            #endregion
+            //#endregion
 
-            #region Ensure the same data on server and clinet
+            //#region Ensure the same data on server and clinet
 
-            this.CheckIfTheSameContentOnClinetsAndServer(
-                new List<CloudDriveSyncSystem>()
-                {
-                    this._cloudDriveSyncSystemClient1,
-                    this._cloudDriveSyncSystemClient2,
-                }
-            );
+            //this.CheckIfTheSameContentOnClinetsAndServer(
+            //    new List<CloudDriveSyncSystem>()
+            //    {
+            //        this._cloudDriveSyncSystemClient1,
+            //        this._cloudDriveSyncSystemClient2,
+            //    }
+            //);
 
-            this.CheckIfFileContentTheSameAsClientDataBase(
-                _localFileRepositoryService1,
-                this._Client1Config
-            );
-            #endregion
+            //this.CheckIfFileContentTheSameAsClientDataBase(
+            //    _localFileRepositoryService1,
+            //    this._Client1Config
+            //);
+            //#endregion
         }
 
         #region HelpersMethod

@@ -11,8 +11,23 @@ namespace Cloud_Storage_Server.Database.Repositories
             {
                 Device Device = new Device { Id = Guid.NewGuid(), OwnerId = user.id };
                 context.Devices.Add(Device);
-
+                context.SaveChanges();
                 return Device;
+            }
+        }
+
+        public static Device GetDevice(string id)
+        {
+            using (DatabaseContext context = new DatabaseContext())
+            {
+                if (Guid.TryParse(id, out Guid guidId))
+                {
+                    return context.Devices.FirstOrDefault(x => x.Id == guidId);
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
     }

@@ -9,6 +9,8 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
 {
     public delegate void OnConnectionStateChange(bool isConnected);
 
+    public delegate void OnServerWebSockerMessage(WebSocketMessage message);
+
     public interface IServerConnection
     {
         bool CheckIfAuthirized();
@@ -22,5 +24,6 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
         void UploudFile(UploudFileData fileData, Stream value);
         void UpdateFileData(UploudFileData file);
         event OnConnectionStateChange ConnectionChangeHandler;
+        event OnServerWebSockerMessage ServerWerbsocketHadnler;
     }
 }
