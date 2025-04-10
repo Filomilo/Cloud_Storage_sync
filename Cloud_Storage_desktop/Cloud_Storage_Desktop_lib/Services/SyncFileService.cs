@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Interfaces;
+using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Actions;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.SyncingHandlers;
@@ -59,6 +60,26 @@ namespace Cloud_Storage_Desktop_lib.Services
                     )
                 );
             this._serverConnection.ConnectionChangeHandler += onConnnetionChange;
+            this._serverConnection.ServerWerbsocketHadnler +=
+                _serverConnection_ServerWerbsocketHadnler;
+        }
+
+        private void _serverConnection_ServerWerbsocketHadnler(WebSocketMessage message)
+        {
+            if (message.messageType == MESSAGE_TYPE.UPDATE)
+            {
+                onFileUPdate(message.data.syncFileData);
+            }
+        }
+
+        private void onFileUPdate(SyncFileData syncFileData)
+        {
+            new PerFileInitialSyncHandler(
+                this._configuration,
+                this._serverConnection,
+                _taskRunController,
+                this._fileRepositoryService
+            ).Handle(syncFileData);
         }
 
         private void onConnnetionChange(bool state)
