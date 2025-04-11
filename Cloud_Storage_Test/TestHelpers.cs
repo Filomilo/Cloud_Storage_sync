@@ -13,6 +13,7 @@ using Cloud_Storage_Desktop_lib.Actions;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Services;
 using Cloud_Storage_Desktop_lib.Tests;
+using Cloud_Storage_Server.Database;
 using Cloud_Storage_Server.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
@@ -249,6 +250,15 @@ namespace Cloud_Storage_Test
         public static FileSystemService GetDeafultFileSystemService()
         {
             return new FileSystemService("dataStorage\\");
+        }
+
+        public static void ResetDatabase()
+        {
+            using (var context = new DatabaseContext())
+            {
+                context.Database.EnsureDeleted();
+                context.Database.EnsureCreated();
+            }
         }
     }
 }

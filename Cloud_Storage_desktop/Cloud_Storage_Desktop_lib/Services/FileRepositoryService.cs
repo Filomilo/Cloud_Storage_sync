@@ -79,5 +79,14 @@ namespace Cloud_Storage_Desktop_lib.Services
                 return context.Files.ToList();
             }
         }
+
+        public void Reset()
+        {
+            using (var context = new DataBaseContext())
+            {
+                context.Database.EnsureDeleted();
+                context.Database.EnsureCreated();
+            }
+        }
     }
 }

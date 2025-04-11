@@ -53,11 +53,31 @@ namespace Cloud_Storage_Test.Controllers
         //    TestHelpers.RemoveTmpDirectory();
         //}
 
+
+        private static WebSocketMessage[] TestedMessages = new WebSocketMessage[]
+        {
+            new WebSocketMessage("TestMEssage"),
+            new WebSocketMessage(
+                new SyncFileData()
+                {
+                    Extenstion = ".mp4",
+                    Hash = "123",
+                    Name = "Name",
+                    Path = ".",
+                    Version = 1,
+                    DeviceOwner = new List<string>() { "123" },
+                    Id = Guid.NewGuid(),
+                    OwnerId = 1,
+                }
+            ),
+        };
+
         [Test]
-        public void testConnectToWebScoket()
+        public void testConnectToWebScoket(
+            [ValueSource("TestedMessages")] WebSocketMessage webSocketMessage
+        )
         {
             bool recivedMEssage = false;
-            WebSocketMessage webSocketMessage = new WebSocketMessage("TestMEssage");
 
             IServerConnection serverConnection = new ServerConnection(
                 this._testServer,

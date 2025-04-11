@@ -27,7 +27,7 @@ namespace Cloud_Storage_Common
 
         public static FileStream WaitForFile(
             string filename,
-            bool openRead = true,
+            FileAccess acces,
             int retryCount = 10,
             int delayMilliseconds = 500
         )
@@ -36,7 +36,7 @@ namespace Cloud_Storage_Common
             {
                 try
                 {
-                    return openRead ? File.OpenRead(filename) : File.OpenWrite(filename);
+                    return File.Open(filename, FileMode.OpenOrCreate, acces);
                 }
                 catch (IOException)
                 {
@@ -149,7 +149,7 @@ namespace Cloud_Storage_Common
         {
             using (var sha256 = SHA256.Create())
             {
-                using (var stream = FileManager.WaitForFile(filename))
+                using (var stream = FileManager.WaitForFile(filename, FileAccess.Read))
                 {
                     Logger.LogTrace($"Gettign hash for file [[{filename}]]");
                     return Convert.ToBase64String(sha256.ComputeHash(stream));
@@ -174,7 +174,7 @@ namespace Cloud_Storage_Common
 
         public static FileStream GetStreamForFile(string fiePath)
         {
-            return WaitForFile(fiePath, false);
+            return WaitForFile(fiePath, FileAccess.ReadWrite);
         }
 
         public static void DeleteFile(string v)

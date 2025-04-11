@@ -46,7 +46,7 @@ namespace Cloud_Storage_Desktop_lib.Actions
                             )
                         )
                         {
-                            fileRepositoryService.AddNewFile(new LocalFileData(fileData));
+                            //fileRepositoryService.AddNewFile(new LocalFileData(fileData));
                             serverConnection.UploudFile(fileData, stream);
                         }
                     }

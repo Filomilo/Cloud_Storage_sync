@@ -35,10 +35,9 @@ namespace Cloud_Storage_Test
         private IConfiguration _Client2Config;
         private HttpClient _testServer;
         private FileSystemService _fileSystemService = TestHelpers.GetDeafultFileSystemService();
-        private IFileRepositoryService _localFileRepositoryService1 =
-            new Cloud_Storage_Desktop_lib.Services.FileRepositoryService();
-        private IFileRepositoryService _localFileRepositoryService2 =
-            new Cloud_Storage_Desktop_lib.Services.FileRepositoryService();
+        private IFileRepositoryService _localFileRepositoryService1;
+
+        private IFileRepositoryService _localFileRepositoryService2;
         private IWebsocketConnectedController websocketConnectedController;
         private string email;
         string pass = "1234567890asdASD++";
@@ -46,7 +45,13 @@ namespace Cloud_Storage_Test
         [SetUp]
         public void Setup()
         {
+            TestHelpers.ResetDatabase();
             TestHelpers.RemoveTmpDirectory();
+            _localFileRepositoryService1 =
+                new Cloud_Storage_Desktop_lib.Services.FileRepositoryService();
+            _localFileRepositoryService2 =
+                new Cloud_Storage_Desktop_lib.Services.FileRepositoryService();
+
             ILogger logger = CloudDriveLogging.Instance.GetLogger("TestLogging");
             logger.LogInformation("Test log-------------------------------------");
             CloudDriveLogging.Instance.SetTestLogger(logger);
@@ -116,6 +121,9 @@ namespace Cloud_Storage_Test
         public void TearDown()
         {
             TestHelpers.RemoveTmpDirectory();
+            TestHelpers.ResetDatabase();
+            this._localFileRepositoryService1.Reset();
+            this._localFileRepositoryService2.Reset();
         }
 
         [Test]
@@ -161,7 +169,7 @@ namespace Cloud_Storage_Test
                         return files.Count == 1;
                     });
                 },
-                "File reposirotry did not reach files amount to one in desired time"
+                $"File reposirotry did not reach files amount to one in desired time, exprect to file repository have 1 but has [[{files.Count}]] "
             );
 
             SyncFileData syncesFile = files.First();
@@ -431,6 +439,7 @@ namespace Cloud_Storage_Test
         [Test]
         public void Delete_File_Located_On_Both_Devices()
         {
+            throw new NotImplementedException("Nor implnted");
             #region Ensure The same file
             this._cloudDriveSyncSystemClient1.ServerConnection.login(email, pass);
             this._cloudDriveSyncSystemClient2.ServerConnection.login(email, pass);

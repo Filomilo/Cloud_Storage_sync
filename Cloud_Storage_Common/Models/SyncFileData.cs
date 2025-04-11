@@ -123,5 +123,27 @@ namespace Cloud_Storage_Common.Models
         [ForeignKey("Devices")]
         public List<string> DeviceOwner { get; set; }
         public virtual List<Device> OwnersDevices { get; set; }
+
+        public override bool Equals(object? o)
+        {
+            if (ReferenceEquals(this, o))
+                return true;
+            if (this is null)
+                return false;
+            if (o is null)
+                return false;
+            if (o.GetType() != o.GetType())
+                return false;
+            SyncFileData obj = (SyncFileData)o;
+            return this.Path == obj.Path
+                && this.Name == obj.Name
+                && this.Extenstion == obj.Extenstion
+                && this.Hash == obj.Hash
+                && this.Version == obj.Version
+                && this.Id.Equals(obj.Id)
+                && this.OwnerId == obj.OwnerId
+                && this.SyncDate.Equals(obj.SyncDate)
+                && Enumerable.SequenceEqual(this.DeviceOwner, obj.DeviceOwner);
+        }
     }
 }

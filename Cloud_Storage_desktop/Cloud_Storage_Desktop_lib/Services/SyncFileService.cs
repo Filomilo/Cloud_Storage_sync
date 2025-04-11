@@ -10,6 +10,7 @@ using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Actions;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.SyncingHandlers;
+using Cloud_Storage_Server.Handlers;
 using Microsoft.Extensions.Logging;
 
 namespace Cloud_Storage_Desktop_lib.Services
@@ -20,11 +21,12 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         private IServerConnection _serverConnection;
         private IConfiguration _configuration;
+        private ITaskRunController _taskRunController;
+        private IFileRepositoryService _fileRepositoryService;
 
         private IHandler _InitialSyncHandler;
         private IHandler _OnFileUpdateHandler;
-        private ITaskRunController _taskRunController;
-        private IFileRepositoryService _fileRepositoryService;
+        private IHandler _OnFileCreatedHandler;
 
         public SyncFileService(
             IConfiguration configuration,
@@ -67,9 +69,24 @@ namespace Cloud_Storage_Desktop_lib.Services
                 null,
                 this._fileRepositoryService
             );
+
             this._serverConnection.ConnectionChangeHandler += onConnnetionChange;
             this._serverConnection.ServerWerbsocketHadnler +=
                 _serverConnection_ServerWerbsocketHadnler;
+            // File created handler
+            this._OnFileCreatedHandler = new PrepareFileSyncData(this._configuration);
+            _OnFileCreatedHandler
+                .SetNext(
+                    new AddFileToDataBaseHandler(this._configuration, this._fileRepositoryService)
+                )
+                .SetNext(
+                    new UploadNewFileHandler(
+                        this._configuration,
+                        this._serverConnection,
+                        this._taskRunController,
+                        this._fileRepositoryService
+                    )
+                );
         }
 
         private void _serverConnection_ServerWerbsocketHadnler(WebSocketMessage message)
@@ -147,18 +164,19 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         public void OnLocallyCreated(FileSystemEventArgs args)
         {
-            if (Active)
-                _taskRunController.AddTask(
-                    new UploadAction(
-                        this._serverConnection,
-                        this._configuration,
-                        this._fileRepositoryService,
-                        FileManager.GetUploadFileData(
-                            args.FullPath,
-                            this._configuration.StorageLocation
-                        )
-                    )
-                );
+            _OnFileCreatedHandler.Handle(args.FullPath);
+            //if (Active)
+            //    _taskRunController.AddTask(
+            //        new UploadAction(
+            //            this._serverConnection,
+            //            this._configuration,
+            //            this._fileRepositoryService,
+            //            FileManager.GetUploadFileData(
+            //                args.FullPath,
+            //                this._configuration.StorageLocation
+            //            )
+            //        )
+            //    );
         }
 
         public void OnLocallyChanged(FileSystemEventArgs args)

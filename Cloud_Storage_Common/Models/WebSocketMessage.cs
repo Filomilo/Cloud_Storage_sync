@@ -53,16 +53,18 @@ namespace Cloud_Storage_Common.Models
         {
             if (other == null)
                 return false;
-            return this.messageType == other.messageType
-                && (
-                    (
-                        this.messageType == MESSAGE_TYPE.UPDATE
-                        && this._data.syncFileData.Equals(other._data.syncFileData)
-                    )
-                    || (
-                        this.messageType == MESSAGE_TYPE.TEXT && this._data.text == other._data.text
-                    )
-                );
+            if (this.messageType != other.messageType)
+                return false;
+            switch (this.messageType)
+            {
+                case MESSAGE_TYPE.UPDATE:
+                    return this._data.syncFileData.Equals(other._data.syncFileData);
+                case MESSAGE_TYPE.TEXT:
+                    return this.messageType == MESSAGE_TYPE.TEXT
+                        && this._data.text == other._data.text;
+                default:
+                    return false;
+            }
         }
     }
 }

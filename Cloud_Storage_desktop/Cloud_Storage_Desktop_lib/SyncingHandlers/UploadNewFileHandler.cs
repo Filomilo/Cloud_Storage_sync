@@ -35,7 +35,7 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 
         public override object Handle(object request)
         {
-            if (request.GetType() != typeof(UploudFileData))
+            if (request is not UploudFileData)
             {
                 throw new ArgumentException(
                     "UploadNewFileHandler excepts argument of type LocalAndServerFileData"
