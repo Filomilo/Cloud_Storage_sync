@@ -52,7 +52,10 @@ namespace Cloud_Storage_Server.Services
                 .SetNext(new SaveAndUpdateNewVersionOfFile(this._fileSystemService));
             this.FileUpdated += (SyncFileData file) =>
             {
-                websocketConnectedController.SendMessageToUser(file.OwnerId, file);
+                websocketConnectedController.SendMessageToUser(
+                    file.OwnerId,
+                    new WebSocketMessage(file)
+                );
             };
         }
 

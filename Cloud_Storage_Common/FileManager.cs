@@ -27,6 +27,7 @@ namespace Cloud_Storage_Common
 
         public static FileStream WaitForFile(
             string filename,
+            bool openRead = true,
             int retryCount = 10,
             int delayMilliseconds = 500
         )
@@ -35,7 +36,7 @@ namespace Cloud_Storage_Common
             {
                 try
                 {
-                    return File.OpenRead(filename);
+                    return openRead ? File.OpenRead(filename) : File.OpenWrite(filename);
                 }
                 catch (IOException)
                 {
@@ -173,7 +174,7 @@ namespace Cloud_Storage_Common
 
         public static FileStream GetStreamForFile(string fiePath)
         {
-            return File.Open(fiePath, FileMode.Open, FileAccess.Read);
+            return WaitForFile(fiePath, false);
         }
 
         public static void DeleteFile(string v)

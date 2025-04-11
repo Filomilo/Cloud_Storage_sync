@@ -22,6 +22,7 @@ namespace Cloud_Storage_Desktop_lib.Services
         private IConfiguration _configuration;
 
         private IHandler _InitialSyncHandler;
+        private IHandler _OnFileUpdateHandler;
         private ITaskRunController _taskRunController;
         private IFileRepositoryService _fileRepositoryService;
 
@@ -59,6 +60,13 @@ namespace Cloud_Storage_Desktop_lib.Services
                         fileRepositoryService
                     )
                 );
+            _OnFileUpdateHandler = new DownloadNewFIleHandler(
+                this._taskRunController,
+                this._serverConnection,
+                this._configuration,
+                null,
+                this._fileRepositoryService
+            );
             this._serverConnection.ConnectionChangeHandler += onConnnetionChange;
             this._serverConnection.ServerWerbsocketHadnler +=
                 _serverConnection_ServerWerbsocketHadnler;
@@ -74,12 +82,7 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         private void onFileUPdate(SyncFileData syncFileData)
         {
-            new PerFileInitialSyncHandler(
-                this._configuration,
-                this._serverConnection,
-                _taskRunController,
-                this._fileRepositoryService
-            ).Handle(syncFileData);
+            this._OnFileUpdateHandler.Handle(syncFileData);
         }
 
         private void onConnnetionChange(bool state)
