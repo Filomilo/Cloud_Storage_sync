@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Cloud_Storage_Common;
@@ -21,6 +22,7 @@ namespace Cloud_Storage_Desktop_lib.Services
     public class RunningTaskController : ITaskRunController
     {
         private ILogger logger = CloudDriveLogging.Instance.GetLogger("RunningTaskController");
+        private IConfiguration _configuration;
 
         public RunningTaskController(IConfiguration configuration)
         {
@@ -28,7 +30,6 @@ namespace Cloud_Storage_Desktop_lib.Services
             _taskFinished += _OnTaskFinished;
         }
 
-        private IConfiguration _configuration;
         private object Locker = new object();
         private Dictionary<object, TaskObject> _RunningTask = new Dictionary<object, TaskObject>();
         private Queue<ITaskToRun> _QueuedTasks = new Queue<ITaskToRun>();
@@ -48,7 +49,9 @@ namespace Cloud_Storage_Desktop_lib.Services
                 task = new Task(
                     () =>
                     {
-                        logger.LogDebug($"Activated task {taskToRun.Id}");
+                        logger.LogDebug(
+                            $"------------------------ >>>>>> Activated task {taskToRun.Id} of [[{taskToRun}]]"
+                        );
                         taskToRun.ActionToRun.Invoke();
                         Task.Run(() =>
                         {

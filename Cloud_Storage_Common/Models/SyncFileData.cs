@@ -9,6 +9,21 @@ namespace Cloud_Storage_Common.Models
 {
     public class FileData
     {
+        public FileData() { }
+
+        public FileData(string relativePath)
+        {
+            FileManager.GetFilePathParamsFormRelativePath(
+                relativePath,
+                out string realitve,
+                out string name,
+                out string ext
+            );
+            this.Path = realitve;
+            this.Name = name;
+            this.Extenstion = ext;
+        }
+
         [Required]
         [RegularExpression(
             $"{FileManager.RegexRelativePathValidation}",
@@ -93,6 +108,11 @@ namespace Cloud_Storage_Common.Models
             this.Extenstion = syncFileData.Extenstion == null ? "" : syncFileData.Extenstion;
             this.Version = syncFileData.Version;
         }
+
+        public static explicit operator LocalFileData(SyncFileData v)
+        {
+            return new LocalFileData(v);
+        }
     }
 
     [PrimaryKey(nameof(Id))]
@@ -144,6 +164,22 @@ namespace Cloud_Storage_Common.Models
                 && this.OwnerId == obj.OwnerId
                 && this.SyncDate.Equals(obj.SyncDate)
                 && Enumerable.SequenceEqual(this.DeviceOwner, obj.DeviceOwner);
+        }
+
+        public SyncFileData Clone()
+        {
+            return new SyncFileData
+            {
+                Path = this.Path,
+                Name = this.Name,
+                Extenstion = this.Extenstion,
+                Hash = this.Hash,
+                Version = this.Version,
+                Id = this.Id,
+                OwnerId = this.OwnerId,
+                SyncDate = this.SyncDate,
+                DeviceOwner = new List<string>(this.DeviceOwner),
+            };
         }
     }
 }

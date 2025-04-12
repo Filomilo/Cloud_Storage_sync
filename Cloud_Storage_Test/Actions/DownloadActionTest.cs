@@ -33,7 +33,9 @@ namespace Cloud_Storage_Test.Actions
             TestHelpers.UploudAccontDataToLoggedUser(
                 server,
                 this.Configuration,
-                new Cloud_Storage_Desktop_lib.Services.FileRepositoryService()
+                new Cloud_Storage_Desktop_lib.Services.FileRepositoryService(
+                    new TestDbContextGenerator1()
+                )
             );
             if (Directory.Exists(TestHelpers.TmpDirecotry))
                 Directory.Delete(TestHelpers.TmpDirecotry, true);
@@ -73,7 +75,7 @@ namespace Cloud_Storage_Test.Actions
                     this.server,
                     this.Configuration,
                     syncFileData,
-                    new FileRepositoryService()
+                    new FileRepositoryService(new TestDbContextGenerator1())
                 );
                 downloadAction.ActionToRun.Invoke();
             }

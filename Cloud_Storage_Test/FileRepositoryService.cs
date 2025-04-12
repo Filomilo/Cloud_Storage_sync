@@ -15,7 +15,9 @@ namespace Cloud_Storage_Test
         [Test]
         public void savedAndGetFile()
         {
-            FileRepositoryService fileRepositoryService = new FileRepositoryService();
+            FileRepositoryService fileRepositoryService = new FileRepositoryService(
+                new TestDbContextGenerator1()
+            );
 
             UploudFileData uploudFileData = new UploudFileData()
             {

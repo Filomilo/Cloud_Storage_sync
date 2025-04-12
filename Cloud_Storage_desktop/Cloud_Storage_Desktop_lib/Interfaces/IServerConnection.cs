@@ -27,5 +27,6 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
         event OnConnectionStateChange ConnectionChangeHandler;
         event OnServerWebSockerMessage ServerWerbsocketHadnler;
         WebSocketState WebSocketState { get; }
+        void DeleteFile(string relativePath);
     }
 }

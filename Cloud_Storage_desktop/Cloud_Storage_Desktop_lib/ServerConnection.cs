@@ -275,6 +275,9 @@ namespace Cloud_Storage_Desktop_lib
 
         public void UploudFile(UploudFileData fileData, Stream stream)
         {
+            logger.LogDebug(
+                $"Upldoing file  file from device {this._credentialManager.GetDeviceID()}"
+            );
             var form = FileMangamentSerivce.GetFormDatForFile(fileData, stream);
             var response = this.client.PostAsync("api/Files/upload", form).Result;
 
@@ -294,6 +297,7 @@ namespace Cloud_Storage_Desktop_lib
 
         public void UpdateFileData(UploudFileData file)
         {
+            logger.LogDebug($"Updating file on device {this._credentialManager.GetDeviceID()}");
             var response = this.client.PostAsJsonAsync("api/Files/update", file).Result;
 
             if (response.IsSuccessStatusCode)
@@ -314,6 +318,26 @@ namespace Cloud_Storage_Desktop_lib
         public WebSocketState WebSocketState
         {
             get { return this._webSocket.State; }
+        }
+
+        public void DeleteFile(string relativePath)
+        {
+            var response = this
+                .client.DeleteAsync($"api/Files/delete?relativePath={relativePath}")
+                .Result;
+
+            if (response.IsSuccessStatusCode)
+            {
+                logger.LogInformation($"File {relativePath} data updated successfully!");
+            }
+            else
+            {
+                string responseMesage = response.Content.ReadAsStringAsync().Result;
+                logger.LogError(
+                    $"Failed to update file  data [[{relativePath}]]: {responseMesage}"
+                );
+                throw new Exception($"{response.Content.ReadAsStringAsync().Result}");
+            }
         }
 
         public List<SyncFileData> GetListOfFiles()

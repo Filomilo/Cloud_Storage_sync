@@ -31,7 +31,10 @@ namespace Cloud_Storage_Server.Services
         public Stream DownloadFile(User user, SyncFileData data);
         public List<SyncFileData> ListFilesForUser(User user);
         public bool DoesFileAlreadyExist(User user, UploudFileData data);
+        void RemoveFile(FileData fileData, long id, string deviceId);
+
         event FileUpdateHandler FileUpdated;
+        void UpdateFileForDevice(string email, string deviceId, UploudFileData file);
     }
 
     public class FileSyncService : IFileSyncService
@@ -39,6 +42,8 @@ namespace Cloud_Storage_Server.Services
         private IFileSystemService _fileSystemService;
         private ILogger logger = CloudDriveLogging.Instance.GetLogger("FileSyncService");
         private IHandler _AddNewFileHandler;
+        private IHandler _RemoveFileHandler;
+        private IHandler _UpdateFileHandler;
 
         public FileSyncService(
             IFileSystemService fileSystemService,
@@ -57,6 +62,10 @@ namespace Cloud_Storage_Server.Services
                     new WebSocketMessage(file)
                 );
             };
+
+            this._RemoveFileHandler = new RemoveFileDeviceOwnership();
+
+            this._UpdateFileHandler = new UpdateIfOnlyOwnerChanged();
         }
 
         public void AddNewFile(User user, string deviceId, UploudFileData data, Stream file)
@@ -103,7 +112,32 @@ namespace Cloud_Storage_Server.Services
             return false;
         }
 
+        public void RemoveFile(FileData fileData, long ownerid, string deviceId)
+        {
+            SyncFileData file =
+                this._RemoveFileHandler.Handle(
+                    new RemoveFileDeviceOwnershipRequest()
+                    {
+                        deviceId = deviceId,
+                        fileData = fileData,
+                        userID = ownerid,
+                    }
+                ) as SyncFileData;
+            if (file != null)
+                this.FileUpdated(file);
+        }
+
         public event FileUpdateHandler? FileUpdated;
+
+        public void UpdateFileForDevice(string email, string deviceId, UploudFileData file)
+        {
+            SyncFileData fileData = new SyncFileData(file);
+            fileData.OwnerId = UserRepository.getUserByMail(email).id;
+            fileData.DeviceOwner = new List<string>();
+            fileData.DeviceOwner.Add(deviceId);
+
+            _UpdateFileHandler.Handle(fileData);
+        }
 
         private static string GetRealtivePathForFile(User user, SyncFileData data)
         {

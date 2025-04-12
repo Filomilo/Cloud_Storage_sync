@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
 using Cloud_Storage_Common;
@@ -95,8 +96,20 @@ namespace Cloud_Storage_Server.Controllers
 
         [Route("delete")]
         [HttpDelete]
-        public IActionResult edit([FromBody] Guid guid)
+        public IActionResult delete([FromQuery] string relativePath)
         {
+            if (string.IsNullOrEmpty(relativePath))
+            {
+                return BadRequest("relativePath cannot be null or empty.");
+            }
+            User user = UserRepository.getUserByMail(
+                JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
+            );
+            string deviceId = JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization);
+            FileData fileData = new FileData(relativePath);
+
+            this._FileSyncService.RemoveFile(new FileData(relativePath), user.id, deviceId);
+
             return Ok();
         }
 
@@ -109,7 +122,7 @@ namespace Cloud_Storage_Server.Controllers
                 JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
             );
             SyncFileData fileData = FileRepository.GetFileOfID(guid);
-
+            string deviceId = JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization);
             Stream data = _FileSyncService.DownloadFile(user, fileData);
 
             return File(data, "application/octet-stream", fileData.Name);
@@ -125,7 +138,12 @@ namespace Cloud_Storage_Server.Controllers
         [HttpPost]
         public IActionResult update([FromBody] UploudFileData file)
         {
-            return BadRequest("no itmpelmetned");
+            String email = JwtHelpers.GetEmailFromToken(Request.Headers.Authorization);
+
+            string deviceId = JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization);
+            _FileSyncService.UpdateFileForDevice(email, deviceId, file);
+
+            return Ok("updated");
         }
     }
 }

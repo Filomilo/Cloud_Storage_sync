@@ -51,7 +51,7 @@ namespace Cloud_Storage_Desktop_lib.Actions
                 UploadAction uploadAction = new UploadAction(
                     this.server,
                     this.Configuration,
-                    new Services.FileRepositoryService(),
+                    new Services.FileRepositoryService(new TestDbContextGenerator1()),
                     file
                 );
                 Assert.DoesNotThrow(() =>

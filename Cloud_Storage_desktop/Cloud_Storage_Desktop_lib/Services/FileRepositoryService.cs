@@ -13,40 +13,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Cloud_Storage_Desktop_lib.Services
 {
-    class DataBaseContext : DbContext
-    {
-        public DbSet<LocalFileData> Files { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseInMemoryDatabase("Files");
-            //optionsBuilder.UseSqlite(
-            //    "Data Source="
-            //        + Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
-            //        + "Files.db"
-            //);
-        }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            //throw new NotImplementedException();
-            modelBuilder
-                .Entity<LocalFileData>()
-                .HasIndex(f => new
-                {
-                    f.Extenstion,
-                    f.Name,
-                    f.Path,
-                })
-                .IsUnique();
-        }
-    }
-
     public class FileRepositoryService : IFileRepositoryService
     {
+        private IDbContextGenerator _dbContextGenerator;
+
+        public FileRepositoryService(IDbContextGenerator dbContextGenerator)
+        {
+            _dbContextGenerator = dbContextGenerator;
+        }
+
+        public AbstractDataBaseContext GetDbContext()
+        {
+            return _dbContextGenerator.GetDbContext();
+        }
+
         public void AddNewFile(LocalFileData file)
         {
-            using (var context = new DataBaseContext())
+            using (var context = GetDbContext())
             {
                 context.Files.Add(file);
                 context.SaveChanges();
@@ -55,7 +38,7 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         public void DeleteFile(LocalFileData file)
         {
-            using (var context = new DataBaseContext())
+            using (var context = GetDbContext())
             {
                 context.Files.Remove(file);
                 context.SaveChanges();
@@ -64,7 +47,7 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         public void UpdateFile(LocalFileData oldFileData, LocalFileData newFileData)
         {
-            using (var context = new DataBaseContext())
+            using (var context = GetDbContext())
             {
                 context.Files.Remove(oldFileData);
                 context.Files.Add(newFileData);
@@ -74,7 +57,7 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         public IEnumerable<LocalFileData> GetAllFiles()
         {
-            using (var context = new DataBaseContext())
+            using (var context = GetDbContext())
             {
                 return context.Files.ToList();
             }
@@ -82,7 +65,7 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         public void Reset()
         {
-            using (var context = new DataBaseContext())
+            using (var context = GetDbContext())
             {
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();

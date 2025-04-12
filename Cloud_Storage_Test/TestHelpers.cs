@@ -17,6 +17,7 @@ using Cloud_Storage_Server.Database;
 using Cloud_Storage_Server.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using NUnit.Framework;
@@ -146,6 +147,38 @@ public class TestWebScoket : IWebSocketWrapper
     }
 }
 
+public class DataBAseContext1 : AbstractDataBaseContext
+{
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseInMemoryDatabase("Files1");
+    }
+}
+
+public class DataBAseContext2 : AbstractDataBaseContext
+{
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseInMemoryDatabase("Files2");
+    }
+}
+
+public class TestDbContextGenerator1 : IDbContextGenerator
+{
+    public AbstractDataBaseContext GetDbContext()
+    {
+        return new DataBAseContext1();
+    }
+}
+
+public class TestDbContextGenerator2 : IDbContextGenerator
+{
+    public AbstractDataBaseContext GetDbContext()
+    {
+        return new DataBAseContext2();
+    }
+}
+
 namespace Cloud_Storage_Test
 {
     class TestHelpers
@@ -254,6 +287,16 @@ namespace Cloud_Storage_Test
 
         public static void ResetDatabase()
         {
+            using (var context = new DataBAseContext1())
+            {
+                context.Database.EnsureDeleted();
+                context.Database.EnsureCreated();
+            }
+            using (var context = new DataBAseContext2())
+            {
+                context.Database.EnsureDeleted();
+                context.Database.EnsureCreated();
+            }
             using (var context = new DatabaseContext())
             {
                 context.Database.EnsureDeleted();

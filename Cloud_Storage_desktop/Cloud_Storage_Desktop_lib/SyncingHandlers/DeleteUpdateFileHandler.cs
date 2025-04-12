@@ -3,21 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Cloud_Storage_Common;
 using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Actions;
 using Cloud_Storage_Desktop_lib.Interfaces;
+using log4net.Repository.Hierarchy;
+using Microsoft.Extensions.Logging;
 
 namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 {
-    class DownloadNewFIleHandler : AbstactHandler
+    class DeleteUpdateFileHandler : AbstactHandler
     {
+        private ILogger logger = CloudDriveLogging.Instance.GetLogger("DeleteUpdateFileHandler");
         private ITaskRunController _taskRunController;
         private IServerConnection _serverConnection;
         private IConfiguration _configuration;
         private IFileRepositoryService _fileRepositoryService;
 
-        public DownloadNewFIleHandler(
+        public DeleteUpdateFileHandler(
             ITaskRunController taskRunController,
             IServerConnection serverConnection,
             IConfiguration configuration,
@@ -32,18 +36,20 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 
         public override object Handle(object request)
         {
-            if (request.GetType() != typeof(SyncFileData))
+            if (request is not SyncFileData)
                 throw new ArgumentException(
-                    "DownloadNewFIleHandler excepts argument of type SyncFileData"
+                    "DeleteUpdateFileHandler excepts argument of type SyncFileData"
                 );
-            SyncFileData syncFileData = (SyncFileData)request;
-            if (syncFileData.Hash == "")
+            SyncFileData syncFileData = request as SyncFileData;
+            if (syncFileData.Hash != "")
             {
+                logger.LogDebug($"File {syncFileData.GetRealativePath()} is not to delete.");
                 if (this._nextHandler != null)
                     return this._nextHandler.Handle(request);
+                return syncFileData;
             }
             _taskRunController.AddTask(
-                new DownloadAction(
+                new DeleteAction(
                     _serverConnection,
                     _configuration,
                     syncFileData,

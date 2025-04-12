@@ -52,5 +52,29 @@ namespace Cloud_Storage_Common.Tests
                 Assert.That(absoultepath1 == absoulutePath2);
             }
         }
+
+        [Test]
+        public void GetFilePathParamsFormRelativePathTest()
+        {
+            string path = "test/test.txt";
+            FileManager.GetFilePathParamsFormRelativePath(
+                path,
+                out string directory,
+                out string name,
+                out string extesnion
+            );
+            Assert.That(
+                directory == "test",
+                $"Expeccted directory to be [[test]] but instead is [[{directory}]]"
+            );
+            Assert.That(
+                name == "test",
+                $"Expeccted directory to be [[test]] but instead is [[{name}]]"
+            );
+            Assert.That(
+                extesnion == ".txt",
+                $"Expeccted extenison to be [[.txt]] but instead is [[{extesnion}]]"
+            );
+        }
     }
 }

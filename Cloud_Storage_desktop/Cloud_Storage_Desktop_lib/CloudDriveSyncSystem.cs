@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
+using Cloud_Storage_Desktop_lib.Database;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Services;
 using Cloud_Storage_Desktop_lib.SyncingHandlers;
@@ -54,7 +55,7 @@ namespace Cloud_Storage_Desktop_lib
         }
         private IConfiguration _Configuration = new Configuration();
 
-        private IFileRepositoryService _FileRepositoryService = new FileRepositoryService();
+        private IFileRepositoryService _FileRepositoryService;
 
         public ICredentialManager CredentialManager
         {
@@ -71,6 +72,9 @@ namespace Cloud_Storage_Desktop_lib
                 this._Configuration.ApiUrl,
                 this.CredentialManager,
                 new WebSocketWrapper()
+            );
+            this._FileRepositoryService = new FileRepositoryService(
+                new InMemoryDataBAseContextGenerator()
             );
             _init();
         }

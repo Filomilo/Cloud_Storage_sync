@@ -9,15 +9,23 @@ namespace Cloud_Storage_Server.Handlers
     {
         public override object Handle(object request)
         {
-            if (request.GetType() != typeof(FileUploadRequest))
+            SyncFileData uploudFileData = null;
+            if (request is FileUploadRequest)
+            {
+                FileUploadRequest fileUploadRequest = (FileUploadRequest)request;
+                uploudFileData = fileUploadRequest.syncFileData;
+            }
+            if (request is SyncFileData)
+            {
+                uploudFileData = request as SyncFileData;
+            }
+            if (uploudFileData is null)
             {
                 throw new ArgumentException(
-                    "SkipIfTheSameFileAreadyExist excepts argument of type FileUploadRequest"
+                    "UpdateIfOnlyOwnerChanged excepts argument of type SyncFileData or FileUploadRequest"
                 );
             }
 
-            FileUploadRequest fileUploadRequest = (FileUploadRequest)request;
-            SyncFileData uploudFileData = fileUploadRequest.syncFileData;
             SyncFileData fileInRepositry = FileRepository.getFileByPathNameExtensionAndUser(
                 uploudFileData.Path,
                 uploudFileData.Name,
@@ -37,7 +45,7 @@ namespace Cloud_Storage_Server.Handlers
             else
             {
                 if (_nextHandler != null)
-                    return this._nextHandler.Handle(fileUploadRequest);
+                    return this._nextHandler.Handle(request);
             }
 
             return FileRepository.getFileByPathNameExtensionAndUser(

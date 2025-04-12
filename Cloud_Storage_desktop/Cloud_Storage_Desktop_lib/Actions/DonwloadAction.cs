@@ -45,19 +45,19 @@ namespace Cloud_Storage_Desktop_lib.Actions
                             stream
                         );
                         // update file data
-                        //LocalFileData newData = new LocalFileData(syncFileData);
-                        //LocalFileData oldData = fileRepositoryService
-                        //    .GetAllFiles()
-                        //    .FirstOrDefault(x =>
-                        //        x.GetRealativePath().Equals(syncFileData.GetRealativePath())
-                        //    );
-                        //if (oldData == null)
-                        //    fileRepositoryService.UpdateFile(oldData, newData);
-                        //else
-                        //{
-                        //    fileRepositoryService.AddNewFile(newData);
-                        //}
-                        //serverConnection.UpdateFileData(newData);
+                        LocalFileData newData = (LocalFileData)syncFileData;
+                        LocalFileData oldData = fileRepositoryService
+                            .GetAllFiles()
+                            .FirstOrDefault(x =>
+                                x.GetRealativePath().Equals(syncFileData.GetRealativePath())
+                            );
+                        if (oldData != null)
+                            fileRepositoryService.UpdateFile(oldData, newData);
+                        else
+                        {
+                            fileRepositoryService.AddNewFile(newData);
+                        }
+                        serverConnection.UpdateFileData(newData);
                     }
                     catch (Exception EX)
                     {

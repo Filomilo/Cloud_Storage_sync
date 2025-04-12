@@ -36,7 +36,11 @@ namespace Cloud_Storage_Common
             {
                 try
                 {
-                    return File.Open(filename, FileMode.OpenOrCreate, acces);
+                    return File.Open(
+                        filename,
+                        acces == FileAccess.Write ? FileMode.OpenOrCreate : FileMode.Open,
+                        acces
+                    );
                 }
                 catch (IOException)
                 {
@@ -180,6 +184,38 @@ namespace Cloud_Storage_Common
         public static void DeleteFile(string v)
         {
             File.Delete(v);
+        }
+
+        public static void GetFilePathParamsFormRelativePath(
+            string relativePath,
+            out string realitveDirectory,
+            out string name,
+            out string extesnion
+        )
+        {
+            name = Path.GetFileNameWithoutExtension(relativePath);
+            realitveDirectory = Path.GetDirectoryName(relativePath);
+            extesnion = Path.GetExtension(relativePath);
+            if (realitveDirectory == "")
+            {
+                realitveDirectory = ".";
+            }
+
+            if (realitveDirectory == "." && name.StartsWith("."))
+            {
+                name = name.Substring(1);
+            }
+        }
+
+        public static string GetRealtiveFullPathToFile(
+            string? path,
+            string configurationStorageLocation
+        )
+        {
+            string relativePAth = GetRealtivePathToFile(path, configurationStorageLocation);
+            string filename = Path.GetFileNameWithoutExtension(path);
+            string ext = Path.GetExtension(path);
+            return $"{relativePAth}{filename}{ext}";
         }
     }
 }

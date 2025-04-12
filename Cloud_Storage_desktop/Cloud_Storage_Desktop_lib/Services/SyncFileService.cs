@@ -27,6 +27,7 @@ namespace Cloud_Storage_Desktop_lib.Services
         private IHandler _InitialSyncHandler;
         private IHandler _OnFileUpdateHandler;
         private IHandler _OnFileCreatedHandler;
+        private IHandler _OnFileDeletedHandler;
 
         public SyncFileService(
             IConfiguration configuration,
@@ -62,13 +63,24 @@ namespace Cloud_Storage_Desktop_lib.Services
                         fileRepositoryService
                     )
                 );
-            _OnFileUpdateHandler = new DownloadNewFIleHandler(
-                this._taskRunController,
-                this._serverConnection,
-                this._configuration,
-                null,
-                this._fileRepositoryService
-            );
+            _OnFileUpdateHandler = new ValidateIfFileAlreadyExisitInDataBase(fileRepositoryService);
+            _OnFileUpdateHandler
+                .SetNext(
+                    new DownloadNewFIleHandler(
+                        this._taskRunController,
+                        this._serverConnection,
+                        this._configuration,
+                        this._fileRepositoryService
+                    )
+                )
+                .SetNext(
+                    new DeleteUpdateFileHandler(
+                        this._taskRunController,
+                        this._serverConnection,
+                        this._configuration,
+                        this._fileRepositoryService
+                    )
+                );
 
             this._serverConnection.ConnectionChangeHandler += onConnnetionChange;
             this._serverConnection.ServerWerbsocketHadnler +=
@@ -87,6 +99,11 @@ namespace Cloud_Storage_Desktop_lib.Services
                         this._fileRepositoryService
                     )
                 );
+            // On Lcoaly dleted
+            this._OnFileDeletedHandler = new LocallyDeletedFileHandler(
+                this._configuration,
+                this._serverConnection
+            );
         }
 
         private void _serverConnection_ServerWerbsocketHadnler(WebSocketMessage message)
@@ -159,7 +176,7 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         public void OnLocallyDeleted(FileSystemEventArgs args)
         {
-            logger.LogWarning($"OnLocallyDeleted Not Implemented:: {args.ToString()}");
+            this._OnFileDeletedHandler.Handle(args.FullPath);
         }
 
         public void OnLocallyCreated(FileSystemEventArgs args)
