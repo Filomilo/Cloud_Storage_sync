@@ -93,5 +93,10 @@ namespace Cloud_Storage_Desktop_lib.Services
         public event OnDeleted OnDeletedEventHandler;
         public event OnCreated OnCreatedEventHandler;
         public event OnChanged OnChangedEventHandler;
+
+        public void Stop()
+        {
+            this._Watcher.Dispose();
+        }
     }
 }

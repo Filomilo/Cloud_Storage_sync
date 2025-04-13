@@ -128,6 +128,11 @@ namespace Cloud_Storage_Test
         {
             TestHelpers.RemoveTmpDirectory();
             TestHelpers.ResetDatabase();
+            this._cloudDriveSyncSystemClient1.FileSyncService.StopAllSync();
+            this._cloudDriveSyncSystemClient2.FileSyncService.StopAllSync();
+            this._cloudDriveSyncSystemClient1.SystemWatcher.Stop();
+            this._cloudDriveSyncSystemClient2.SystemWatcher.Stop();
+            this._cloudDriveSyncSystemClient2.FileSyncService.StopAllSync();
             this._localFileRepositoryService1.Reset();
             this._localFileRepositoryService2.Reset();
         }

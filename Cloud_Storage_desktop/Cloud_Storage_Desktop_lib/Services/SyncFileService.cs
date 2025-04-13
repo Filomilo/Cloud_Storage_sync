@@ -204,6 +204,7 @@ namespace Cloud_Storage_Desktop_lib.Services
         public void StopAllSync()
         {
             logger.LogInformation("STOP all sync");
+            this._taskRunController.CancelAllTasks();
             _state = SyncState.STOPPED;
         }
 
