@@ -18,7 +18,7 @@ namespace Cloud_Storage_Server.Handlers
 
             FileUploadRequest fileUploadRequest = (FileUploadRequest)request;
             SyncFileData uploudFileData = fileUploadRequest.syncFileData;
-            SyncFileData fileInRepositry = FileRepository.getFileByPathNameExtensionAndUser(
+            SyncFileData fileInRepositry = FileRepository.getNewestFileByPathNameExtensionAndUser(
                 uploudFileData.Path,
                 uploudFileData.Name,
                 uploudFileData.Extenstion,

@@ -32,7 +32,7 @@ namespace Cloud_Storage_Server.Database.Repositories
             }
         }
 
-        public static SyncFileData getFileByPathNameExtensionAndUser(
+        public static IEnumerable<SyncFileData> getFileByPathNameExtensionAndUser(
             string path,
             string name,
             string extension,
@@ -41,14 +41,14 @@ namespace Cloud_Storage_Server.Database.Repositories
         {
             using (DatabaseContext context = new DatabaseContext())
             {
-                SyncFileData file = context.Files.FirstOrDefault(x =>
+                IEnumerable<SyncFileData> files = context.Files.Where(x =>
                     x.Path == path
                     && x.Name == name
                     && x.Extenstion == extension
                     && x.OwnerId == ownerId
                 );
 
-                return file;
+                return files;
             }
         }
 
@@ -75,6 +75,52 @@ namespace Cloud_Storage_Server.Database.Repositories
                 file.Version = fileUpdateData.Version;
                 context.Files.Update(file);
                 context.SaveChanges();
+            }
+        }
+
+        internal static SyncFileData getNewestFileByPathNameExtensionAndUser(
+            string path,
+            string name,
+            string extenstion,
+            long ownerId
+        )
+        {
+            using (DatabaseContext context = new DatabaseContext())
+            {
+                SyncFileData file = context
+                    .Files.Where(x =>
+                        x.Path == path
+                        && x.Name == name
+                        && x.Extenstion == extenstion
+                        && x.OwnerId == ownerId
+                    )
+                    .ToList()
+                    .OrderBy(x => x.Version)
+                    .FirstOrDefault();
+
+                return file;
+            }
+        }
+
+        public static SyncFileData getFileByPathNameExtensionUserAndDeviceOwner(
+            string path,
+            string name,
+            string extenstion,
+            long ownerId,
+            string deviceID
+        )
+        {
+            using (DatabaseContext context = new DatabaseContext())
+            {
+                SyncFileData file = context.Files.FirstOrDefault(x =>
+                    x.Path == path
+                    && x.Name == name
+                    && x.Extenstion == extenstion
+                    && x.OwnerId == ownerId
+                    && x.DeviceOwner.Contains(deviceID)
+                );
+
+                return file;
             }
         }
     }

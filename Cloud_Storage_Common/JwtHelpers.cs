@@ -35,6 +35,8 @@ namespace Cloud_Storage_Common
 
         public static string GetDeviceIDFromToken(string tokenString)
         {
+            if (tokenString.Length == 0)
+                return "";
             var handler = new JwtSecurityTokenHandler();
             var token = handler.ReadJwtToken(tokenString);
             return token.Claims.First(x => x.Type == "actort").Value;

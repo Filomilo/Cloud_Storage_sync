@@ -74,7 +74,7 @@ namespace Cloud_Storage_Server.Services
             return _connectedDevices.Values;
         }
 
-        public void SendMessageToAllConnectedDevices(object message)
+        public void SendMessageToAllConnectedDevices(object message, string excludingDevice = null)
         {
             ValidateConnections();
             lock (Locker)
@@ -83,6 +83,8 @@ namespace Cloud_Storage_Server.Services
                     .Values.ToList()
                     .ForEach(device =>
                     {
+                        if (device.DeviceId.ToString() == excludingDevice)
+                            return;
                         device.WebSocket.SendAsync(
                             new ArraySegment<byte>(Encoding.UTF8.GetBytes(message.ToString())),
                             WebSocketMessageType.Text,

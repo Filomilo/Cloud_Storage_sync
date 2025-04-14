@@ -14,7 +14,7 @@ namespace Cloud_Storage_Server.Interfaces
         void AddDevice(IConnectedDevice device);
         void RemoveDevice(object deviceId);
         IEnumerable<IConnectedDevice> GetAllConnectedDevices();
-        void SendMessageToAllConnectedDevices(object message);
+        void SendMessageToAllConnectedDevices(object message, string excludingDevice = null);
         void SendMessageToDevice(object DeviceId, object message);
         void SendMessageToUser(object userID, object message);
         void DisconnectDevices();

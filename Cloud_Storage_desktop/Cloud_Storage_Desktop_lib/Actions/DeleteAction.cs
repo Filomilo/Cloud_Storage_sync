@@ -40,6 +40,11 @@ namespace Cloud_Storage_Desktop_lib.Actions
                     try
                     {
                         FileManager.DeleteFile(file);
+                        fileRepositoryService.DeleteFileByPath(
+                            syncFileData.Path,
+                            syncFileData.Name,
+                            syncFileData.Extenstion
+                        );
                     }
                     catch (Exception EX)
                     {

@@ -1,13 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Cloud_Storage_Server.Database.Models;
 using Lombok.NET;
 using Microsoft.EntityFrameworkCore;
 
 namespace Cloud_Storage_Common.Models
 {
-    public class FileData
+    public class FileData : IComparable
     {
         public FileData() { }
 
@@ -40,6 +41,16 @@ namespace Cloud_Storage_Common.Models
         public override string ToString()
         {
             return $"{Path}{Name}{Extenstion}";
+        }
+
+        public int CompareTo(object? obj)
+        {
+            if (obj is not FileData)
+            {
+                throw new ArgumentException("Object is not a FileData instance");
+            }
+
+            return this.Name.CompareTo((obj as FileData).Name);
         }
 
         public string GetRealativePath()
@@ -84,6 +95,27 @@ namespace Cloud_Storage_Common.Models
 
         [Required]
         public ulong Version { get; set; } = 0;
+
+        public override bool Equals(object? obj)
+        {
+            if (ReferenceEquals(this, obj))
+                return true;
+            if (obj is null || this.GetType() != obj.GetType())
+                return false;
+
+            UploudFileData other = (UploudFileData)obj;
+
+            return this.Path == other.Path
+                && this.Name == other.Name
+                && this.Extenstion == other.Extenstion
+                && this.Hash == other.Hash
+                && this.Version == other.Version;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Path, Name, Extenstion, Hash, Version);
+        }
     }
 
     [PrimaryKey(nameof(Path), nameof(Name), nameof(Extenstion))]
@@ -111,7 +143,14 @@ namespace Cloud_Storage_Common.Models
 
         public static explicit operator LocalFileData(SyncFileData v)
         {
-            return new LocalFileData(v);
+            return new LocalFileData()
+            {
+                Extenstion = v.Extenstion,
+                Hash = v.Hash,
+                Name = v.Name,
+                Path = v.Path,
+                Version = v.Version,
+            };
         }
     }
 
@@ -180,6 +219,12 @@ namespace Cloud_Storage_Common.Models
                 SyncDate = this.SyncDate,
                 DeviceOwner = new List<string>(this.DeviceOwner),
             };
+        }
+
+        public override string ToString()
+        {
+            return base.ToString()
+                + $"\n Version ::: {this.Version} \n  Hash ::: [[{this.Hash}]]\n Device owners:: [[{String.Join(", ", this.DeviceOwner)}]] \n";
         }
     }
 }

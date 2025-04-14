@@ -374,5 +374,10 @@ namespace Cloud_Storage_Desktop_lib
             Stream stream = response.Content.ReadAsStream();
             return stream;
         }
+
+        internal void Dispose()
+        {
+            this.client.Dispose();
+        }
     }
 }

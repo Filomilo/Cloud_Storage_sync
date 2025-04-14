@@ -17,5 +17,6 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
         void UpdateFile(LocalFileData oldFileData, LocalFileData newFileData);
         IEnumerable<LocalFileData> GetAllFiles();
         void Reset();
+        void DeleteFileByPath(string realitveDirectory, string name, string extesnion);
     }
 }

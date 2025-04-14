@@ -249,9 +249,11 @@ namespace Cloud_Storage_Test
                 Directory.Delete(TmpDirecotry, true);
         }
 
-        public static string CreateTmpFile(string dir, string fileContent)
+        public static string CreateTmpFile(string dir, string fileContent, int i)
         {
-            string fileName = Path.GetFileName(Path.GetTempFileName());
+            string fileName =
+                Path.GetFileName(Path.GetFileNameWithoutExtension(Path.GetTempFileName()))
+                + $"_{i}.tmp";
             FileStream newlyCreatedFile = File.Create(dir + fileName);
             newlyCreatedFile.Write(Encoding.ASCII.GetBytes(fileContent));
             newlyCreatedFile.Close();
@@ -299,7 +301,22 @@ namespace Cloud_Storage_Test
             }
             using (var context = new DatabaseContext())
             {
-                context.Database.EnsureDeleted();
+                if (context.Database.CanConnect())
+                {
+                    EnsureTrue(() =>
+                    {
+                        try
+                        {
+                            context.Database.EnsureDeleted();
+                            return true;
+                        }
+                        catch (Exception ex)
+                        {
+                            return false;
+                        }
+                    });
+                }
+
                 context.Database.EnsureCreated();
             }
         }

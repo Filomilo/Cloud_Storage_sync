@@ -100,10 +100,14 @@ namespace Cloud_Storage_Desktop_lib.Services
                     )
                 );
             // On Lcoaly dleted
-            this._OnFileDeletedHandler = new LocallyDeletedFileHandler(
+            this._OnFileDeletedHandler = new RemoveFileFromDatabaseHandler(
                 this._configuration,
-                this._serverConnection
+                this._fileRepositoryService
             );
+            this._OnFileDeletedHandler.SetNext(
+                new LocallyDeletedFileHandler(this._configuration, this._serverConnection)
+            );
+            ;
         }
 
         private void _serverConnection_ServerWerbsocketHadnler(WebSocketMessage message)
@@ -160,6 +164,12 @@ namespace Cloud_Storage_Desktop_lib.Services
             {
                 this._state = SyncState.DISCONNECTED;
             }
+        }
+
+        public void Dispose()
+        {
+            this.PauseAllSync();
+            ;
         }
 
         private SyncState _state = SyncState.NOT_SETUP;

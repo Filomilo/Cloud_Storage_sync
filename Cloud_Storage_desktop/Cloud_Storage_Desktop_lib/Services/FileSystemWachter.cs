@@ -98,5 +98,10 @@ namespace Cloud_Storage_Desktop_lib.Services
         {
             this._Watcher.Dispose();
         }
+
+        public void Dispose()
+        {
+            this._Watcher.Dispose();
+        }
     }
 }

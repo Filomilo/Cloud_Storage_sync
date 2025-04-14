@@ -34,6 +34,7 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
 
         IEnumerable<ISyncProcess> GetAllSyncProcesses();
         void ResumeAllSync();
+        void Dispose();
 
         delegate void OnSyncProcessUpdate(ISyncProcessEventArgs args);
 

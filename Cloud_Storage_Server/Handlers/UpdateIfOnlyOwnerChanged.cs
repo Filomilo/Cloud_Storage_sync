@@ -26,21 +26,43 @@ namespace Cloud_Storage_Server.Handlers
                 );
             }
 
-            SyncFileData fileInRepositry = FileRepository.getFileByPathNameExtensionAndUser(
-                uploudFileData.Path,
-                uploudFileData.Name,
-                uploudFileData.Extenstion,
-                uploudFileData.OwnerId
-            );
+            SyncFileData newestFileInRepository =
+                FileRepository.getNewestFileByPathNameExtensionAndUser(
+                    uploudFileData.Path,
+                    uploudFileData.Name,
+                    uploudFileData.Extenstion,
+                    uploudFileData.OwnerId
+                );
+
             if (
-                fileInRepositry != null
-                && fileInRepositry.Hash.Equals(uploudFileData.Hash)
-                && !fileInRepositry.DeviceOwner.Contains(uploudFileData.DeviceOwner.First())
+                newestFileInRepository != null
+                && newestFileInRepository.Hash.Equals(uploudFileData.Hash)
+                && !newestFileInRepository.DeviceOwner.Contains(uploudFileData.DeviceOwner.First())
             )
             {
-                SyncFileData copy = fileInRepositry;
+                SyncFileData prevVersionOfFlieForThisDevice =
+                    FileRepository.getFileByPathNameExtensionUserAndDeviceOwner(
+                        uploudFileData.Path,
+                        uploudFileData.Name,
+                        uploudFileData.Extenstion,
+                        uploudFileData.OwnerId,
+                        uploudFileData.DeviceOwner.First()
+                    );
+                if (prevVersionOfFlieForThisDevice != null)
+                {
+                    SyncFileData prevVersionOfFlieForThisDeviceCopy = newestFileInRepository;
+                    prevVersionOfFlieForThisDeviceCopy.DeviceOwner.Remove(
+                        uploudFileData.DeviceOwner.First()
+                    );
+                    FileRepository.UpdateFile(
+                        prevVersionOfFlieForThisDevice,
+                        prevVersionOfFlieForThisDeviceCopy
+                    );
+                }
+
+                SyncFileData copy = newestFileInRepository;
                 copy.DeviceOwner.Add(uploudFileData.DeviceOwner.First());
-                FileRepository.UpdateFile(fileInRepositry, copy);
+                FileRepository.UpdateFile(newestFileInRepository, copy);
             }
             else
             {

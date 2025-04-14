@@ -94,7 +94,7 @@ namespace Cloud_Storage_Server.Services
         {
             try
             {
-                SyncFileData fileInRepo = FileRepository.getFileByPathNameExtensionAndUser(
+                SyncFileData fileInRepo = FileRepository.getNewestFileByPathNameExtensionAndUser(
                     data.Path,
                     data.Name,
                     data.Extenstion,

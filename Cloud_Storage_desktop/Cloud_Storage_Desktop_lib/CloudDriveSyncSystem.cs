@@ -145,5 +145,12 @@ namespace Cloud_Storage_Desktop_lib
             this._Configuration.StorageLocation = dir;
             _setupStorgeDir();
         }
+
+        public void Dispose()
+        {
+            this._ServerConnection.Dispose();
+            this.SystemWatcher.Dispose();
+            this.FileSyncService.Dispose();
+        }
     }
 }

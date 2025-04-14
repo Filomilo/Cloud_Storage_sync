@@ -25,5 +25,6 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
         event OnCreated OnCreatedEventHandler;
         event OnChanged OnChangedEventHandler;
         void Stop();
+        void Dispose();
     }
 }

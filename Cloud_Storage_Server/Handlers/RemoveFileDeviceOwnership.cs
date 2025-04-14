@@ -67,6 +67,9 @@ namespace Cloud_Storage_Server.Handlers
                     newFile = exisitingDeletedFile;
                 }
 
+                existingFile.DeviceOwner.Remove(removeFileDeviceOwnership.deviceId);
+                context.Files.Update(existingFile);
+
                 context.SaveChanges();
             }
 
