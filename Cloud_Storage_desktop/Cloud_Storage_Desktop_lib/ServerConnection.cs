@@ -295,14 +295,16 @@ namespace Cloud_Storage_Desktop_lib
             }
         }
 
-        public void UpdateFileData(UploudFileData file)
+        public void UpdateFileData(UpdateFileDataRequest file)
         {
             logger.LogDebug($"Updating file on device {this._credentialManager.GetDeviceID()}");
             var response = this.client.PostAsJsonAsync("api/Files/update", file).Result;
 
             if (response.IsSuccessStatusCode)
             {
-                logger.LogInformation($"File {file.GetRealativePath()} data updated successfully!");
+                logger.LogInformation(
+                    $"File {file.newFileData.GetRealativePath()} data updated successfully!"
+                );
             }
             else
             {

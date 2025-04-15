@@ -19,10 +19,29 @@ namespace Cloud_Storage_Server.Handlers
             {
                 uploudFileData = request as SyncFileData;
             }
+
+            if (request is UpdateFileDataRequest)
+            {
+                if ((request as UpdateFileDataRequest).newFileData == null)
+                    throw new ArgumentException("File update quest hsould hav enew file data");
+                uploudFileData = new SyncFileData((request as UpdateFileDataRequest).newFileData);
+                uploudFileData.DeviceOwner = new List<string>()
+                {
+                    ((UpdateFileDataRequest)request).DeviceReuqested,
+                };
+                uploudFileData.OwnerId = ((UpdateFileDataRequest)request).UserID;
+                if ((request as UpdateFileDataRequest).oldFileData != null)
+                {
+                    if (this._nextHandler != null)
+                    {
+                        return this._nextHandler.Handle(request);
+                    }
+                }
+            }
             if (uploudFileData is null)
             {
                 throw new ArgumentException(
-                    "UpdateIfOnlyOwnerChanged excepts argument of type SyncFileData or FileUploadRequest"
+                    "UpdateIfOnlyOwnerChanged excepts argument of type SyncFileData or FileUploadRequest or UpdateFileDataRequest"
                 );
             }
 

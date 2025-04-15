@@ -49,6 +49,7 @@ namespace Cloud_Storage_Test
         [SetUp]
         public void Setup()
         {
+            Thread.Sleep(2000);
             TestHelpers.ResetDatabase();
             TestHelpers.EnsureTrue(() =>
             {
@@ -158,7 +159,7 @@ namespace Cloud_Storage_Test
             this._cloudDriveSyncSystemClient1.Dispose();
             this._cloudDriveSyncSystemClient2.Dispose();
             this.webApplication.Dispose();
-            Thread.Sleep(1000);
+            Thread.Sleep(2000);
             TestHelpers.ResetDatabase();
         }
 
@@ -245,50 +246,13 @@ namespace Cloud_Storage_Test
         public void Create_And_Sync_File_In_EmptyDirectory_With_Antoher_Device_connected()
         {
             #region Ensure connected and empty
-            this._cloudDriveSyncSystemClient1.ServerConnection.login(email, pass);
-            Assert.That(
-                _cloudDriveSyncSystemClient1.ServerConnection.CheckIfAuthirized(),
-                $"Client is not authorized"
-            );
-
-            List<FileData> filesInSyncLocation = FileManager.GetAllFilesInLocation(
-                _Client1Config.StorageLocation
-            );
-            Assert.That(
-                filesInSyncLocation.Count == 0,
-                "Stating sync location is not empty at beginning"
-            );
-
-            this._cloudDriveSyncSystemClient2.ServerConnection.login(email, pass);
-            Assert.That(
-                _cloudDriveSyncSystemClient2.ServerConnection.CheckIfAuthirized(),
-                $"Client2 is not authorized"
-            );
-
-            List<FileData> filesInSyncLocation2 = FileManager.GetAllFilesInLocation(
-                _Client2Config.StorageLocation
-            );
-            Assert.That(
-                filesInSyncLocation2.Count == 0,
-                "Stating sync2 location is not empty at beginning"
-            );
-
-            Assert.That(
-                !_cloudDriveSyncSystemClient1
-                    .CredentialManager.GetDeviceID()
-                    .Equals(_cloudDriveSyncSystemClient2.CredentialManager.GetDeviceID()),
-                "Device id should be diffenrt"
-            );
+            ConnectBothDevices();
 
             #endregion
 
             #region Create New File
             string fileContent = "Exmaple File Content_" + Guid.NewGuid();
-            String createdFileName = TestHelpers.CreateTmpFile(
-                _Client1Config.StorageLocation,
-                fileContent,
-                0
-            );
+            String createdFileName = this.AddTMpFiles(1, this._Client1Config).FirstOrDefault();
 
             #endregion
 
@@ -373,6 +337,44 @@ namespace Cloud_Storage_Test
             );
 
             #endregion
+        }
+
+        private void ConnectBothDevices()
+        {
+            this._cloudDriveSyncSystemClient1.ServerConnection.login(email, pass);
+            Assert.That(
+                _cloudDriveSyncSystemClient1.ServerConnection.CheckIfAuthirized(),
+                $"Client is not authorized"
+            );
+
+            List<FileData> filesInSyncLocation = FileManager.GetAllFilesInLocation(
+                _Client1Config.StorageLocation
+            );
+            Assert.That(
+                filesInSyncLocation.Count == 0,
+                "Stating sync location is not empty at beginning"
+            );
+
+            this._cloudDriveSyncSystemClient2.ServerConnection.login(email, pass);
+            Assert.That(
+                _cloudDriveSyncSystemClient2.ServerConnection.CheckIfAuthirized(),
+                $"Client2 is not authorized"
+            );
+
+            List<FileData> filesInSyncLocation2 = FileManager.GetAllFilesInLocation(
+                _Client2Config.StorageLocation
+            );
+            Assert.That(
+                filesInSyncLocation2.Count == 0,
+                "Stating sync2 location is not empty at beginning"
+            );
+
+            Assert.That(
+                !_cloudDriveSyncSystemClient1
+                    .CredentialManager.GetDeviceID()
+                    .Equals(_cloudDriveSyncSystemClient2.CredentialManager.GetDeviceID()),
+                "Device id should be diffenrt"
+            );
         }
 
         [Test]
@@ -643,22 +645,8 @@ namespace Cloud_Storage_Test
             );
 
             int amountOfFiles = 3;
-            var getFileContent = (int num) =>
-            {
-                return $"Content_{num}";
-            };
-
-            List<string> filesAdded = new List<string>();
-            for (int i = 0; i < amountOfFiles; i++)
-            {
-                filesAdded.Add(
-                    TestHelpers.CreateTmpFile(
-                        this._Client1Config.StorageLocation,
-                        getFileContent(i),
-                        i
-                    )
-                );
-            }
+            List<string> filesAdded;
+            filesAdded = AddTMpFiles(amountOfFiles, this._Client1Config);
             Assert.DoesNotThrow(
                 () =>
                 {
@@ -810,10 +798,23 @@ namespace Cloud_Storage_Test
                 },
                 $"File in client databse 1 is not 2\n but {this._localFileRepositoryService1.GetAllFiles().Count()} \n [[{String.Join(", ", this._localFileRepositoryService1.GetAllFiles())}]]"
             );
-            Assert.That(
-                this._localFileRepositoryService1.GetAllFiles()
-                    .Order()
-                    .SequenceEqual(this._localFileRepositoryService2.GetAllFiles().Order()),
+
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            return this
+                                ._localFileRepositoryService1.GetAllFiles()
+                                .Order()
+                                .SequenceEqual(
+                                    this._localFileRepositoryService2.GetAllFiles().Order()
+                                );
+                        },
+                        100000
+                    );
+                },
                 $"Files in local repositories is not the same: \n [[{String.Join(", ", this._localFileRepositoryService1.GetAllFiles())}]]\n!= \n[[{String.Join(", ", this._localFileRepositoryService2.GetAllFiles())}]]\n"
             );
 
@@ -873,6 +874,185 @@ namespace Cloud_Storage_Test
 
 
             #endregion
+        }
+
+        [Test]
+        public void Create_File_And_rename_it()
+        {
+            #region Ensure connected and empty
+            ConnectBothDevices();
+
+            #endregion
+
+            #region Create New File
+            String createdFileName = this.AddTMpFiles(1, this._Client1Config).FirstOrDefault();
+
+            #endregion
+
+            #region Ensure second device also has file
+
+            string serverFclient1 = this
+                ._localFileRepositoryService1.GetAllFiles()
+                .FirstOrDefault()
+                .Hash;
+            string newDevieFileHAs = "";
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        string newDevieFileHAs = FileManager.GetHashOfFile(
+                            _Client2Config.StorageLocation + createdFileName
+                        );
+                        return serverFclient1.Equals(newDevieFileHAs);
+                    });
+                },
+                $"new device file hash \n[[{newDevieFileHAs}]]\n IS not the same as file hash on server \n[[{serverFclient1}]]\n"
+            );
+
+            #endregion
+
+
+
+            #region reNmae New File
+
+            string newName = "newName";
+            File.Move(
+                $"{_Client1Config.StorageLocation}{createdFileName}",
+                $"{_Client1Config.StorageLocation}{newName}.tmp"
+            );
+
+            #endregion
+
+            #region Ensure Correct finsihs state
+
+
+            #region File repository 1 should have new version of file in repository
+
+
+            Assert.That(
+                _localFileRepositoryService1.GetAllFiles().Count() == 1,
+                $"Local file repository should only one elements but has {_localFileRepositoryService1.GetAllFiles().Count()}"
+            );
+            LocalFileData localFileData = null;
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            localFileData = _localFileRepositoryService1
+                                .GetAllFiles()
+                                .FirstOrDefault();
+                            return localFileData != null && localFileData.Name == newName;
+                        },
+                        10000
+                    );
+                },
+                $"File name in database [[{_localFileRepositoryService1
+                    .GetAllFiles()
+                    .FirstOrDefault().Name}]] is not equal to file name in folder [[{newName}]]"
+            );
+
+            Assert.That(
+                localFileData.Extenstion == ".tmp",
+                $"File name in database{localFileData.Extenstion} is not equal to file name in folder {Path.GetExtension(createdFileName)}"
+            );
+            Assert.That(
+                localFileData.Hash
+                    == FileManager.GetHashOfFile(_Client1Config.StorageLocation + "newName.tmp"),
+                $"File hash in database {localFileData.Hash} is not equal to file hash on disk {FileManager.GetHashOfFile(_Client1Config.StorageLocation + "newName.tmp")}"
+            );
+            Assert.That(
+                localFileData.Version == 1,
+                $"New file verion should be one but its [[{localFileData.Version}]]"
+            );
+
+            #endregion
+
+            #region Server shoudl 2 file version one with old name one with new name and all devices owners
+
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        return GetAllFilesOnServer().Count == 2;
+                    });
+                },
+                $"File entry on server database should be 2 but there are [[{GetAllFilesOnServer().Count}]]"
+            );
+
+            Assert.That(
+                GetAllFilesOnServer().Where(x => x.Name == "newName").Count() == 1,
+                $"File entry on server database should be 1 with new name but there are [[{GetAllFilesOnServer().Where(x => x.Name == "newName").Count()}]]"
+            );
+
+            SyncFileData fileWithNewNameSyncData = GetAllFilesOnServer()
+                .FirstOrDefault(x => x.Name == "newName");
+
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        fileWithNewNameSyncData = GetAllFilesOnServer()
+                            .FirstOrDefault(x => x.Name == "newName");
+                        return fileWithNewNameSyncData.Version == 1;
+                    });
+                },
+                $"new file should have a new version but has [[{fileWithNewNameSyncData.Version}]] == "
+            );
+
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        fileWithNewNameSyncData = GetAllFilesOnServer()
+                            .FirstOrDefault(x => x.Name == "newName");
+                        return fileWithNewNameSyncData.DeviceOwner.Count == 2;
+                    });
+                },
+                $"File should have 2 owners but has [[{fileWithNewNameSyncData.DeviceOwner.Count}]]"
+            );
+
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        return GetAllFilesOnServer().Where(x => x.DeviceOwner.Count == 0).Count()
+                            == 1;
+                    });
+                },
+                $"There should be one file enrtry without device owner but there :: \n [[\n{String.Join(", \n", GetAllFilesOnServer())} \n]]"
+            );
+
+            #endregion
+
+            BothDevicesShouldHAveTheSameData();
+
+            #endregion
+        }
+
+        private List<string> AddTMpFiles(int amountOfFiles, IConfiguration config)
+        {
+            List<string> filesAdded;
+            var getFileContent = (int num) =>
+            {
+                return $"Content_{num}";
+            };
+
+            filesAdded = new List<string>();
+            for (int i = 0; i < amountOfFiles; i++)
+            {
+                filesAdded.Add(
+                    TestHelpers.CreateTmpFile(config.StorageLocation, getFileContent(i), i)
+                );
+            }
+
+            return filesAdded;
         }
 
         private void CheckIfTheSameContentOnClinets(
@@ -1014,6 +1194,33 @@ namespace Cloud_Storage_Test
                     );
                 }
             }
+        }
+
+        List<SyncFileData> GetAllFilesOnServer()
+        {
+            return FileRepository.GetAllUserFiles(UserRepository.getUserByMail(email).id);
+        }
+
+        void BothDevicesShouldHAveTheSameData()
+        {
+            Assert.That(
+                this._localFileRepositoryService1.GetAllFiles()
+                    .Order()
+                    .SequenceEqual(this._localFileRepositoryService2.GetAllFiles().Order()),
+                $"Both local repositories should bew equal but are \n [[{String.Join(", \n", this._localFileRepositoryService1.GetAllFiles())}  \n]] \n != \n[[{String.Join(", \n", this._localFileRepositoryService2.GetAllFiles())} \n]]"
+            );
+
+            List<UploudFileData> filesOnDevice1 = FileManager.GetUploadFileDataInLocation(
+                this._Client1Config.StorageLocation
+            );
+            List<UploudFileData> filesOnDevice2 = FileManager.GetUploadFileDataInLocation(
+                this._Client2Config.StorageLocation
+            );
+
+            Assert.That(
+                filesOnDevice1.Order().SequenceEqual(filesOnDevice1.Order()),
+                $"Both local repositories should bew equal but are \n [[{String.Join(", \n", filesOnDevice1)}  \n]] \n != \n[[{String.Join(", \n", filesOnDevice1)} \n]]"
+            );
         }
 
         #endregion

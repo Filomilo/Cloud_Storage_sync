@@ -25,7 +25,7 @@ namespace Cloud_Storage_Server.Database.Repositories
         {
             using (DatabaseContext context = new DatabaseContext())
             {
-                SyncFileData file = context.Files.Find(id);
+                SyncFileData file = context.Files.Where(x => x.Id.Equals(id)).FirstOrDefault();
                 if (file == null)
                     throw new KeyNotFoundException("No file iwth this guuid");
                 return file;
@@ -65,14 +65,14 @@ namespace Cloud_Storage_Server.Database.Repositories
         {
             using (DatabaseContext context = new DatabaseContext())
             {
-                SyncFileData file = context.Files.Find(fileInRepositry.Id);
-                file.Name = fileUpdateData.Name;
-                file.Path = fileUpdateData.Path;
-                file.Extenstion = fileUpdateData.Extenstion;
+                SyncFileData file = context
+                    .Files.Where(x => x.Id.Equals(fileInRepositry.Id))
+                    .FirstOrDefault();
+
                 file.Hash = fileUpdateData.Hash;
-                file.DeviceOwner = fileUpdateData.DeviceOwner;
                 file.SyncDate = fileUpdateData.SyncDate;
                 file.Version = fileUpdateData.Version;
+                file.DeviceOwner = fileUpdateData.DeviceOwner;
                 context.Files.Update(file);
                 context.SaveChanges();
             }

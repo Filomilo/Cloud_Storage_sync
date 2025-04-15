@@ -28,6 +28,7 @@ namespace Cloud_Storage_Desktop_lib.Services
         private IHandler _OnFileUpdateHandler;
         private IHandler _OnFileCreatedHandler;
         private IHandler _OnFileDeletedHandler;
+        private IHandler _RenameFileHandler;
 
         public SyncFileService(
             IConfiguration configuration,
@@ -65,6 +66,14 @@ namespace Cloud_Storage_Desktop_lib.Services
                 );
             _OnFileUpdateHandler = new ValidateIfFileAlreadyExisitInDataBase(fileRepositoryService);
             _OnFileUpdateHandler
+                .SetNext(
+                    new RenameFileOnUpdateHandler(
+                        this._taskRunController,
+                        this._serverConnection,
+                        this._configuration,
+                        this._fileRepositoryService
+                    )
+                )
                 .SetNext(
                     new DownloadNewFIleHandler(
                         this._taskRunController,
@@ -107,18 +116,25 @@ namespace Cloud_Storage_Desktop_lib.Services
             this._OnFileDeletedHandler.SetNext(
                 new LocallyDeletedFileHandler(this._configuration, this._serverConnection)
             );
-            ;
+
+            this._RenameFileHandler = new UpdateDataBaseFileNameHandler(
+                this._fileRepositoryService,
+                this._configuration
+            );
+            this._RenameFileHandler.SetNext(
+                new SendLocalFileUpdateToServer(this._serverConnection)
+            );
         }
 
         private void _serverConnection_ServerWerbsocketHadnler(WebSocketMessage message)
         {
             if (message.messageType == MESSAGE_TYPE.UPDATE)
             {
-                onFileUPdate(message.data.syncFileData);
+                onFileUPdate(message.data.FlieUpdate);
             }
         }
 
-        private void onFileUPdate(SyncFileData syncFileData)
+        private void onFileUPdate(UpdateFileDataRequest syncFileData)
         {
             this._OnFileUpdateHandler.Handle(syncFileData);
         }
@@ -181,7 +197,7 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         public void OnLocallyOnRenamed(RenamedEventArgs args)
         {
-            logger.LogWarning($"OnLocallyOnRenamed Not Implemented:: {args.ToString()}");
+            _RenameFileHandler.Handle(args);
         }
 
         public void OnLocallyDeleted(FileSystemEventArgs args)

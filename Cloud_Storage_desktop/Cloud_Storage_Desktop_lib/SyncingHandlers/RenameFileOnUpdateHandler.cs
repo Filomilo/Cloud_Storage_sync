@@ -3,25 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Cloud_Storage_Common;
 using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Actions;
 using Cloud_Storage_Desktop_lib.Interfaces;
-using log4net.Repository.Hierarchy;
-using Microsoft.Extensions.Logging;
 
 namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 {
-    class DeleteUpdateFileHandler : AbstactHandler
+    class RenameFileOnUpdateHandler : AbstactHandler
     {
-        private ILogger logger = CloudDriveLogging.Instance.GetLogger("DeleteUpdateFileHandler");
         private ITaskRunController _taskRunController;
         private IServerConnection _serverConnection;
         private IConfiguration _configuration;
         private IFileRepositoryService _fileRepositoryService;
 
-        public DeleteUpdateFileHandler(
+        public RenameFileOnUpdateHandler(
             ITaskRunController taskRunController,
             IServerConnection serverConnection,
             IConfiguration configuration,
@@ -36,36 +32,46 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 
         public override object Handle(object request)
         {
-            SyncFileData syncFileData = null;
-            if (request is SyncFileData)
-                syncFileData = request as SyncFileData;
+            UpdateFileDataRequest updateFileDataRequest = null;
             if (request is UpdateFileDataRequest)
-                syncFileData = (request as UpdateFileDataRequest).newFileData;
-            if (syncFileData == null)
+                updateFileDataRequest = (request as UpdateFileDataRequest);
+            if (updateFileDataRequest == null)
                 throw new ArgumentException(
-                    "DeleteUpdateFileHandler excepts argument of type SyncFileData or UpdateFileDataRequest"
+                    "DownloadNewFIleHandler excepts argument of type SyncFileData or UpdateFileDataRequest"
                 );
-
-            if (syncFileData.Hash != "")
+            if (updateFileDataRequest.oldFileData == null)
             {
-                logger.LogDebug($"File {syncFileData.GetRealativePath()} is not to delete.");
                 if (this._nextHandler != null)
                     return this._nextHandler.Handle(request);
-                return syncFileData;
             }
+            LocalFileData currentFileData = this._fileRepositoryService.GetFileByPathNameExtension(
+                updateFileDataRequest.oldFileData.Path,
+                updateFileDataRequest.oldFileData.Name,
+                updateFileDataRequest.oldFileData.Extenstion
+            );
+
+            if (
+                currentFileData == null
+                || currentFileData.Version != updateFileDataRequest.oldFileData.Version
+            )
+            {
+                if (this._nextHandler != null)
+                    return this._nextHandler.Handle(request);
+            }
+
             _taskRunController.AddTask(
-                new DeleteAction(
+                new RenameAction(
                     _serverConnection,
                     _configuration,
-                    syncFileData,
+                    updateFileDataRequest,
                     _fileRepositoryService
                 )
             );
-            if (this._nextHandler != null)
-            {
-                return this._nextHandler.Handle(request);
-            }
-            return syncFileData;
+            //if (this._nextHandler != null)
+            //{
+            //    return this._nextHandler.Handle(request);
+            //}
+            return updateFileDataRequest;
         }
     }
 }

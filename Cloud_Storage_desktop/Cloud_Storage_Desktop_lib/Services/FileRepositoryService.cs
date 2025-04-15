@@ -101,5 +101,22 @@ namespace Cloud_Storage_Desktop_lib.Services
                 }
             }
         }
+
+        public LocalFileData GetFileByPathNameExtension(string path, string name, string extenstion)
+        {
+            lock (_locker)
+            {
+                using (var context = GetDbContext())
+                {
+                    LocalFileData local = context
+                        .Files.Where(f =>
+                            f.Path == path && f.Name == name && f.Extenstion == extenstion
+                        )
+                        .FirstOrDefault();
+
+                    return local;
+                }
+            }
+        }
     }
 }

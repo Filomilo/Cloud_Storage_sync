@@ -18,5 +18,6 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
         IEnumerable<LocalFileData> GetAllFiles();
         void Reset();
         void DeleteFileByPath(string realitveDirectory, string name, string extesnion);
+        LocalFileData GetFileByPathNameExtension(string path, string name, string extenstion);
     }
 }

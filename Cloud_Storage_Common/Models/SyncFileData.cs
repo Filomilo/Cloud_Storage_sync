@@ -152,19 +152,31 @@ namespace Cloud_Storage_Common.Models
                 Version = v.Version,
             };
         }
+
+        public LocalFileData? Clone()
+        {
+            return new LocalFileData()
+            {
+                Extenstion = this.Extenstion,
+                Hash = this.Hash,
+                Name = this.Name,
+                Path = this.Path,
+                Version = this.Version,
+            };
+        }
     }
 
-    [PrimaryKey(nameof(Id))]
+    [PrimaryKey(nameof(Id), nameof(Path), nameof(Name), nameof(Extenstion))]
     public class SyncFileData : UploudFileData
     {
         public SyncFileData() { }
 
         public SyncFileData(UploudFileData data)
         {
-            this.Path = data.Path;
             this.Name = data.Name == null ? "" : data.Name;
             this.Hash = data.Hash;
             this.Extenstion = data.Extenstion == null ? "" : data.Extenstion;
+            this.Path = data.Path;
         }
 
         [Key]
@@ -225,6 +237,18 @@ namespace Cloud_Storage_Common.Models
         {
             return base.ToString()
                 + $"\n Version ::: {this.Version} \n  Hash ::: [[{this.Hash}]]\n Device owners:: [[{String.Join(", ", this.DeviceOwner)}]] \n";
+        }
+
+        public SyncFileData(LocalFileData data, long OnwerID)
+        {
+            DeviceOwner = new List<string>();
+            Extenstion = data.Extenstion;
+            Hash = data.Hash;
+            Name = data.Name;
+            Path = data.Path;
+            Version = data.Version;
+            OwnerId = OnwerID;
+            SyncDate = DateTime.Now;
         }
     }
 }

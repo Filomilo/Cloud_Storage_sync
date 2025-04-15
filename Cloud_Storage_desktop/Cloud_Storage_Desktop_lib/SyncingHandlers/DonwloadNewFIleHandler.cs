@@ -32,11 +32,16 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 
         public override object Handle(object request)
         {
-            if (request.GetType() != typeof(SyncFileData))
+            SyncFileData syncFileData = null;
+            if (request is SyncFileData)
+                syncFileData = request as SyncFileData;
+            if (request is UpdateFileDataRequest)
+                syncFileData = (request as UpdateFileDataRequest).newFileData;
+            if (syncFileData == null)
                 throw new ArgumentException(
-                    "DownloadNewFIleHandler excepts argument of type SyncFileData"
+                    "DownloadNewFIleHandler excepts argument of type SyncFileData or UpdateFileDataRequest"
                 );
-            SyncFileData syncFileData = (SyncFileData)request;
+
             if (syncFileData.Hash == "")
             {
                 if (this._nextHandler != null)

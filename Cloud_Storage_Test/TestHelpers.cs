@@ -301,21 +301,27 @@ namespace Cloud_Storage_Test
             }
             using (var context = new DatabaseContext())
             {
-                if (context.Database.CanConnect())
-                {
-                    EnsureTrue(() =>
+                Assert.DoesNotThrow(
+                    () =>
                     {
-                        try
+                        if (context.Database.CanConnect())
                         {
-                            context.Database.EnsureDeleted();
-                            return true;
+                            EnsureTrue(() =>
+                            {
+                                try
+                                {
+                                    context.Database.EnsureDeleted();
+                                    return true;
+                                }
+                                catch (Exception ex)
+                                {
+                                    return false;
+                                }
+                            });
                         }
-                        catch (Exception ex)
-                        {
-                            return false;
-                        }
-                    });
-                }
+                    },
+                    "Cannot connect databse"
+                );
 
                 context.Database.EnsureCreated();
             }

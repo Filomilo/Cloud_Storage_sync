@@ -57,7 +57,7 @@ namespace Cloud_Storage_Desktop_lib.Actions
                         {
                             fileRepositoryService.AddNewFile(newData);
                         }
-                        serverConnection.UpdateFileData(newData);
+                        serverConnection.UpdateFileData(new UpdateFileDataRequest(null, newData));
                     }
                     catch (Exception EX)
                     {

@@ -20,7 +20,7 @@ namespace Cloud_Storage_Common.Models
     public class MessageData
     {
         public string text { get; set; }
-        public SyncFileData syncFileData { get; set; }
+        public UpdateFileDataRequest FlieUpdate { get; set; }
     }
 
     [AllArgsConstructor]
@@ -37,10 +37,10 @@ namespace Cloud_Storage_Common.Models
             set { _data = value; }
         }
 
-        public WebSocketMessage(SyncFileData data)
+        public WebSocketMessage(UpdateFileDataRequest data)
         {
             this.messageType = MESSAGE_TYPE.UPDATE;
-            this._data.syncFileData = data;
+            this._data.FlieUpdate = data;
         }
 
         public WebSocketMessage(string text)
@@ -58,7 +58,7 @@ namespace Cloud_Storage_Common.Models
             switch (this.messageType)
             {
                 case MESSAGE_TYPE.UPDATE:
-                    return this._data.syncFileData.Equals(other._data.syncFileData);
+                    return this._data.FlieUpdate.Equals(other._data.FlieUpdate);
                 case MESSAGE_TYPE.TEXT:
                     return this.messageType == MESSAGE_TYPE.TEXT
                         && this._data.text == other._data.text;

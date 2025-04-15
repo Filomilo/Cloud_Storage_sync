@@ -58,16 +58,22 @@ namespace Cloud_Storage_Test.Controllers
         {
             new WebSocketMessage("TestMEssage"),
             new WebSocketMessage(
-                new SyncFileData()
+                new UpdateFileDataRequest()
                 {
-                    Extenstion = ".mp4",
-                    Hash = "123",
-                    Name = "Name",
-                    Path = ".",
-                    Version = 1,
-                    DeviceOwner = new List<string>() { "123" },
-                    Id = Guid.NewGuid(),
-                    OwnerId = 1,
+                    DeviceReuqested = "123",
+                    newFileData = new SyncFileData()
+                    {
+                        Extenstion = ".mp4",
+                        Hash = "123",
+                        Name = "Name",
+                        Path = ".",
+                        Version = 1,
+                        DeviceOwner = new List<string>() { "123" },
+                        Id = Guid.NewGuid(),
+                        OwnerId = 1,
+                    },
+                    oldFileData = null,
+                    UserID = 1,
                 }
             ),
         };

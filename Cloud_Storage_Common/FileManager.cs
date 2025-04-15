@@ -10,6 +10,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Cloud_Storage_Common.Models;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Cloud_Storage_Common
@@ -28,7 +29,7 @@ namespace Cloud_Storage_Common
         public static FileStream WaitForFile(
             string filename,
             FileAccess acces,
-            int retryCount = 10,
+            int retryCount = 100,
             int delayMilliseconds = 500
         )
         {
@@ -216,6 +217,20 @@ namespace Cloud_Storage_Common
             string filename = Path.GetFileNameWithoutExtension(path);
             string ext = Path.GetExtension(path);
             return $"{relativePAth}{filename}{ext}";
+        }
+
+        public static void MoveFileRealitve(
+            string getRealativePath,
+            string s,
+            IConfiguration configuration
+        )
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void ChangeFilePath(string prevPath, string newPath)
+        {
+            File.Move(prevPath, newPath);
         }
     }
 }

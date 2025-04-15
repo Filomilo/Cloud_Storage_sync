@@ -136,12 +136,12 @@ namespace Cloud_Storage_Server.Controllers
         [Route("update")]
         [Authorize]
         [HttpPost]
-        public IActionResult update([FromBody] UploudFileData file)
+        public IActionResult update([FromBody] UpdateFileDataRequest fileUpdate)
         {
             String email = JwtHelpers.GetEmailFromToken(Request.Headers.Authorization);
 
             string deviceId = JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization);
-            _FileSyncService.UpdateFileForDevice(email, deviceId, file);
+            _FileSyncService.UpdateFileForDevice(email, deviceId, fileUpdate);
 
             return Ok("updated");
         }

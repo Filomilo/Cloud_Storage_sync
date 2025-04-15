@@ -12,6 +12,7 @@ namespace Cloud_Storage_Desktop_lib.Actions
         UPLOAD_ACTION,
         DOWNLOAD_ACTION,
         DELETE_ACTION,
+        RENAME_ACTION,
     }
 
     public abstract class AbstactAction : ITaskToRun
