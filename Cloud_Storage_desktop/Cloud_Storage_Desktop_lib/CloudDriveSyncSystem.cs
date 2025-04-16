@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
+using Cloud_Storage_Desktop_lib.Database;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Services;
 using Cloud_Storage_Desktop_lib.SyncingHandlers;
@@ -22,30 +23,11 @@ using FileSystemWatcher = Cloud_Storage_Desktop_lib.Services.FileSystemWatcher;
 
 namespace Cloud_Storage_Desktop_lib
 {
-    internal class SyncTask : ITaskToRun
-    {
-        private String file;
-        private Action action;
-        public object Id
-        {
-            get { return file; }
-        }
-
-        public Action ActionToRun
-        {
-            get { return action; }
-        }
-
-        public SyncTask(String file, Action action)
-        {
-            this.file = file;
-            this.action = action;
-        }
-    }
-
     public partial class CloudDriveSyncSystem
     {
-        private static ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger(
+        #region INterfaces
+
+        private static ILogger logger = CloudDriveLogging.Instance.GetLogger(
             "CloudDriveSyncSystem"
         );
         private static CloudDriveSyncSystem _instance;
@@ -62,7 +44,7 @@ namespace Cloud_Storage_Desktop_lib
             }
         }
         private ServerConnection _ServerConnection;
-        public ServerConnection ServerConnection
+        public IServerConnection ServerConnection
         {
             get { return _ServerConnection; }
         }
@@ -73,21 +55,39 @@ namespace Cloud_Storage_Desktop_lib
         }
         private IConfiguration _Configuration = new Configuration();
 
-        //public IConfiguration Configuration
-        //{
-        //    get { return _Configuration; }
-        //}
+        private IFileRepositoryService _FileRepositoryService;
 
-        //private ITaskRunController _TaskRunnerController;
+        public ICredentialManager CredentialManager
+        {
+            get { return _CredentialManager; }
+        }
+        private ICredentialManager _CredentialManager = new CredentialManager();
+
         public IFileSyncService FileSyncService;
         public IFIleSystemWatcher SystemWatcher;
-
+        #endregion
         private CloudDriveSyncSystem()
         {
-            this._ServerConnection = new ServerConnection(this._Configuration.ApiUrl);
+            this._ServerConnection = new ServerConnection(
+                this._Configuration.ApiUrl,
+                this.CredentialManager,
+                new WebSocketWrapper()
+            );
+            this._FileRepositoryService = new FileRepositoryService(
+                new InMemoryDataBAseContextGenerator()
+            );
+            _init();
+        }
+
+        private void _init()
+        {
             this.SystemWatcher = new FileSystemWatcher();
 
-            this.FileSyncService = new SyncFileService(this.Configuration, this._ServerConnection);
+            this.FileSyncService = new SyncFileService(
+                this.Configuration,
+                this._ServerConnection,
+                this._FileRepositoryService
+            );
             this.SystemWatcher.OnDeletedEventHandler += this.FileSyncService.OnLocallyDeleted;
             this.SystemWatcher.OnChangedEventHandler += this.FileSyncService.OnLocallyChanged;
             this.SystemWatcher.OnCreatedEventHandler += this.FileSyncService.OnLocallyCreated;
@@ -96,102 +96,61 @@ namespace Cloud_Storage_Desktop_lib
 
         //private IHandler _FileSyncHandler;
 
-        //Testt only do not use
+        #region Test only constuctors
         public CloudDriveSyncSystem(HttpClient client)
         {
-            this._ServerConnection = new ServerConnection(client);
+            this._ServerConnection = new ServerConnection(
+                client,
+                this.CredentialManager,
+                new WebSocketWrapper()
+            );
 
             _instance = this;
+        }
+
+        public CloudDriveSyncSystem(
+            HttpClient client,
+            IWebSocketWrapper WebSocketWrapper,
+            IConfiguration configuration,
+            ICredentialManager credentialManager,
+            IFileRepositoryService localFileRepositoryService
+        )
+        {
+            this._CredentialManager = credentialManager;
+            this._ServerConnection = new ServerConnection(
+                client,
+                credentialManager,
+                WebSocketWrapper
+            );
+            this._Configuration = configuration;
+            this._FileRepositoryService = localFileRepositoryService;
+            _init();
+            _setupStorgeDir();
+
+            _instance = this;
+        }
+        //Testt only do not use
+
+        #endregion
+
+        private void _setupStorgeDir()
+        {
+            this.SystemWatcher.Directory = this._Configuration.StorageLocation;
+            this.FileSyncService.StopAllSync();
+            this.FileSyncService.StartSync();
         }
 
         public void SetStorageLocation(string dir)
         {
             this._Configuration.StorageLocation = dir;
-            this.SystemWatcher.Directory = dir;
-            this.FileSyncService.StopAllSync();
-            this.FileSyncService.StartSync();
+            _setupStorgeDir();
         }
 
-        //public void SyncFiles()
-        //{
-        //    logger.Log(LogLevel.Information,$"Retrving files in location:{this.Configuration.StorageLocation} ");
-        //    List<String> files = FileManager.GetAllFilePathInLocaation(this._Configuration.StorageLocation);
-        //    foreach (String file in files)
-        //    {
-        //        CancellationTokenSource token = new CancellationTokenSource();
-        //        this._TaskRunnerController.AddTask(new SyncTask(
-        //            file, () =>
-        //            {
-        //                try
-        //                {
-        //                    this.SyncFile(file);
-        //                }
-        //                catch (Exception exception)
-        //                {
-        //                    logger.Log(LogLevel.Error, $"Error while syncing file {exception.Message}");
-        //                }
-        //            })
-        //            );
-
-        //    }
-
-        //}
-
-        //private void SyncFile(string filePath)
-        //{
-        //    logger.Log(LogLevel.Information,$"Start sync: {filePath}");
-        //    Thread.Sleep(5000);
-        //    object res = this._FileSyncHandler.Handle(filePath);
-        //    logger.LogDebug("FileSyync Handler result: "+ res.ToString());
-        //    logger.Log(LogLevel.Information, $"Finished sync: {filePath}");
-        //}
-
-        //public void UploudFiles()
-        //{
-        //    List<UploudFileData> filesToUploud = FileManager.GetAllFilesInLocationRelative(
-        //        Configuration.StorageLocation
-        //    );
-        //    Console.WriteLine($"Found {filesToUploud.Count} files, attempting to uploud");
-        //    for (var i = 0; i < filesToUploud.Count; i++)
-        //    {
-        //        Console.WriteLine(
-        //            $"Uplouding {filesToUploud[i].getFullFilePathForBasePath(this.Configuration.StorageLocation)}"
-        //        );
-        //        try
-        //        {
-        //            this.ServerConnection.uploudFile(
-        //                filesToUploud[i],
-        //                FileManager.GetBytesOfFiles(
-        //                    filesToUploud[i]
-        //                        .getFullFilePathForBasePath(this.Configuration.StorageLocation)
-        //                )
-        //            );
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            logger.Log(
-        //                LogLevel.Warning,
-        //                $"Failed to uploud file [{filesToUploud[i].getFullFilePathForBasePath(this.Configuration.StorageLocation)} :: CAUSE [{ex.Message}]]"
-        //            );
-        //        }
-        //    }
-        //}
-
-        //public void DownloadFiles()
-        //{
-        //    List<SyncFileData> filesOnCloud = this.GetListOfFilesOnCloud();
-        //    foreach (SyncFileData file in filesOnCloud)
-        //    {
-        //        FileManager.SaveFile(
-        //            file.getFullFilePathForBasePath(this.Configuration.StorageLocation),
-        //            this.ServerConnection.DownloadFlie(file.Id)
-        //        );
-        //    }
-        //}
-
-        //public List<SyncFileData> GetListOfFilesOnCloud()
-        //{
-        //    return this.ServerConnection.GetListOfFiles();
-        //}
+        public void Dispose()
+        {
+            this._ServerConnection.Dispose();
+            this.SystemWatcher.Dispose();
+            this.FileSyncService.Dispose();
+        }
     }
 }

@@ -4,6 +4,7 @@ using Cloud_Storage_Server.Configurations;
 using Cloud_Storage_Server.Database;
 using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Database.Repositories;
+using Cloud_Storage_Server.Interfaces;
 using Cloud_Storage_Server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -40,10 +41,16 @@ builder.Services.AddSwaggerGen(setup =>
     );
 });
 builder.Services.AddDbContext<DatabaseContext>();
-builder.Services.AddSingleton<IWebsockerConnectionService, WebsockerConnectionService>();
+WebsocketConnectedController WebsocketConnectedController = new WebsocketConnectedController();
+builder.Services.AddSingleton<IWebsocketConnectedController, WebsocketConnectedController>(
+    provider => WebsocketConnectedController
+);
 FileSystemService fileSystemService = new FileSystemService("dataStorage\\");
 builder.Services.AddSingleton<IFileSystemService>(provider => fileSystemService);
-builder.Services.AddSingleton<IFileSyncService>(provider => new FileSyncService(fileSystemService));
+builder.Services.AddSingleton<IFileSyncService>(provider => new FileSyncService(
+    fileSystemService,
+    WebsocketConnectedController
+));
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -94,15 +101,15 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 
 app.MapControllers();
+var webSocketOptions = new WebSocketOptions { KeepAliveInterval = TimeSpan.FromMinutes(2) };
 
-app.UseWebSockets();
+app.UseWebSockets(webSocketOptions);
 
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
     var context = services.GetRequiredService<DatabaseContext>();
-    ;
     //context.Database.Migrate();
     context.Database.EnsureCreated();
 }

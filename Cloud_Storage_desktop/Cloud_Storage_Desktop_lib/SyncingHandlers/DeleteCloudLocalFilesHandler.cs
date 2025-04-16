@@ -9,9 +9,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 {
+    /// <summary>
+    /// this handler works for multiple iefls dleted on server
+    /// </summary>
     public class DeleteCloudLocalFilesHandler : AbstactHandler
     {
-        private ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger(
+        private ILogger logger = CloudDriveLogging.Instance.GetLogger(
             "DeleteCloudLocalFilesHandler"
         );
 

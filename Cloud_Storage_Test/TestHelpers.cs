@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Net.WebSockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Cloud_Storage_Common;
@@ -8,14 +11,20 @@ using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_Desktop_lib.Actions;
 using Cloud_Storage_Desktop_lib.Interfaces;
+using Cloud_Storage_Desktop_lib.Services;
 using Cloud_Storage_Desktop_lib.Tests;
+using Cloud_Storage_Server.Database;
+using Cloud_Storage_Server.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using NUnit.Framework;
 
 public class TestConfig : IConfiguration
 {
-    public static string TmpDirecotry =
+    public string TmpDirecotry =
         AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin")) + "tmp\\";
 
     public string ApiUrl
@@ -32,6 +41,141 @@ public class TestConfig : IConfiguration
     {
         get { return TmpDirecotry; }
         set { TmpDirecotry = value; }
+    }
+
+    public TestConfig() { }
+
+    public TestConfig(string storageLocation)
+    {
+        this.StorageLocation = storageLocation;
+    }
+}
+
+public class TestCredentialMangager : ICredentialManager
+{
+    private string _token = "";
+
+    public void SaveToken(string token)
+    {
+        _token = token;
+    }
+
+    public string GetToken()
+    {
+        return _token;
+    }
+
+    public void RemoveToken()
+    {
+        _token = "";
+    }
+
+    public string GetDeviceID()
+    {
+        return JwtHelpers.GetDeviceIDFromToken(_token);
+    }
+
+    internal string GetUserEmail()
+    {
+        return JwtHelpers.GetEmailFromToken(_token);
+    }
+}
+
+public class TestWebScoket : IWebSocketWrapper
+{
+    private ILogger logger = CloudDriveLogging.Instance.GetLogger("TestWebScoket");
+    private WebSocketClient _webSocketClient;
+    private WebSocket _webSocket = new ClientWebSocket();
+    private Dictionary<string, string> _headers = new Dictionary<string, string>();
+
+    public TestWebScoket(WebSocketClient webSocketClient)
+    {
+        _webSocketClient = webSocketClient;
+    }
+
+    public void Connect(Uri url, CancellationToken cancellationToken)
+    {
+        _webSocketClient.ConfigureRequest = (request) =>
+        {
+            foreach (var keyValuePair in _headers)
+            {
+                request.Headers.Add(keyValuePair.Key, keyValuePair.Value);
+            }
+        };
+        _webSocket = _webSocketClient.ConnectAsync(url, cancellationToken).Result;
+    }
+
+    public WebSocketReceiveResult ReceiveAsync(
+        ArraySegment<byte> buffer,
+        CancellationToken cancellationToken
+    )
+    {
+        return this._webSocket.ReceiveAsync(buffer, cancellationToken).Result;
+    }
+
+    public WebSocketState State
+    {
+        get { return this._webSocket.State; }
+    }
+
+    public void Close(
+        WebSocketCloseStatus closeStatus,
+        string? statusDescription,
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            if (
+                this._webSocket.State != WebSocketState.Aborted
+                | this._webSocket.State != WebSocketState.Closed
+            )
+                this._webSocket.CloseAsync(closeStatus, statusDescription, cancellationToken)
+                    .Dispose();
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex.Message);
+        }
+    }
+
+    public void SetRequestHeader(string str1, string value)
+    {
+        if (this._headers.ContainsKey(str1))
+            _headers.Remove(str1);
+        _headers.Add(str1, value);
+    }
+}
+
+public class DataBAseContext1 : AbstractDataBaseContext
+{
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseInMemoryDatabase("Files1");
+    }
+}
+
+public class DataBAseContext2 : AbstractDataBaseContext
+{
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseInMemoryDatabase("Files2");
+    }
+}
+
+public class TestDbContextGenerator1 : IDbContextGenerator
+{
+    public AbstractDataBaseContext GetDbContext()
+    {
+        return new DataBAseContext1();
+    }
+}
+
+public class TestDbContextGenerator2 : IDbContextGenerator
+{
+    public AbstractDataBaseContext GetDbContext()
+    {
+        return new DataBAseContext2();
     }
 }
 
@@ -50,10 +194,19 @@ namespace Cloud_Storage_Test
             AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin"))
             + "tmp\\";
 
+        public static string GetNewTmpDir(string fodlerName)
+        {
+            return TmpDirecotry + fodlerName + "\\";
+        }
+
         public static IServerConnection getTestServerConnetion()
         {
             HttpClient _testServer = new MyWebApplication().CreateDefaultClient();
-            return new ServerConnection(_testServer);
+            return new ServerConnection(
+                _testServer,
+                new TestCredentialMangager(),
+                new WebSocketWrapper()
+            );
         }
 
         public static IConfiguration GetTestConfig()
@@ -63,7 +216,8 @@ namespace Cloud_Storage_Test
 
         public static void UploudAccontDataToLoggedUser(
             IServerConnection serverConnection,
-            IConfiguration Configuration
+            IConfiguration Configuration,
+            IFileRepositoryService fileRepositoryService
         )
         {
             Configuration.StorageLocation = TestHelpers.ExampleDataDirectory;
@@ -76,11 +230,100 @@ namespace Cloud_Storage_Test
                     fileData.getFullFilePathForBasePath(Configuration.StorageLocation),
                     Configuration.StorageLocation
                 );
-                UploadAction uploadAction = new UploadAction(serverConnection, Configuration, file);
+                UploadAction uploadAction = new UploadAction(
+                    serverConnection,
+                    Configuration,
+                    fileRepositoryService,
+                    file
+                );
                 Assert.DoesNotThrow(() =>
                 {
                     uploadAction.ActionToRun.Invoke();
                 });
+            }
+        }
+
+        public static void RemoveTmpDirectory()
+        {
+            if (Directory.Exists(TmpDirecotry))
+                Directory.Delete(TmpDirecotry, true);
+        }
+
+        public static string CreateTmpFile(string dir, string fileContent, int i)
+        {
+            string fileName =
+                Path.GetFileName(Path.GetFileNameWithoutExtension(Path.GetTempFileName()))
+                + $"_{i}.tmp";
+            FileStream newlyCreatedFile = File.Create(dir + fileName);
+            newlyCreatedFile.Write(Encoding.ASCII.GetBytes(fileContent));
+            newlyCreatedFile.Close();
+            return fileName;
+        }
+
+        private const long Timeout = 2000;
+
+        public static void EnsureTrue(Func<bool> func, long timeout = Timeout)
+        {
+            if (Debugger.IsAttached)
+            {
+                timeout *= 100;
+            }
+
+            bool state = false;
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            while (true)
+            {
+                state = func();
+                if (state == true)
+                    break;
+                Thread.Sleep(100);
+                if (stopwatch.ElapsedMilliseconds > timeout)
+                    throw new TimeoutException($"Ensure true timouet {timeout}");
+            }
+        }
+
+        public static FileSystemService GetDeafultFileSystemService()
+        {
+            return new FileSystemService("dataStorage\\");
+        }
+
+        public static void ResetDatabase()
+        {
+            using (var context = new DataBAseContext1())
+            {
+                context.Database.EnsureDeleted();
+                context.Database.EnsureCreated();
+            }
+            using (var context = new DataBAseContext2())
+            {
+                context.Database.EnsureDeleted();
+                context.Database.EnsureCreated();
+            }
+            using (var context = new DatabaseContext())
+            {
+                Assert.DoesNotThrow(
+                    () =>
+                    {
+                        if (context.Database.CanConnect())
+                        {
+                            EnsureTrue(() =>
+                            {
+                                try
+                                {
+                                    context.Database.EnsureDeleted();
+                                    return true;
+                                }
+                                catch (Exception ex)
+                                {
+                                    return false;
+                                }
+                            });
+                        }
+                    },
+                    "Cannot connect databse"
+                );
+
+                context.Database.EnsureCreated();
             }
         }
     }

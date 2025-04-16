@@ -16,14 +16,13 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
         private IConfiguration _configuration;
         private IServerConnection _connection;
         private IHandler _Handler;
-        private ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger(
-            "PerFileInitialSyncHandler"
-        );
+        private ILogger logger = CloudDriveLogging.Instance.GetLogger("PerFileInitialSyncHandler");
 
         public PerFileInitialSyncHandler(
             IConfiguration configuration,
             IServerConnection serverConnection,
-            ITaskRunController taskRunController
+            ITaskRunController taskRunController,
+            IFileRepositoryService fileRepositoryService
         )
         {
             _configuration = configuration;
@@ -32,7 +31,12 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
             _Handler
                 .SetNext(new ValidateRenamedFileHandler(configuration, serverConnection))
                 .SetNext(
-                    new UploadNewFileHandler(configuration, serverConnection, taskRunController)
+                    new UploadNewFileHandler(
+                        configuration,
+                        serverConnection,
+                        taskRunController,
+                        fileRepositoryService
+                    )
                 );
         }
 

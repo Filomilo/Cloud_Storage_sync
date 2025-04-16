@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using Cloud_Storage_Common;
+using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Database.Models;
 
 namespace Cloud_Storage_Server.Services
@@ -31,7 +32,7 @@ namespace Cloud_Storage_Server.Services
             return data;
         }
 
-        private string GetFullPathToFile(string path)
+        public string GetFullPathToFile(string path)
         {
             return Directory.GetCurrentDirectory() + "\\" + _basePath + path + ".dat";
         }
@@ -51,6 +52,11 @@ namespace Cloud_Storage_Server.Services
             List<string> splits = parhFile.Split("\\").ToList();
             splits.RemoveAt(splits.Count - 1);
             return string.Join("\\", splits);
+        }
+
+        internal string GetFullPathToFile(SyncFileData file)
+        {
+            return GetFullPathToFile(file.OwnerId + "//" + file.Id.ToString());
         }
     }
 }

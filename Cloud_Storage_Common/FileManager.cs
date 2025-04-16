@@ -10,17 +10,48 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Cloud_Storage_Common.Models;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Cloud_Storage_Common
 {
     public static class FileManager
     {
+        private static ILogger Logger = CloudDriveLogging.Instance.GetLogger("FileManager");
         public const string RegexRelativePathValidation =
             "^(?:\\.|[a-zA-Z0-9_-]+(?:\\\\[a-zA-Z0-9_-]+)*)$";
 
         public static List<string> GetAllFilePathInLocaation(string storageLocation)
         {
             return Directory.GetFiles(storageLocation, "*.*", SearchOption.AllDirectories).ToList();
+        }
+
+        public static FileStream WaitForFile(
+            string filename,
+            FileAccess acces,
+            int retryCount = 100,
+            int delayMilliseconds = 500
+        )
+        {
+            for (int i = 0; i < retryCount; i++)
+            {
+                try
+                {
+                    return File.Open(
+                        filename,
+                        acces == FileAccess.Write ? FileMode.OpenOrCreate : FileMode.Open,
+                        acces
+                    );
+                }
+                catch (IOException)
+                {
+                    Thread.Sleep(delayMilliseconds);
+                }
+            }
+
+            throw new IOException(
+                $"Unable to access file '{filename}' after {retryCount} attempts."
+            );
         }
 
         public static List<FileData> GetAllFilesInLocation(string path)
@@ -123,8 +154,9 @@ namespace Cloud_Storage_Common
         {
             using (var sha256 = SHA256.Create())
             {
-                using (var stream = File.OpenRead(filename))
+                using (var stream = FileManager.WaitForFile(filename, FileAccess.Read))
                 {
+                    Logger.LogTrace($"Gettign hash for file [[{filename}]]");
                     return Convert.ToBase64String(sha256.ComputeHash(stream));
                     ;
                 }
@@ -147,7 +179,58 @@ namespace Cloud_Storage_Common
 
         public static FileStream GetStreamForFile(string fiePath)
         {
-            return File.Open(fiePath, FileMode.Open, FileAccess.Read);
+            return WaitForFile(fiePath, FileAccess.ReadWrite);
+        }
+
+        public static void DeleteFile(string v)
+        {
+            File.Delete(v);
+        }
+
+        public static void GetFilePathParamsFormRelativePath(
+            string relativePath,
+            out string realitveDirectory,
+            out string name,
+            out string extesnion
+        )
+        {
+            name = Path.GetFileNameWithoutExtension(relativePath);
+            realitveDirectory = Path.GetDirectoryName(relativePath);
+            extesnion = Path.GetExtension(relativePath);
+            if (realitveDirectory == "")
+            {
+                realitveDirectory = ".";
+            }
+
+            if (realitveDirectory == "." && name.StartsWith("."))
+            {
+                name = name.Substring(1);
+            }
+        }
+
+        public static string GetRealtiveFullPathToFile(
+            string? path,
+            string configurationStorageLocation
+        )
+        {
+            string relativePAth = GetRealtivePathToFile(path, configurationStorageLocation);
+            string filename = Path.GetFileNameWithoutExtension(path);
+            string ext = Path.GetExtension(path);
+            return $"{relativePAth}{filename}{ext}";
+        }
+
+        public static void MoveFileRealitve(
+            string getRealativePath,
+            string s,
+            IConfiguration configuration
+        )
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void ChangeFilePath(string prevPath, string newPath)
+        {
+            File.Move(prevPath, newPath);
         }
     }
 }

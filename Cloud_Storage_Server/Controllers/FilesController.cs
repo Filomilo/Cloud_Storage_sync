@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
 using Cloud_Storage_Common;
@@ -37,7 +38,7 @@ namespace Cloud_Storage_Server.Controllers
         public IActionResult listOfFiles()
         {
             User user = UserRepository.getUserByMail(
-                AuthService.GetEmailFromToken(Request.Headers.Authorization)
+                JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
             );
             List<SyncFileData> files = FileRepository.GetAllUserFiles(user.id);
             return Ok(files);
@@ -71,13 +72,15 @@ namespace Cloud_Storage_Server.Controllers
                 }
                 filerequest = santizeFileUploudRequest(filerequest);
                 User user = UserRepository.getUserByMail(
-                    AuthService.GetEmailFromToken(Request.Headers.Authorization)
+                    JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
                 );
-                if (_FileSyncService.DoesFileAlreadyExist(user, filerequest.fileData))
-                    return Ok("File like this already exist");
+                string deviceId = JwtHelpers.GetDeviceIDFromAuthString(
+                    Request.Headers.Authorization
+                );
+
                 using (Stream stream = filerequest.file.OpenReadStream())
                 {
-                    _FileSyncService.AddNewFile(user, filerequest.fileData, stream);
+                    _FileSyncService.AddNewFile(user, deviceId, filerequest.fileData, stream);
                     return Ok("Succsesfully added file");
                 }
             }
@@ -89,13 +92,24 @@ namespace Cloud_Storage_Server.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            return BadRequest("Not implmented");
         }
 
         [Route("delete")]
         [HttpDelete]
-        public IActionResult edit([FromBody] Guid guid)
+        public IActionResult delete([FromQuery] string relativePath)
         {
+            if (string.IsNullOrEmpty(relativePath))
+            {
+                return BadRequest("relativePath cannot be null or empty.");
+            }
+            User user = UserRepository.getUserByMail(
+                JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
+            );
+            string deviceId = JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization);
+            FileData fileData = new FileData(relativePath);
+
+            this._FileSyncService.RemoveFile(new FileData(relativePath), user.id, deviceId);
+
             return Ok();
         }
 
@@ -105,10 +119,10 @@ namespace Cloud_Storage_Server.Controllers
         public IActionResult DownlaodFile([FromQuery] Guid guid)
         {
             User user = UserRepository.getUserByMail(
-                AuthService.GetEmailFromToken(Request.Headers.Authorization)
+                JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
             );
             SyncFileData fileData = FileRepository.GetFileOfID(guid);
-
+            string deviceId = JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization);
             Stream data = _FileSyncService.DownloadFile(user, fileData);
 
             return File(data, "application/octet-stream", fileData.Name);
@@ -122,9 +136,14 @@ namespace Cloud_Storage_Server.Controllers
         [Route("update")]
         [Authorize]
         [HttpPost]
-        public IActionResult update([FromBody] FileData file)
+        public IActionResult update([FromBody] UpdateFileDataRequest fileUpdate)
         {
-            return BadRequest("no itmpelmetned");
+            String email = JwtHelpers.GetEmailFromToken(Request.Headers.Authorization);
+
+            string deviceId = JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization);
+            _FileSyncService.UpdateFileForDevice(email, deviceId, fileUpdate);
+
+            return Ok("updated");
         }
     }
 }

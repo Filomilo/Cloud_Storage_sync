@@ -7,6 +7,7 @@ using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Actions;
 using Cloud_Storage_Desktop_lib.Interfaces;
+using Cloud_Storage_Desktop_lib.Services;
 using NUnit.Framework;
 
 namespace Cloud_Storage_Test.Actions
@@ -29,7 +30,13 @@ namespace Cloud_Storage_Test.Actions
             Assert.That(server.CheckIfAuthirized() == false);
             server.Register(email, pass);
             Assert.That(server.CheckIfAuthirized());
-            TestHelpers.UploudAccontDataToLoggedUser(server, this.Configuration);
+            TestHelpers.UploudAccontDataToLoggedUser(
+                server,
+                this.Configuration,
+                new Cloud_Storage_Desktop_lib.Services.FileRepositoryService(
+                    new TestDbContextGenerator1()
+                )
+            );
             if (Directory.Exists(TestHelpers.TmpDirecotry))
                 Directory.Delete(TestHelpers.TmpDirecotry, true);
             this.Configuration.StorageLocation = TestHelpers.TmpDirecotry;
@@ -67,7 +74,8 @@ namespace Cloud_Storage_Test.Actions
                 DownloadAction downloadAction = new DownloadAction(
                     this.server,
                     this.Configuration,
-                    syncFileData
+                    syncFileData,
+                    new FileRepositoryService(new TestDbContextGenerator1())
                 );
                 downloadAction.ActionToRun.Invoke();
             }

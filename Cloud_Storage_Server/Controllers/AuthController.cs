@@ -1,12 +1,13 @@
-﻿using Cloud_Storage_Server.Database.Models;
+﻿using System.ComponentModel.DataAnnotations;
+using Cloud_Storage_Common.Models;
+using Cloud_Storage_Desktop_lib;
+using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Database.Repositories;
 using Cloud_Storage_Server.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
-using Cloud_Storage_Desktop_lib;
 
 namespace Cloud_Storage_Server.Controllers
 {
@@ -14,17 +15,17 @@ namespace Cloud_Storage_Server.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-  
-     
         [HttpPost]
         [Route("login")]
         public IActionResult login(AuthRequest loginRequest)
         {
-     
             bool verifacation = AuthService.VerifyUser(loginRequest.Email, loginRequest.Password);
-            if (verifacation){
+            if (verifacation)
+            {
                 User user = UserRepository.getUserByMail(loginRequest.Email);
-                return Ok(AuthService.GenerateToken(user));
+                Device device = DeviceRepository.AddNewDevice(user);
+                string token = AuthService.GenerateToken(user, device);
+                return Ok(token);
             }
             else
                 return Unauthorized("Invalid email or password");
@@ -34,15 +35,16 @@ namespace Cloud_Storage_Server.Controllers
         [Route("register")]
         public IActionResult register(AuthRequest loginRequest)
         {
-
             User user = AuthService.CreateNewUserBeasedOnLoginRequest(loginRequest);
             User savedUser;
             try
             {
                 AuthService.validatePasswordFormat(loginRequest.Password);
                 savedUser = UserRepository.saveUser(user);
+                Device device = DeviceRepository.AddNewDevice(savedUser);
+                string token = AuthService.GenerateToken(savedUser, device);
+                return Ok(token);
             }
-
             catch (ValidationException ex)
             {
                 return BadRequest($"Inavlid format: {ex.Message}");
@@ -55,10 +57,6 @@ namespace Cloud_Storage_Server.Controllers
             {
                 return BadRequest($"Unkown error happend");
             }
-
-            return Ok(AuthService.GenerateToken(savedUser));
         }
-
-
     }
 }

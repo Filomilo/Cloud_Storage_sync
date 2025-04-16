@@ -1,61 +1,88 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Transactions;
 using Cloud_Storage_Common;
+using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Database;
 using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Database.Repositories;
+using Cloud_Storage_Server.Handlers;
+using Cloud_Storage_Server.Interfaces;
 
 namespace Cloud_Storage_Server.Services
 {
+    public class FileUploadRequest
+    {
+        public SyncFileData syncFileData;
+        public Stream fileStream;
+
+        public FileUploadRequest(SyncFileData syncFileData, Stream fileStream)
+        {
+            this.syncFileData = syncFileData;
+            this.fileStream = fileStream;
+        }
+    }
+
+    public delegate void FileUpdateHandler(UpdateFileDataRequest uploudFile);
+
     public interface IFileSyncService
     {
-        public void AddNewFile(User user, UploudFileData data, Stream file);
+        public void AddNewFile(User user, string deviceId, UploudFileData data, Stream file);
         public Stream DownloadFile(User user, SyncFileData data);
         public List<SyncFileData> ListFilesForUser(User user);
         public bool DoesFileAlreadyExist(User user, UploudFileData data);
+        void RemoveFile(FileData fileData, long id, string deviceId);
+
+        event FileUpdateHandler FileUpdated;
+        void UpdateFileForDevice(string email, string deviceId, UpdateFileDataRequest file);
     }
 
     public class FileSyncService : IFileSyncService
     {
         private IFileSystemService _fileSystemService;
-        private ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger(
-            "FileSyncService"
-        );
+        private ILogger logger = CloudDriveLogging.Instance.GetLogger("FileSyncService");
+        private IHandler _AddNewFileHandler;
+        private IHandler _RemoveFileHandler;
+        private IHandler _UpdateFileHandler;
 
-        public FileSyncService(IFileSystemService fileSystemService)
+        public FileSyncService(
+            IFileSystemService fileSystemService,
+            IWebsocketConnectedController websocketConnectedController
+        )
         {
             _fileSystemService = fileSystemService;
+            _AddNewFileHandler = new SkipIfTheSameFileAlreadyExist();
+            _AddNewFileHandler
+                .SetNext(new UpdateIfOnlyOwnerChanged())
+                .SetNext(new SaveAndUpdateNewVersionOfFile(this._fileSystemService));
+            this.FileUpdated += (UpdateFileDataRequest file) =>
+            {
+                websocketConnectedController.SendMessageToUser(
+                    file.UserID,
+                    new WebSocketMessage(file)
+                );
+            };
+
+            this._RemoveFileHandler = new RemoveFileDeviceOwnership();
+
+            this._UpdateFileHandler = new UpdateIfOnlyOwnerChanged();
+            _UpdateFileHandler.SetNext(new RenameIfOnlyPathChangedHandler());
         }
 
-        private static string GetRealtivePathForFile(User user, SyncFileData data)
-        {
-            //throw new NotImplementedException();
-            return $"{user.id}\\{data.Id}";
-        }
-
-        public void AddNewFile(User user, UploudFileData data, Stream file)
+        public void AddNewFile(User user, string deviceId, UploudFileData data, Stream file)
         {
             SyncFileData fileData = new SyncFileData(data);
             fileData.OwnerId = user.id;
+            fileData.DeviceOwner = new List<string>();
+            fileData.DeviceOwner.Add(deviceId);
 
+            FileUploadRequest fileUploadRequest = new FileUploadRequest(fileData, file);
             try
             {
-                SyncFileData saved;
-                using (DatabaseContext context = new DatabaseContext())
+                SyncFileData sync = (SyncFileData)_AddNewFileHandler.Handle(fileUploadRequest);
+                if (FileUpdated != null)
                 {
-                    using (var transaction = context.Database.BeginTransaction())
-                    {
-                        var validationContext = new ValidationContext(file);
-                        Validator.ValidateObject(file, validationContext, true);
-
-                        saved = context.Files.Add(fileData).Entity;
-                        context.SaveChanges();
-
-                        this._fileSystemService.SaveFile(GetRealtivePathForFile(user, saved), file);
-
-                        transaction.Commit();
-                    }
+                    FileUpdated.Invoke(new UpdateFileDataRequest(null, sync, user.id));
                 }
             }
             catch (Exception ex)
@@ -69,7 +96,7 @@ namespace Cloud_Storage_Server.Services
         {
             try
             {
-                SyncFileData fileInRepo = FileRepository.getFileByPathNameExtensionAndUser(
+                SyncFileData fileInRepo = FileRepository.getNewestFileByPathNameExtensionAndUser(
                     data.Path,
                     data.Name,
                     data.Extenstion,
@@ -85,6 +112,44 @@ namespace Cloud_Storage_Server.Services
                 return false;
             }
             return false;
+        }
+
+        public void RemoveFile(FileData fileData, long ownerid, string deviceId)
+        {
+            SyncFileData file =
+                this._RemoveFileHandler.Handle(
+                    new RemoveFileDeviceOwnershipRequest()
+                    {
+                        deviceId = deviceId,
+                        fileData = fileData,
+                        userID = ownerid,
+                    }
+                ) as SyncFileData;
+            if (file != null)
+                this.FileUpdated(new UpdateFileDataRequest(null, file, ownerid));
+        }
+
+        public event FileUpdateHandler? FileUpdated;
+
+        public void UpdateFileForDevice(
+            string email,
+            string deviceId,
+            UpdateFileDataRequest fileUpdate
+        )
+        {
+            fileUpdate.DeviceReuqested = deviceId;
+            fileUpdate.UserID = UserRepository.getUserByMail(email).id;
+            UpdateFileDataRequest resolved =
+                _UpdateFileHandler.Handle(fileUpdate) as UpdateFileDataRequest;
+            if (resolved != null)
+            {
+                this.FileUpdated(resolved);
+            }
+        }
+
+        private static string GetRealtivePathForFile(User user, SyncFileData data)
+        {
+            return $"{user.id}\\{data.Id}";
         }
 
         public Stream DownloadFile(User user, SyncFileData data)

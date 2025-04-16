@@ -20,9 +20,7 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
             _configuration = configuration;
         }
 
-        private ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger(
-            "PrepareFileSyncData"
-        );
+        private ILogger logger = CloudDriveLogging.Instance.GetLogger("PrepareFileSyncData");
 
         public override object Handle(object request)
         {

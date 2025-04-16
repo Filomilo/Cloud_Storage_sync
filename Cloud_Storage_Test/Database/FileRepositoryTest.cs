@@ -172,10 +172,7 @@ public class FileRepositoryTest
 
         SyncFileData savedFile = FileRepository.SaveNewFile(fileToSave);
 
-        FileRepository.UpdateFile(
-            (Cloud_Storage_Common.Models.FileData)fileToSave,
-            (Cloud_Storage_Common.Models.FileData)fileUpdateData
-        );
+        FileRepository.UpdateFile(fileToSave, fileUpdateData);
 
         SyncFileData fileInRepository = FileRepository.GetFileOfID(savedFile.Id);
         Assert.That(fileUpdateData.Extenstion == fileInRepository.Extenstion);
@@ -214,7 +211,7 @@ public class FileRepositoryTest
                 typeof(KeyNotFoundException),
                 () =>
                 {
-                    FileRepository.UpdateFile((FileData)fileToSave, (FileData)fileUpdateData);
+                    FileRepository.UpdateFile(fileToSave, fileUpdateData);
                 }
             );
         }
@@ -225,11 +222,12 @@ public class FileRepositoryTest
     {
         SyncFileData fileToSave = new SyncFileData()
         {
-            Extenstion = "jpg",
+            Extenstion = ".jpg",
             Name = "File",
-            Path = ".",
+            Path = "folder",
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
+            Hash = "123",
         };
 
         SyncFileData savedFile = FileRepository.SaveNewFile(fileToSave);
@@ -269,10 +267,10 @@ public class FileRepositoryTest
 
         SyncFileData savedFile = FileRepository.SaveNewFile(fileToSave);
 
-        SyncFileData fileInRepository = FileRepository.getFileByPathNameExtensionAndUser(
+        SyncFileData fileInRepository = FileRepository.getNewestFileByPathNameExtensionAndUser(
             path: savedFile.Path,
             name: savedFile.Name,
-            extension: savedFile.Extenstion,
+            extenstion: savedFile.Extenstion,
             ownerId: _savedUser.id
         );
         Assert.That(fileToSave.Extenstion == fileInRepository.Extenstion);
@@ -303,10 +301,10 @@ public class FileRepositoryTest
                 () =>
                 {
                     SyncFileData fileInRepository =
-                        FileRepository.getFileByPathNameExtensionAndUser(
+                        FileRepository.getNewestFileByPathNameExtensionAndUser(
                             path: fileToSave.Path,
                             name: fileToSave.Name,
-                            extension: fileToSave.Extenstion,
+                            extenstion: fileToSave.Extenstion,
                             ownerId: _savedUser.id
                         );
                 }

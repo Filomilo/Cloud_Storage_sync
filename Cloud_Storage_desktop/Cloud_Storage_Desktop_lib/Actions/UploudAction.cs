@@ -13,9 +13,7 @@ namespace Cloud_Storage_Desktop_lib.Actions
 {
     public class UploadAction : AbstactAction
     {
-        private ILogger logger = CloudDriveLogging.Instance.loggerFactory.CreateLogger(
-            "UploadAction"
-        );
+        private ILogger logger = CloudDriveLogging.Instance.GetLogger("UploadAction");
 
         private Action _uploudAction;
 
@@ -32,6 +30,7 @@ namespace Cloud_Storage_Desktop_lib.Actions
         public UploadAction(
             IServerConnection serverConnection,
             IConfiguration configuration,
+            IFileRepositoryService fileRepositoryService,
             UploudFileData fileData
         )
         {
@@ -47,13 +46,16 @@ namespace Cloud_Storage_Desktop_lib.Actions
                             )
                         )
                         {
+                            //fileRepositoryService.AddNewFile(new LocalFileData(fileData));
                             serverConnection.UploudFile(fileData, stream);
                         }
                     }
                     catch (Exception EX)
                     {
                         //TODO: ADD ERROR HADNLER
-                        logger.LogError($"Exception while uplound file:: [{this.file}]");
+                        logger.LogError(
+                            $"Exception while uplound file:: [{this.file}] [[{EX.Message}]]"
+                        );
                     }
                 }
             );
