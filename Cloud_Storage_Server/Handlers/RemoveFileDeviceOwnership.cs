@@ -7,6 +7,7 @@ namespace Cloud_Storage_Server.Handlers
     public class RemoveFileDeviceOwnershipRequest
     {
         public FileData fileData;
+        public SyncFileData syncFileData;
         public long userID;
         public string deviceId;
     }
@@ -74,12 +75,13 @@ namespace Cloud_Storage_Server.Handlers
             {
                 throw new Exception("Filed to save new file data");
             }
+            removeFileDeviceOwnership.syncFileData = newFile;
 
             if (this._nextHandler != null)
             {
-                return this._nextHandler.Handle(newFile);
+                return this._nextHandler.Handle(removeFileDeviceOwnership);
             }
-            return newFile;
+            return removeFileDeviceOwnership;
         }
 
         private bool StopIFileLAlreadyDletedForThisDevice(

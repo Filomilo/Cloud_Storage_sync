@@ -31,6 +31,7 @@ namespace Cloud_Storage_Server.Services
         void RemoveFile(FileData fileData, long id, string deviceId);
 
         event FileUpdateHandler FileUpdated;
+        void SendFileUpdate(UpdateFileDataRequest update);
         void UpdateFileForDevice(string email, string deviceId, UpdateFileDataRequest file);
     }
 
@@ -56,7 +57,8 @@ namespace Cloud_Storage_Server.Services
             };
 
             this._serverChainOfResposibiltyRepository = new ServerChainOfResposibiltyRepository(
-                this._fileSystemService
+                this._fileSystemService,
+                this
             );
         }
 
@@ -88,22 +90,27 @@ namespace Cloud_Storage_Server.Services
 
         public void RemoveFile(FileData fileData, long ownerid, string deviceId)
         {
-            SyncFileData file =
-                this._serverChainOfResposibiltyRepository.OnFileDeleteHandler.Handle(
-                    new RemoveFileDeviceOwnershipRequest()
-                    {
-                        deviceId = deviceId,
-                        fileData = fileData,
-                        userID = ownerid,
-                    }
-                ) as SyncFileData;
-            if (file != null)
-                this.FileUpdated(
-                    new UpdateFileDataRequest(UPDATE_TYPE.DELETE, null, file, ownerid)
-                );
+            this._serverChainOfResposibiltyRepository.OnFileDeleteHandler.Handle(
+                new RemoveFileDeviceOwnershipRequest()
+                {
+                    deviceId = deviceId,
+                    fileData = fileData,
+                    userID = ownerid,
+                }
+            );
+            //if (file != null)
+            //    this.FileUpdated(
+            //        new UpdateFileDataRequest(UPDATE_TYPE.DELETE, null, file, ownerid)
+            //    );
         }
 
         public event FileUpdateHandler? FileUpdated;
+
+        public void SendFileUpdate(UpdateFileDataRequest update)
+        {
+            if (FileUpdated != null)
+                FileUpdated.Invoke(update);
+        }
 
         public void UpdateFileForDevice(
             string email,

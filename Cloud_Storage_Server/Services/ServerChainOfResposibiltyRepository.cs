@@ -8,12 +8,15 @@ namespace Cloud_Storage_Server.Services
     public class ServerChainOfResposibiltyRepository : IServerChainOfResposibiltyRepository
     {
         private IFileSystemService _fileSystemService;
+        private IFileSyncService _fileSyncService;
 
-        public ServerChainOfResposibiltyRepository(IFileSystemService fileSystemService)
+        public ServerChainOfResposibiltyRepository(
+            IFileSystemService fileSystemService,
+            IFileSyncService fileSyncService
+        )
         {
             _fileSystemService = fileSystemService;
-
-            OnFileRenameHandler = CreateOnFileRenameHandler();
+            _fileSyncService = fileSyncService;
             OnFileAddHandler = CreateOnFileAddHandler();
             OnFileUpdateHandler = CreateOnFileUpdateHandler();
             OnFileRenameHandler = CreateOnFileDeleteHandler();
@@ -22,7 +25,11 @@ namespace Cloud_Storage_Server.Services
 
         private IHandler? CreateOnFileDeleteHandler()
         {
-            return new ChainOfResponsiblityBuilder().Next(new RemoveFileDeviceOwnership()).Build();
+            return new ChainOfResponsiblityBuilder()
+                .Next(new RemoveFileDeviceOwnership())
+                .Next(new PrepareFileRemoveUpdateHandler())
+                .Next(new SendUpdateToClientsHandler(this._fileSyncService))
+                .Build();
         }
 
         private IHandler? CreateOnFileUpdateHandler()
