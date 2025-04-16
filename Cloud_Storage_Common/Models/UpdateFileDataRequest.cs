@@ -1,7 +1,16 @@
-﻿using Lombok.NET;
+﻿using System.ComponentModel.DataAnnotations;
+using Lombok.NET;
 
 namespace Cloud_Storage_Common.Models
 {
+    public enum UPDATE_TYPE
+    {
+        RENAME,
+        CONTNETS,
+        DELETE,
+        ADD,
+    }
+
     [AllArgsConstructor]
     [NoArgsConstructor]
     public partial class UpdateFileDataRequest
@@ -11,16 +20,30 @@ namespace Cloud_Storage_Common.Models
         public SyncFileData oldFileData { get; set; }
         public SyncFileData newFileData { get; set; }
 
-        public UpdateFileDataRequest(LocalFileData? oldData, LocalFileData newData)
+        [Required]
+        public UPDATE_TYPE UpdateType { get; set; }
+
+        public UpdateFileDataRequest(
+            UPDATE_TYPE update,
+            LocalFileData? oldData,
+            LocalFileData newData
+        )
         {
+            this.UpdateType = update;
             if (oldData != null)
                 this.oldFileData = new SyncFileData(oldData);
             if (newData != null)
                 this.newFileData = new SyncFileData(newData);
         }
 
-        public UpdateFileDataRequest(SyncFileData value, SyncFileData sync, long userId)
+        public UpdateFileDataRequest(
+            UPDATE_TYPE update,
+            SyncFileData value,
+            SyncFileData sync,
+            long userId
+        )
         {
+            this.UpdateType = update;
             this.UserID = userId;
             this.oldFileData = value;
             this.newFileData = sync;

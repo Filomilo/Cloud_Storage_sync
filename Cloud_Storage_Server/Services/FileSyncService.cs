@@ -79,7 +79,9 @@ namespace Cloud_Storage_Server.Services
                 SyncFileData sync = (SyncFileData)_AddNewFileHandler.Handle(fileUploadRequest);
                 if (FileUpdated != null)
                 {
-                    FileUpdated.Invoke(new UpdateFileDataRequest(null, sync, user.id));
+                    FileUpdated.Invoke(
+                        new UpdateFileDataRequest(UPDATE_TYPE.ADD, null, sync, user.id)
+                    );
                 }
             }
             catch (Exception ex)
@@ -123,7 +125,9 @@ namespace Cloud_Storage_Server.Services
                     }
                 ) as SyncFileData;
             if (file != null)
-                this.FileUpdated(new UpdateFileDataRequest(null, file, ownerid));
+                this.FileUpdated(
+                    new UpdateFileDataRequest(UPDATE_TYPE.DELETE, null, file, ownerid)
+                );
         }
 
         public event FileUpdateHandler? FileUpdated;
