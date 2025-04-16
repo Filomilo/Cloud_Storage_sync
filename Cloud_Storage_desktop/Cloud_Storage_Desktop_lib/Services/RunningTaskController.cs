@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using Cloud_Storage_Common;
+﻿using Cloud_Storage_Common;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Microsoft.Extensions.Logging;
-using NUnit.Framework;
 
 namespace Cloud_Storage_Desktop_lib.Services
 {

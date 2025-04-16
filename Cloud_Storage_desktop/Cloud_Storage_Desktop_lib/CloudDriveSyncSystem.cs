@@ -1,24 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Diagnostics.SymbolStore;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using Cloud_Storage_Common;
-using Cloud_Storage_Common.Interfaces;
-using Cloud_Storage_Common.Models;
+﻿using Cloud_Storage_Common;
 using Cloud_Storage_Desktop_lib.Database;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Services;
-using Cloud_Storage_Desktop_lib.SyncingHandlers;
-using Lombok.NET;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 using FileSystemWatcher = Cloud_Storage_Desktop_lib.Services.FileSystemWatcher;
 
 namespace Cloud_Storage_Desktop_lib

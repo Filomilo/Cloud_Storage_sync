@@ -5,13 +5,10 @@ using System.Text;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_Server.Configurations;
-using Cloud_Storage_Server.Controllers;
 using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Database.Repositories;
 using Cloud_Storage_Server.Services.PasswordHasher;
 using log4net;
-using Microsoft.AspNetCore.Identity.Data;
-using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Cloud_Storage_Server.Services

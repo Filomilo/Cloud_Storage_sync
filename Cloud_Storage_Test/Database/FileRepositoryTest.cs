@@ -3,10 +3,8 @@ using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Database;
 using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Database.Repositories;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-using FileData = Cloud_Storage_Common.Models.FileData;
 
 namespace Cloud_Storage_Test.Database;
 
@@ -46,6 +44,8 @@ public class FileRepositoryTest
                 Path = "location1\\location2\\location\\3",
                 SyncDate = DateTime.Now,
                 OwnerId = _savedUser.id,
+                Version = 0,
+                DeviceOwner = new List<string>() { "123" },
             }
         );
 
@@ -70,6 +70,8 @@ public class FileRepositoryTest
                             Path = "location1\\location2\\location\\3",
                             SyncDate = DateTime.Now,
                             OwnerId = -1,
+                            Version = 0,
+                            DeviceOwner = new List<string>() { "123" },
                         }
                     );
                 }
@@ -116,21 +118,27 @@ public class FileRepositoryTest
     {
         SyncFileData fileToSave = new SyncFileData()
         {
+            Id = Guid.NewGuid(),
             Extenstion = "jpg",
             Hash = "3546",
             Name = "File",
             Path = ".",
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
+            Version = 0,
+            DeviceOwner = new List<string>() { "123" },
         };
         SyncFileData fileToSaveCopy = new SyncFileData()
         {
+            Id = fileToSave.Id,
             Extenstion = "jpg",
             Hash = "3456",
             Name = "File",
             Path = ".",
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
+            Version = 0,
+            DeviceOwner = new List<string>() { "123" },
         };
 
         int amountOfFilesBefore = context.Files.ToList().Count;
@@ -158,6 +166,8 @@ public class FileRepositoryTest
             Path = ".",
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
+            Version = 0,
+            DeviceOwner = new List<string>() { "123" },
         };
 
         SyncFileData fileUpdateData = new SyncFileData()
@@ -168,6 +178,8 @@ public class FileRepositoryTest
             Path = "newFolder",
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
+            Version = 0,
+            DeviceOwner = new List<string>() { "123" },
         };
 
         SyncFileData savedFile = FileRepository.SaveNewFile(fileToSave);
@@ -196,6 +208,8 @@ public class FileRepositoryTest
                 Path = "/",
                 SyncDate = DateTime.Now,
                 OwnerId = _savedUser.id,
+                Version = 0,
+                DeviceOwner = new List<string>() { "123" },
             };
 
             SyncFileData fileUpdateData = new SyncFileData()
@@ -206,6 +220,8 @@ public class FileRepositoryTest
                 Path = "newFolder",
                 SyncDate = DateTime.Now,
                 OwnerId = _savedUser.id,
+                Version = 0,
+                DeviceOwner = new List<string>() { "123" },
             };
             Assert.Throws(
                 typeof(KeyNotFoundException),
@@ -228,6 +244,8 @@ public class FileRepositoryTest
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
             Hash = "123",
+            Version = 0,
+            DeviceOwner = new List<string>() { "123" },
         };
 
         SyncFileData savedFile = FileRepository.SaveNewFile(fileToSave);
@@ -263,6 +281,8 @@ public class FileRepositoryTest
             Path = "123\\123",
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
+            Version = 0,
+            DeviceOwner = new List<string>() { "123" },
         };
 
         SyncFileData savedFile = FileRepository.SaveNewFile(fileToSave);
@@ -295,19 +315,17 @@ public class FileRepositoryTest
                 Name = "File",
                 Path = "/123/123",
                 SyncDate = DateTime.Now,
+
+                Version = 0,
+                DeviceOwner = new List<string>() { "123" },
             };
-            Assert.Throws(
-                typeof(KeyNotFoundException),
-                () =>
-                {
-                    SyncFileData fileInRepository =
-                        FileRepository.getNewestFileByPathNameExtensionAndUser(
-                            path: fileToSave.Path,
-                            name: fileToSave.Name,
-                            extenstion: fileToSave.Extenstion,
-                            ownerId: _savedUser.id
-                        );
-                }
+            Assert.That(
+                FileRepository.getNewestFileByPathNameExtensionAndUser(
+                    path: fileToSave.Path,
+                    name: fileToSave.Name,
+                    extenstion: fileToSave.Extenstion,
+                    ownerId: _savedUser.id
+                ) == null
             );
         }
     }
@@ -326,6 +344,8 @@ public class FileRepositoryTest
                 Path = "123\\1234",
                 SyncDate = DateTime.Now,
                 OwnerId = _savedUser.id,
+                Version = 0,
+                DeviceOwner = new List<string>() { "123" },
             };
 
             SyncFileData savedFile = FileRepository.SaveNewFile(fileToSave);

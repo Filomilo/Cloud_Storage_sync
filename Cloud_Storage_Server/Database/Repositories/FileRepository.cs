@@ -1,8 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Cloud_Storage_Common.Models;
-using Cloud_Storage_Server.Database.Models;
-using Microsoft.AspNetCore.Mvc.Diagnostics;
-using FileData = Cloud_Storage_Common.Models.FileData;
 
 namespace Cloud_Storage_Server.Database.Repositories
 {
@@ -68,12 +65,11 @@ namespace Cloud_Storage_Server.Database.Repositories
                 SyncFileData file = context
                     .Files.Where(x => x.Id.Equals(fileInRepositry.Id))
                     .FirstOrDefault();
-
-                file.Hash = fileUpdateData.Hash;
-                file.SyncDate = fileUpdateData.SyncDate;
-                file.Version = fileUpdateData.Version;
-                file.DeviceOwner = fileUpdateData.DeviceOwner;
-                context.Files.Update(file);
+                if (file == null)
+                    throw new KeyNotFoundException("No file iwth this guuid");
+                context.Remove(file);
+                fileUpdateData.Id = file.Id;
+                context.Files.Add(fileUpdateData);
                 context.SaveChanges();
             }
         }

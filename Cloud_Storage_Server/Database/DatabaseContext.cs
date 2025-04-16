@@ -1,8 +1,6 @@
 ﻿using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Database.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.InMemory;
-using FileData = Cloud_Storage_Common.Models.FileData;
 
 namespace Cloud_Storage_Server.Database
 {
