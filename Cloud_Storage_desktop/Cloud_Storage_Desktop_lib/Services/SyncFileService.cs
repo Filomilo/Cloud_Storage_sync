@@ -83,7 +83,6 @@ namespace Cloud_Storage_Desktop_lib.Services
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            //this._OnFileUpdateHandler.Handle(syncFileData);
         }
 
         private void onConnnetionChange(bool state)
@@ -145,13 +144,11 @@ namespace Cloud_Storage_Desktop_lib.Services
         public void OnLocallyOnRenamed(RenamedEventArgs args)
         {
             _clientChainOfResponsibilityRepository.OnLocalyFileRenamedHandler.Handle(args);
-            //_RenameFileHandler.Handle(args);
         }
 
         public void OnLocallyDeleted(FileSystemEventArgs args)
         {
             _clientChainOfResponsibilityRepository.OnLocalyFileDeletedHandler.Handle(args.FullPath);
-            //this._OnFileDeletedHandler.Handle(args.FullPath);
         }
 
         public void OnLocallyCreated(FileSystemEventArgs args)
@@ -168,24 +165,10 @@ namespace Cloud_Storage_Desktop_lib.Services
                     $"Error while handling file creation for file [[{args.Name}]] :::: {ex.Message}"
                 );
             }
-            //_OnFileCreatedHandler.Handle(args.FullPath);
-            //if (Active)
-            //    _taskRunController.AddTask(
-            //        new UploadAction(
-            //            this._serverConnection,
-            //            this._configuration,
-            //            this._fileRepositoryService,
-            //            FileManager.GetUploadFileData(
-            //                args.FullPath,
-            //                this._configuration.StorageLocation
-            //            )
-            //        )
-            //    );
         }
 
         public void OnLocallyChanged(FileSystemEventArgs args)
         {
-            //_clientChainOfResponsibilityRepository.OnLocallyFileChangeHandler.Handle(args);
             logger.LogWarning($"OnLocallyChanged Not Implemented:: {args.ToString()}");
         }
 
