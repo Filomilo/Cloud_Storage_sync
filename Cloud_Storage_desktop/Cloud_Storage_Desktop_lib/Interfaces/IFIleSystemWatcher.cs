@@ -2,8 +2,6 @@
 {
     public delegate void OnChanged(FileSystemEventArgs e);
 
-    public delegate void OnCreated(FileSystemEventArgs e);
-
     public delegate void OnDeleted(FileSystemEventArgs e);
 
     public delegate void OnRenamed(RenamedEventArgs e);
@@ -16,7 +14,6 @@
         event OnError OnErrorEventHandler;
         event OnRenamed OnRenamedEventHandler;
         event OnDeleted OnDeletedEventHandler;
-        event OnCreated OnCreatedEventHandler;
         event OnChanged OnChangedEventHandler;
         void Stop();
         void Dispose();

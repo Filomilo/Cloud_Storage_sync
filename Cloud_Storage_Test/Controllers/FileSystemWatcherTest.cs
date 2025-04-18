@@ -32,7 +32,7 @@ namespace Cloud_Storage_Desktop_lib.Services
             bool wasOnCreatedEventHandler = false;
             bool wasOnChangeEventHadnler = false;
             bool wasOnDeltedeEventHadnler = false;
-            this.fIleSystemWatcher.OnCreatedEventHandler += (
+            this.fIleSystemWatcher.OnChangedEventHandler += (
                 args =>
                 {
                     wasOnCreatedEventHandler = true;

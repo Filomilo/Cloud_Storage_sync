@@ -155,7 +155,7 @@ namespace Cloud_Storage_Desktop_lib.Services
         {
             try
             {
-                _clientChainOfResponsibilityRepository.OnLocalyFileCreatedHandler.Handle(
+                _clientChainOfResponsibilityRepository.OnLocallyFileChangeHandler.Handle(
                     args.FullPath
                 );
             }
@@ -169,7 +169,18 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         public void OnLocallyChanged(FileSystemEventArgs args)
         {
-            logger.LogWarning($"OnLocallyChanged Not Implemented:: {args.ToString()}");
+            try
+            {
+                _clientChainOfResponsibilityRepository.OnLocallyFileChangeHandler.Handle(
+                    args.FullPath
+                );
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(
+                    $"Error while handling file creation for file [[{args.Name}]] :::: {ex.Message}"
+                );
+            }
         }
 
         public void StopAllSync()

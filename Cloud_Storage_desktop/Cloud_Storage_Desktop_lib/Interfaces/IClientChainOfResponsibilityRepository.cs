@@ -12,7 +12,6 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
         IHandler InitlalSyncHandler { get; }
         IHandler OnLocallyFileChangeHandler { get; }
         IHandler OnLocalyFileRenamedHandler { get; }
-        IHandler OnLocalyFileCreatedHandler { get; }
         IHandler OnLocalyFileDeletedHandler { get; }
 
         IHandler OnCloudFileChangeHandler { get; }

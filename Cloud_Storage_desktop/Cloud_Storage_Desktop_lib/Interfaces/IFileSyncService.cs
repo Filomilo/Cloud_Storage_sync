@@ -20,7 +20,6 @@
         void StartSync();
         void OnLocallyOnRenamed(RenamedEventArgs args);
         void OnLocallyDeleted(FileSystemEventArgs args);
-        void OnLocallyCreated(FileSystemEventArgs args);
         void OnLocallyChanged(FileSystemEventArgs args);
 
         void StopAllSync();

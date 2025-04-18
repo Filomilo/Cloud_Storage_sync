@@ -74,7 +74,6 @@ namespace Cloud_Storage_Desktop_lib
             );
             this.SystemWatcher.OnDeletedEventHandler += this.FileSyncService.OnLocallyDeleted;
             this.SystemWatcher.OnChangedEventHandler += this.FileSyncService.OnLocallyChanged;
-            this.SystemWatcher.OnCreatedEventHandler += this.FileSyncService.OnLocallyCreated;
             this.SystemWatcher.OnRenamedEventHandler += this.FileSyncService.OnLocallyOnRenamed;
         }
 

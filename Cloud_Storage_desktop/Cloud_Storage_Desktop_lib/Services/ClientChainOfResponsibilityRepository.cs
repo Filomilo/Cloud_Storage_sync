@@ -35,7 +35,6 @@ namespace Cloud_Storage_Desktop_lib.Services
 
             OnLocallyFileChangeHandler = CreateOnLocallyFileChangeHandler();
             OnLocalyFileRenamedHandler = CreateOnLocalyFileRenamedHandler();
-            OnLocalyFileCreatedHandler = CreateOnLocalyFileCreatedHandler();
             OnLocalyFileDeletedHandler = CreateOnLocalyFileDeletedHandler();
             OnCloudFileChangeHandler = CreateOnnCloudFileChangeHandler();
             OnCloudFileRenamedHandler = CreateOnCloudFileRenamedHandler();
@@ -211,7 +210,20 @@ namespace Cloud_Storage_Desktop_lib.Services
                 .Build();
         }
 
-        private IHandler? CreateOnLocalyFileCreatedHandler()
+        private IHandler? CreateOnLocalyFileRenamedHandler()
+        {
+            return new ChainOfResponsiblityBuilder()
+                .Next(
+                    new UpdateDataBaseFileNameHandler(
+                        this._fileRepositoryService,
+                        this._configuration
+                    )
+                )
+                .Next(new SendLocalFileUpdateToServer(this._serverConnection))
+                .Build();
+        }
+
+        private IHandler? CreateOnLocallyFileChangeHandler()
         {
             return new ChainOfResponsiblityBuilder()
                 .Next(new PrepareFileSyncData(this._configuration))
@@ -229,29 +241,9 @@ namespace Cloud_Storage_Desktop_lib.Services
                 .Build();
         }
 
-        private IHandler? CreateOnLocalyFileRenamedHandler()
-        {
-            return new ChainOfResponsiblityBuilder()
-                .Next(
-                    new UpdateDataBaseFileNameHandler(
-                        this._fileRepositoryService,
-                        this._configuration
-                    )
-                )
-                .Next(new SendLocalFileUpdateToServer(this._serverConnection))
-                .Build();
-        }
-
-        private IHandler? CreateOnLocallyFileChangeHandler()
-        {
-            //throw new NotImplementedException();
-            return null;
-        }
-
         public IHandler InitlalSyncHandler { get; }
         public IHandler OnLocallyFileChangeHandler { get; }
         public IHandler OnLocalyFileRenamedHandler { get; }
-        public IHandler OnLocalyFileCreatedHandler { get; }
         public IHandler OnLocalyFileDeletedHandler { get; }
         public IHandler OnCloudFileChangeHandler { get; }
         public IHandler OnCloudFileRenamedHandler { get; }
