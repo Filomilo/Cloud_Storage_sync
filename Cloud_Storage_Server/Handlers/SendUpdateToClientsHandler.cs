@@ -1,10 +1,6 @@
-﻿using System.Runtime.CompilerServices;
-using Cloud_Storage_Common.Interfaces;
+﻿using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
-using Cloud_Storage_Server.Database;
-using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Services;
-using Microsoft.EntityFrameworkCore;
 
 namespace Cloud_Storage_Server.Handlers
 {

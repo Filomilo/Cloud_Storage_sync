@@ -2,8 +2,6 @@
 using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Interfaces;
-using Cloud_Storage_Desktop_lib.SyncingHandlers;
-using Cloud_Storage_Server.Handlers;
 using Microsoft.Extensions.Logging;
 
 namespace Cloud_Storage_Desktop_lib.Services
