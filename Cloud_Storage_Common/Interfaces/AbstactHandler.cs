@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Cloud_Storage_Common.Interfaces
+﻿namespace Cloud_Storage_Common.Interfaces
 {
-  public  abstract class   AbstactHandler: IHandler
+    public abstract class AbstactHandler : IHandler
     {
         protected IHandler _nextHandler;
 
@@ -17,6 +11,6 @@ namespace Cloud_Storage_Common.Interfaces
             return handler;
         }
 
-       abstract public object Handle(object request);
+        public abstract object Handle(object request);
     }
 }

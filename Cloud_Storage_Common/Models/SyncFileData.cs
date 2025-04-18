@@ -1,9 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using Cloud_Storage_Server.Database.Models;
-using Lombok.NET;
 using Microsoft.EntityFrameworkCore;
 
 namespace Cloud_Storage_Common.Models

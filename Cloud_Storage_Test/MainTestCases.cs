@@ -1,29 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Net.WebSockets;
+﻿using System.Net.WebSockets;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Documents;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_Desktop_lib.Interfaces;
-using Cloud_Storage_Desktop_lib.Services;
 using Cloud_Storage_Desktop_lib.Tests;
 using Cloud_Storage_Server.Database;
-using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Database.Repositories;
 using Cloud_Storage_Server.Interfaces;
 using Cloud_Storage_Server.Services;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
-using Microsoft.Extensions.Options;
 using NUnit.Framework;
 
 namespace Cloud_Storage_Test
@@ -890,6 +877,11 @@ namespace Cloud_Storage_Test
             #endregion
 
             #region Ensure second device also has file
+
+            TestHelpers.EnsureTrue(() =>
+            {
+                return _localFileRepositoryService1.GetAllFiles().Count() > 0;
+            });
 
             string serverFclient1 = this
                 ._localFileRepositoryService1.GetAllFiles()

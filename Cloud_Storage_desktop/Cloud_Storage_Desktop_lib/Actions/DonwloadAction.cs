@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Cloud_Storage_Common;
+﻿using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -57,7 +52,9 @@ namespace Cloud_Storage_Desktop_lib.Actions
                         {
                             fileRepositoryService.AddNewFile(newData);
                         }
-                        serverConnection.UpdateFileData(new UpdateFileDataRequest(null, newData));
+                        serverConnection.UpdateFileData(
+                            new UpdateFileDataRequest(UPDATE_TYPE.ADD, null, newData)
+                        );
                     }
                     catch (Exception EX)
                     {
