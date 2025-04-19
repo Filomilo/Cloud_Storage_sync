@@ -222,6 +222,7 @@ namespace Cloud_Storage_Desktop_lib.Services
         {
             return new ChainOfResponsiblityBuilder()
                 .Next(new PrepareFileSyncData(this._configuration))
+                .Next(new ValidateIfFileAlreadyExisitInDataBase(_fileRepositoryService))
                 .Next(
                     new AddFileToDataBaseHandler(this._configuration, this._fileRepositoryService)
                 )

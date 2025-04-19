@@ -15,14 +15,18 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 
         public override object Handle(object request)
         {
-            SyncFileData syncFileData = null;
+            LocalFileData syncFileData = null;
             if (request is SyncFileData)
-                syncFileData = request as SyncFileData;
+                syncFileData = (LocalFileData)((SyncFileData)request);
+            if (request is UploudFileData)
+            {
+                syncFileData = new LocalFileData((UploudFileData)request);
+            }
             if (request is UpdateFileDataRequest)
-                syncFileData = (request as UpdateFileDataRequest).newFileData;
+                syncFileData = (LocalFileData)(request as UpdateFileDataRequest).newFileData;
             if (syncFileData == null)
                 throw new ArgumentException(
-                    "ValidateIfFileAlreadyExisitInDataBase excepts argument of type SyncFileData or UpdateFileDataRequest"
+                    "ValidateIfFileAlreadyExisitInDataBase excepts argument of type SyncFileData or UpdateFileDataRequest or UploudFileData"
                 );
             bool doesEsist =
                 _fileRepositoryService

@@ -170,6 +170,24 @@ namespace Cloud_Storage_Test.Handlers
                     null
                 );
             };
+            yield return (updateIfOnlyOwnerChangedTest) =>
+            {
+                return new Cloud_Storage_Server.Services.FileUploadRequest(
+                    new SyncFileData()
+                    {
+                        Name = updateIfOnlyOwnerChangedTest.testFileNew.Name,
+                        Extenstion = updateIfOnlyOwnerChangedTest.testFileNew.Extenstion + "a",
+                        Path = updateIfOnlyOwnerChangedTest.testFileNew.Path,
+                        Hash = "newhash",
+                        OwnerId = 5,
+                        DeviceOwner = new List<string>()
+                        {
+                            updateIfOnlyOwnerChangedTest.testDevice2.Id.ToString(),
+                        },
+                    },
+                    null
+                );
+            };
         }
 
         public static IEnumerable<
