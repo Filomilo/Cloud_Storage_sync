@@ -1,12 +1,20 @@
 ﻿using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Database.Repositories;
+using Cloud_Storage_Server.Interfaces;
 using Cloud_Storage_Server.Services;
 
 namespace Cloud_Storage_Server.Handlers
 {
     public class UpdateIfOnlyOwnerChanged : AbstactHandler
     {
+        private IDataBaseContextGenerator _dataBaseContextGenerator;
+
+        public UpdateIfOnlyOwnerChanged(IDataBaseContextGenerator dataBaseContextGenerator)
+        {
+            this._dataBaseContextGenerator = dataBaseContextGenerator;
+        }
+
         public override object Handle(object request)
         {
             SyncFileData uploudFileData = null;
@@ -45,13 +53,17 @@ namespace Cloud_Storage_Server.Handlers
                 );
             }
 
-            SyncFileData newestFileInRepository =
-                FileRepository.getNewestFileByPathNameExtensionAndUser(
+            SyncFileData newestFileInRepository;
+            using (var context = this._dataBaseContextGenerator.GetDbContext())
+            {
+                newestFileInRepository = FileRepository.getNewestFileByPathNameExtensionAndUser(
+                    context,
                     uploudFileData.Path,
                     uploudFileData.Name,
                     uploudFileData.Extenstion,
                     uploudFileData.OwnerId
                 );
+            }
 
             if (
                 newestFileInRepository != null
@@ -59,29 +71,36 @@ namespace Cloud_Storage_Server.Handlers
                 && !newestFileInRepository.DeviceOwner.Contains(uploudFileData.DeviceOwner.First())
             )
             {
-                SyncFileData prevVersionOfFlieForThisDevice =
-                    FileRepository.getFileByPathNameExtensionUserAndDeviceOwner(
-                        uploudFileData.Path,
-                        uploudFileData.Name,
-                        uploudFileData.Extenstion,
-                        uploudFileData.OwnerId,
-                        uploudFileData.DeviceOwner.First()
-                    );
-                if (prevVersionOfFlieForThisDevice != null)
+                SyncFileData prevVersionOfFlieForThisDevice;
+                using (var context = this._dataBaseContextGenerator.GetDbContext())
                 {
-                    SyncFileData prevVersionOfFlieForThisDeviceCopy = newestFileInRepository;
-                    prevVersionOfFlieForThisDeviceCopy.DeviceOwner.Remove(
-                        uploudFileData.DeviceOwner.First()
-                    );
-                    FileRepository.UpdateFile(
-                        prevVersionOfFlieForThisDevice,
-                        prevVersionOfFlieForThisDeviceCopy
-                    );
-                }
+                    prevVersionOfFlieForThisDevice =
+                        FileRepository.getFileByPathNameExtensionUserAndDeviceOwner(
+                            context,
+                            uploudFileData.Path,
+                            uploudFileData.Name,
+                            uploudFileData.Extenstion,
+                            uploudFileData.OwnerId,
+                            uploudFileData.DeviceOwner.First()
+                        );
 
-                SyncFileData copy = newestFileInRepository;
-                copy.DeviceOwner.Add(uploudFileData.DeviceOwner.First());
-                FileRepository.UpdateFile(newestFileInRepository, copy);
+                    if (prevVersionOfFlieForThisDevice != null)
+                    {
+                        SyncFileData prevVersionOfFlieForThisDeviceCopy = newestFileInRepository;
+                        prevVersionOfFlieForThisDeviceCopy.DeviceOwner.Remove(
+                            uploudFileData.DeviceOwner.First()
+                        );
+                        FileRepository.UpdateFile(
+                            context,
+                            prevVersionOfFlieForThisDevice,
+                            prevVersionOfFlieForThisDeviceCopy
+                        );
+                    }
+
+                    SyncFileData copy = newestFileInRepository;
+                    copy.DeviceOwner.Add(uploudFileData.DeviceOwner.First());
+                    FileRepository.UpdateFile(context, newestFileInRepository, copy);
+                }
             }
             else
             {
@@ -89,12 +108,16 @@ namespace Cloud_Storage_Server.Handlers
                     return this._nextHandler.Handle(request);
             }
 
-            return FileRepository.getFileByPathNameExtensionAndUser(
-                uploudFileData.Path,
-                uploudFileData.Name,
-                uploudFileData.Extenstion,
-                uploudFileData.OwnerId
-            );
+            using (var context = this._dataBaseContextGenerator.GetDbContext())
+            {
+                return FileRepository.getFileByPathNameExtensionAndUser(
+                    context,
+                    uploudFileData.Path,
+                    uploudFileData.Name,
+                    uploudFileData.Extenstion,
+                    uploudFileData.OwnerId
+                );
+            }
         }
     }
 }

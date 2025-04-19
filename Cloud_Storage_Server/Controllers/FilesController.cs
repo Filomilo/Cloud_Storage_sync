@@ -4,6 +4,7 @@ using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Database.Repositories;
+using Cloud_Storage_Server.Interfaces;
 using Cloud_Storage_Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,21 +24,30 @@ namespace Cloud_Storage_Server.Controllers
     public class FilesController : Controller
     {
         private readonly IFileSyncService _FileSyncService;
+        private readonly IDataBaseContextGenerator _dataBaseContextGenerator;
 
-        public FilesController(IFileSyncService fileSyncService)
+        public FilesController(
+            IFileSyncService fileSyncService,
+            IDataBaseContextGenerator dataBaseContextGenerator
+        )
         {
             _FileSyncService = fileSyncService;
+            _dataBaseContextGenerator = dataBaseContextGenerator;
         }
 
         [Route("list")]
         [HttpGet]
         public IActionResult listOfFiles()
         {
-            User user = UserRepository.getUserByMail(
-                JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
-            );
-            List<SyncFileData> files = FileRepository.GetAllUserFiles(user.id);
-            return Ok(files);
+            using (var context = _dataBaseContextGenerator.GetDbContext())
+            {
+                User user = UserRepository.getUserByMail(
+                    context,
+                    JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
+                );
+                List<SyncFileData> files = FileRepository.GetAllUserFiles(context, user.id);
+                return Ok(files);
+            }
         }
 
         [Route("edit")]
@@ -67,9 +77,15 @@ namespace Cloud_Storage_Server.Controllers
                     return BadRequest("Request cannot be null");
                 }
                 filerequest = santizeFileUploudRequest(filerequest);
-                User user = UserRepository.getUserByMail(
-                    JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
-                );
+                User user;
+                using (var context = this._dataBaseContextGenerator.GetDbContext())
+                {
+                    user = UserRepository.getUserByMail(
+                        context,
+                        JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
+                    );
+                }
+
                 string deviceId = JwtHelpers.GetDeviceIDFromAuthString(
                     Request.Headers.Authorization
                 );
@@ -98,9 +114,16 @@ namespace Cloud_Storage_Server.Controllers
             {
                 return BadRequest("relativePath cannot be null or empty.");
             }
-            User user = UserRepository.getUserByMail(
-                JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
-            );
+
+            User user;
+            using (var context = _dataBaseContextGenerator.GetDbContext())
+            {
+                user = UserRepository.getUserByMail(
+                    context,
+                    JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
+                );
+            }
+
             string deviceId = JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization);
             FileData fileData = new FileData(relativePath);
 
@@ -114,10 +137,17 @@ namespace Cloud_Storage_Server.Controllers
         [HttpGet]
         public IActionResult DownlaodFile([FromQuery] Guid guid)
         {
-            User user = UserRepository.getUserByMail(
-                JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
-            );
-            SyncFileData fileData = FileRepository.GetFileOfID(guid);
+            User user = null;
+            SyncFileData fileData;
+            using (var context = _dataBaseContextGenerator.GetDbContext())
+            {
+                user = UserRepository.getUserByMail(
+                    context,
+                    JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
+                );
+                fileData = FileRepository.GetFileOfID(context, guid);
+            }
+
             string deviceId = JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization);
             Stream data = _FileSyncService.DownloadFile(user, fileData);
 

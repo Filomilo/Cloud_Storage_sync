@@ -1,6 +1,7 @@
 ﻿using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Database;
+using Cloud_Storage_Server.Interfaces;
 
 namespace Cloud_Storage_Server.Handlers
 {
@@ -14,6 +15,13 @@ namespace Cloud_Storage_Server.Handlers
 
     public class RemoveFileDeviceOwnership : AbstactHandler
     {
+        private IDataBaseContextGenerator _dataBaseContextGenerator;
+
+        public RemoveFileDeviceOwnership(IDataBaseContextGenerator dataBaseContextGenerator)
+        {
+            _dataBaseContextGenerator = dataBaseContextGenerator;
+        }
+
         public override object Handle(object request)
         {
             if (request is not RemoveFileDeviceOwnershipRequest)
@@ -25,7 +33,7 @@ namespace Cloud_Storage_Server.Handlers
             RemoveFileDeviceOwnershipRequest removeFileDeviceOwnership =
                 request as RemoveFileDeviceOwnershipRequest;
             SyncFileData newFile = null;
-            using (DatabaseContext context = new DatabaseContext())
+            using (AbstractDataBaseContext context = _dataBaseContextGenerator.GetDbContext())
             {
                 var existingFile = GetExisitingFileOnThisDeviceFromDatabse(
                     context,
@@ -86,7 +94,7 @@ namespace Cloud_Storage_Server.Handlers
 
         private bool StopIFileLAlreadyDletedForThisDevice(
             SyncFileData? existingFile,
-            DatabaseContext context,
+            AbstractDataBaseContext context,
             out object syncFileData
         )
         {
@@ -107,7 +115,7 @@ namespace Cloud_Storage_Server.Handlers
         }
 
         private static SyncFileData? GetAlreadyDletedFileVersionFromDataBase(
-            DatabaseContext context,
+            AbstractDataBaseContext context,
             RemoveFileDeviceOwnershipRequest? removeFileDeviceOwnership,
             SyncFileData? existingFile
         )
@@ -125,7 +133,7 @@ namespace Cloud_Storage_Server.Handlers
         }
 
         private static SyncFileData? GetExisitingFileOnThisDeviceFromDatabse(
-            DatabaseContext context,
+            AbstractDataBaseContext context,
             RemoveFileDeviceOwnershipRequest? removeFileDeviceOwnership
         )
         {

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NUnit.Framework;
+using AbstractDataBaseContext = Cloud_Storage_Desktop_lib.Interfaces.AbstractDataBaseContext;
 
 public class TestConfig : IConfiguration
 {
@@ -292,7 +293,7 @@ namespace Cloud_Storage_Test
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
             }
-            using (var context = new DatabaseContext())
+            using (var context = new SqliteDataBaseContextGenerator().GetDbContext())
             {
                 Assert.DoesNotThrow(
                     () =>

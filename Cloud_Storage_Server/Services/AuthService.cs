@@ -7,17 +7,33 @@ using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_Server.Configurations;
 using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Database.Repositories;
+using Cloud_Storage_Server.Interfaces;
 using Cloud_Storage_Server.Services.PasswordHasher;
 using log4net;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Cloud_Storage_Server.Services
 {
-    public static class AuthService
+    public interface IAuthService
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(AuthService));
+        string GenerateToken(User user, Device device);
 
-        public static string GenerateToken(User user, Device device)
+        bool VerifyUser(string mail, string password);
+        User CreateNewUserBeasedOnLoginRequest(AuthRequest loginRequest);
+        bool validatePasswordFormat(string password);
+    }
+
+    public class AuthService : IAuthService
+    {
+        private readonly ILog log = LogManager.GetLogger(typeof(AuthService));
+        private IDataBaseContextGenerator _dataBaseContextGenerator;
+
+        public AuthService(IDataBaseContextGenerator dataBaseContextGenerator)
+        {
+            _dataBaseContextGenerator = dataBaseContextGenerator;
+        }
+
+        public string GenerateToken(User user, Device device)
         {
             var handler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(AuthConfiguration.PrivateKey);
@@ -37,7 +53,7 @@ namespace Cloud_Storage_Server.Services
             return handler.WriteToken(token);
         }
 
-        private static ClaimsIdentity GenerateClaims(User user, Device device)
+        private ClaimsIdentity GenerateClaims(User user, Device device)
         {
             var claims = new ClaimsIdentity();
             claims.AddClaim(new Claim(ClaimTypes.Name, user.mail));
@@ -45,21 +61,24 @@ namespace Cloud_Storage_Server.Services
             return claims;
         }
 
-        public static bool VerifyUser(string mail, string password)
+        public bool VerifyUser(string mail, string password)
         {
-            try
+            using (var context = this._dataBaseContextGenerator.GetDbContext())
             {
-                User dbUser = UserRepository.getUserByMail(mail);
-                return BCryptPasswordHasher.VerifyHashedPassword(dbUser.password, password);
-            }
-            catch (Exception ex)
-            {
-                log.Warn($"Error while verifing user {ex}");
-                return false;
+                try
+                {
+                    User dbUser = UserRepository.getUserByMail(context, mail);
+                    return BCryptPasswordHasher.VerifyHashedPassword(dbUser.password, password);
+                }
+                catch (Exception ex)
+                {
+                    log.Warn($"Error while verifing user {ex}");
+                    return false;
+                }
             }
         }
 
-        public static User CreateNewUserBeasedOnLoginRequest(AuthRequest loginRequest)
+        public User CreateNewUserBeasedOnLoginRequest(AuthRequest loginRequest)
         {
             User user = new User
             {
@@ -69,7 +88,7 @@ namespace Cloud_Storage_Server.Services
             return user;
         }
 
-        public static bool validatePasswordFormat(string password)
+        public bool validatePasswordFormat(string password)
         {
             if (password.Length < 12)
             {

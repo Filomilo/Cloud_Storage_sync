@@ -4,6 +4,7 @@ using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Tests;
+using Cloud_Storage_Server.Database;
 using Cloud_Storage_Server.Database.Repositories;
 using Cloud_Storage_Server.Interfaces;
 using Microsoft.AspNetCore.TestHost;
@@ -104,11 +105,14 @@ namespace Cloud_Storage_Test.Controllers
                 websocketConnectedController.GetAllConnectedDevices().Count() == 1,
                 $"Connected deviceds count is not 1 but {websocketConnectedController.GetAllConnectedDevices().Count()}"
             );
+            using (var context = new SqliteDataBaseContextGenerator().GetDbContext())
+            {
+                websocketConnectedController.SendMessageToUser(
+                    UserRepository.getUserByMail(context, email).id,
+                    webSocketMessage
+                );
+            }
 
-            websocketConnectedController.SendMessageToUser(
-                UserRepository.getUserByMail(email).id,
-                webSocketMessage
-            );
             Assert.DoesNotThrow(
                 () =>
                 {

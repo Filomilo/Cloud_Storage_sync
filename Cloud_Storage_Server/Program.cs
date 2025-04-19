@@ -37,7 +37,14 @@ builder.Services.AddSwaggerGen(setup =>
         new OpenApiSecurityRequirement { { jwtSecurityScheme, Array.Empty<string>() } }
     );
 });
-builder.Services.AddDbContext<DatabaseContext>();
+SqliteDataBaseContextGenerator contextGenerator = new SqliteDataBaseContextGenerator();
+builder.Services.AddSingleton<IDataBaseContextGenerator, SqliteDataBaseContextGenerator>(provider =>
+    contextGenerator
+);
+AuthService authService = new AuthService(contextGenerator);
+builder.Services.AddSingleton<IAuthService>(provider => authService);
+
+//builder.Services.AddDbContext<DatabaseContext>();
 WebsocketConnectedController WebsocketConnectedController = new WebsocketConnectedController();
 builder.Services.AddSingleton<IWebsocketConnectedController, WebsocketConnectedController>(
     provider => WebsocketConnectedController
@@ -46,7 +53,8 @@ FileSystemService fileSystemService = new FileSystemService("dataStorage\\");
 builder.Services.AddSingleton<IFileSystemService>(provider => fileSystemService);
 builder.Services.AddSingleton<IFileSyncService>(provider => new FileSyncService(
     fileSystemService,
-    WebsocketConnectedController
+    WebsocketConnectedController,
+    contextGenerator
 ));
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -67,17 +75,20 @@ builder
         {
             OnTokenValidated = context =>
             {
-                var claimsIdentity = context.Principal.Identity as ClaimsIdentity;
-                var mail = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
-
-                if (string.IsNullOrEmpty(mail))
+                using (AbstractDataBaseContext ctx = contextGenerator.GetDbContext())
                 {
-                    context.Fail("Unauthorized: User Mail missing in token.");
-                }
+                    var claimsIdentity = context.Principal.Identity as ClaimsIdentity;
+                    var mail = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
 
-                if (!UserRepository.DoesUserWithMailExist(mail))
-                {
-                    context.Fail("Unauthorized: User {mail} not exist.");
+                    if (string.IsNullOrEmpty(mail))
+                    {
+                        context.Fail("Unauthorized: User Mail missing in token.");
+                    }
+
+                    if (!UserRepository.DoesUserWithMailExist(ctx, mail))
+                    {
+                        context.Fail("Unauthorized: User {mail} not exist.");
+                    }
                 }
 
                 return Task.CompletedTask;
@@ -106,9 +117,12 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
-    var context = services.GetRequiredService<DatabaseContext>();
+    var contextGeneratorTmp = services.GetRequiredService<IDataBaseContextGenerator>();
     //context.Database.Migrate();
-    context.Database.EnsureCreated();
+    using (var context = contextGeneratorTmp.GetDbContext())
+    {
+        context.Database.EnsureCreated();
+    }
 }
 
 app.Run();

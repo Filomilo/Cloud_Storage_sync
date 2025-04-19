@@ -13,10 +13,15 @@ namespace Cloud_Storage_Server.Controllers
     public class WebSocketController : Controller
     {
         private readonly IWebsocketConnectedController websocketConnectedController;
+        private readonly IDataBaseContextGenerator _dataBaseContextGenerator;
 
-        public WebSocketController(IWebsocketConnectedController websocketConnectedController)
+        public WebSocketController(
+            IWebsocketConnectedController websocketConnectedController,
+            IDataBaseContextGenerator dataBaseContextGenerator
+        )
         {
             this.websocketConnectedController = websocketConnectedController;
+            this._dataBaseContextGenerator = dataBaseContextGenerator;
         }
 
         [SwaggerIgnore]
@@ -27,9 +32,15 @@ namespace Cloud_Storage_Server.Controllers
             if (HttpContext.WebSockets.IsWebSocketRequest)
             {
                 using WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-                Device device = DeviceRepository.GetDevice(
-                    JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization)
-                );
+                Device device = null;
+                using (var context = _dataBaseContextGenerator.GetDbContext())
+                {
+                    device = DeviceRepository.GetDevice(
+                        context,
+                        JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization)
+                    );
+                }
+
                 DeviceSocket deviceSocket = new DeviceSocket(device, webSocket);
                 this.websocketConnectedController.AddDevice(deviceSocket);
                 ArraySegment<byte> buffer = new ArraySegment<byte>(new byte[1024]);

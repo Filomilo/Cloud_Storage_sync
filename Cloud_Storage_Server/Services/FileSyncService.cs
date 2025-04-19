@@ -39,14 +39,16 @@ namespace Cloud_Storage_Server.Services
         private IFileSystemService _fileSystemService;
         private ILogger logger = CloudDriveLogging.Instance.GetLogger("FileSyncService");
         private IServerChainOfResposibiltyRepository _serverChainOfResposibiltyRepository;
+        private IDataBaseContextGenerator _dataBaseContextGenerator;
 
         public FileSyncService(
             IFileSystemService fileSystemService,
-            IWebsocketConnectedController websocketConnectedController
+            IWebsocketConnectedController websocketConnectedController,
+            IDataBaseContextGenerator dataBaseContextGenerator
         )
         {
             _fileSystemService = fileSystemService;
-
+            _dataBaseContextGenerator = dataBaseContextGenerator;
             this.FileUpdated += (UpdateFileDataRequest file) =>
             {
                 websocketConnectedController.SendMessageToUser(
@@ -57,7 +59,8 @@ namespace Cloud_Storage_Server.Services
 
             this._serverChainOfResposibiltyRepository = new ServerChainOfResposibiltyRepository(
                 this._fileSystemService,
-                this
+                this,
+                this._dataBaseContextGenerator
             );
         }
 
@@ -117,8 +120,11 @@ namespace Cloud_Storage_Server.Services
             UpdateFileDataRequest fileUpdate
         )
         {
+            using (var context = _dataBaseContextGenerator.GetDbContext())
+            {
+                fileUpdate.UserID = UserRepository.getUserByMail(context, email).id;
+            }
             fileUpdate.DeviceReuqested = deviceId;
-            fileUpdate.UserID = UserRepository.getUserByMail(email).id;
             UpdateFileDataRequest resolved =
                 this._serverChainOfResposibiltyRepository.OnFileUpdateHandler.Handle(fileUpdate)
                 as UpdateFileDataRequest;
@@ -141,8 +147,11 @@ namespace Cloud_Storage_Server.Services
 
         public List<SyncFileData> ListFilesForUser(User user)
         {
-            List<SyncFileData> files = FileRepository.GetAllUserFiles(user.id);
-            return files;
+            using (var context = _dataBaseContextGenerator.GetDbContext())
+            {
+                List<SyncFileData> files = FileRepository.GetAllUserFiles(context, user.id);
+                return files;
+            }
         }
     }
 }

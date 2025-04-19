@@ -3,6 +3,7 @@ using System.Text;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib;
+using Cloud_Storage_Desktop_lib.Actions;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Tests;
 using Cloud_Storage_Server.Database;
@@ -12,6 +13,7 @@ using Cloud_Storage_Server.Services;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Logging;
 using NUnit.Framework;
+using AbstractDataBaseContext = Cloud_Storage_Server.Database.AbstractDataBaseContext;
 
 namespace Cloud_Storage_Test
 {
@@ -42,7 +44,7 @@ namespace Cloud_Storage_Test
             {
                 try
                 {
-                    using (var ctx = new DatabaseContext())
+                    using (var ctx = new SqliteDataBaseContextGenerator().GetDbContext())
                     {
                         ctx.Users.ToList();
                         return true;
@@ -188,10 +190,11 @@ namespace Cloud_Storage_Test
                 {
                     TestHelpers.EnsureTrue(() =>
                     {
-                        files = FileRepository.GetAllUserFiles(
-                            UserRepository.getUserByMail(email).id
-                        );
-                        return files.Count == 1;
+                        using (var ctx = new SqliteDataBaseContextGenerator().GetDbContext())
+                        {
+                            files = this.GetAllFilesOnServer();
+                            return files.Count == 1;
+                        }
                     });
                 },
                 $"File reposirotry did not reach files amount to one in desired time, exprect to file repository have 1 but has [[{files.Count}]] "
@@ -251,9 +254,7 @@ namespace Cloud_Storage_Test
                 {
                     TestHelpers.EnsureTrue(() =>
                     {
-                        files = FileRepository.GetAllUserFiles(
-                            UserRepository.getUserByMail(email).id
-                        );
+                        files = this.GetAllFilesOnServer();
                         return files.Count == 1;
                     });
                 },
@@ -305,8 +306,7 @@ namespace Cloud_Storage_Test
                     {
                         TestHelpers.EnsureTrue(() =>
                         {
-                            return FileRepository
-                                    .GetAllUserFiles(UserRepository.getUserByMail(email).id)
+                            return GetAllFilesOnServer()
                                     .Where(x =>
                                         x.DeviceOwner.Contains(
                                             this._cloudDriveSyncSystemClient1.CredentialManager.GetDeviceID()
@@ -319,8 +319,7 @@ namespace Cloud_Storage_Test
                         });
                     }
                 ),
-                $"Files: {String.Join(", ", FileRepository
-                .GetAllUserFiles(UserRepository.getUserByMail(this.email).id))} Do not  have both devies as owners"
+                $"Files: {String.Join(", ", this.GetAllFilesOnServer())} Do not  have both devies as owners"
             );
 
             #endregion
@@ -388,7 +387,7 @@ namespace Cloud_Storage_Test
             }
 
             Assert.That(
-                FileRepository.GetAllUserFiles(UserRepository.getUserByMail(email).id).Count == 0,
+                this.GetAllFilesOnServer().Count == 0,
                 "File for user in reposirotry not 0"
             );
 
@@ -423,9 +422,7 @@ namespace Cloud_Storage_Test
                 () =>
                     TestHelpers.EnsureTrue(() =>
                     {
-                        return FileRepository
-                                .GetAllUserFiles(UserRepository.getUserByMail(email).id)
-                                .Count == amountOfFiles;
+                        return this.GetAllFilesOnServer().Count == amountOfFiles;
                     })
             );
 
@@ -471,9 +468,7 @@ namespace Cloud_Storage_Test
                 () =>
                     TestHelpers.EnsureTrue(() =>
                     {
-                        List<SyncFileData> filesOnServer = FileRepository.GetAllUserFiles(
-                            UserRepository.getUserByMail(email).id
-                        );
+                        List<SyncFileData> filesOnServer = this.GetAllFilesOnServer();
                         foreach (SyncFileData syncFileData in filesOnServer)
                         {
                             if (
@@ -550,9 +545,7 @@ namespace Cloud_Storage_Test
                 {
                     TestHelpers.EnsureTrue(() =>
                     {
-                        return FileRepository
-                                .GetAllUserFiles(UserRepository.getUserByMail(email).id)
-                                .Count == 6;
+                        return GetAllFilesOnServer().Count == 6;
                     });
                 },
                 "Files on server not equal to 6"
@@ -563,9 +556,7 @@ namespace Cloud_Storage_Test
                 {
                     TestHelpers.EnsureTrue(() =>
                     {
-                        List<SyncFileData> filesOnServer = FileRepository.GetAllUserFiles(
-                            UserRepository.getUserByMail(email).id
-                        );
+                        List<SyncFileData> filesOnServer = this.GetAllFilesOnServer();
                         foreach (SyncFileData syncFileData in filesOnServer)
                         {
                             if (syncFileData.DeviceOwner.Count == 0)
@@ -652,8 +643,7 @@ namespace Cloud_Storage_Test
                 {
                     TestHelpers.EnsureTrue(() =>
                     {
-                        return FileRepository
-                                .GetAllUserFiles(UserRepository.getUserByMail(this.email).id)
+                        return GetAllFilesOnServer()
                                 .Where(x =>
                                     x.DeviceOwner.Contains(
                                         this._cloudDriveSyncSystemClient1.CredentialManager.GetDeviceID()
@@ -809,11 +799,14 @@ namespace Cloud_Storage_Test
 
             #region Files on server databse should 3 with one without owners
 
-            Assert.That(
-                FileRepository.GetAllUserFiles(UserRepository.getUserByMail(email).id).Count == 4,
-                $"File in server database not equal to [[4]] but [[{FileRepository.GetAllUserFiles(UserRepository.getUserByMail(email).id).Count}]] ::: \n {String.Join(", \n", FileRepository.GetAllUserFiles(UserRepository.getUserByMail(email).id))}"
-            );
-            ;
+            using (AbstractDataBaseContext context = new DatabaseContextSqLite())
+            {
+                Assert.That(
+                    GetAllFilesOnServer().Count == 4,
+                    $"File in server database not equal to [[4]] but [[{this.GetAllFilesOnServer().Count}]] ::: \n {String.Join(", \n", GetAllFilesOnServer())}"
+                );
+                ;
+            }
 
             Assert.DoesNotThrow(
                 () =>
@@ -821,8 +814,7 @@ namespace Cloud_Storage_Test
                     TestHelpers.EnsureTrue(
                         () =>
                         {
-                            return FileRepository
-                                    .GetAllUserFiles(UserRepository.getUserByMail(email).id)
+                            return GetAllFilesOnServer()
                                     .Where(x =>
                                         x.DeviceOwner.Contains(
                                             _cloudDriveSyncSystemClient1.CredentialManager.GetDeviceID()
@@ -836,24 +828,30 @@ namespace Cloud_Storage_Test
                         10000
                     );
                 },
-                $"Server file repository should heave 3 files with two device owner:: \n {String.Join(", \n", FileRepository.GetAllUserFiles(UserRepository.getUserByMail(email).id))} "
+                $"Server file repository should heave 3 files with two device owner:: \n {String.Join(", \n", GetAllFilesOnServer())} "
             );
-            Assert.DoesNotThrow(
-                () =>
-                {
-                    TestHelpers.EnsureTrue(
-                        () =>
-                        {
-                            return FileRepository
-                                    .GetAllUserFiles(UserRepository.getUserByMail(email).id)
-                                    .Where(x => x.DeviceOwner.Count == 0)
-                                    .Count() == 1;
-                        },
-                        10000
-                    );
-                },
-                $"Server file repository should heave one file withou owners but has:: \n {String.Join(", \n", FileRepository.GetAllUserFiles(UserRepository.getUserByMail(email).id))} "
-            );
+            using (AbstractDataBaseContext context = new DatabaseContextSqLite())
+            {
+                Assert.DoesNotThrow(
+                    () =>
+                    {
+                        TestHelpers.EnsureTrue(
+                            () =>
+                            {
+                                return FileRepository
+                                        .GetAllUserFiles(
+                                            context,
+                                            UserRepository.getUserByMail(context, email).id
+                                        )
+                                        .Where(x => x.DeviceOwner.Count == 0)
+                                        .Count() == 1;
+                            },
+                            10000
+                        );
+                    },
+                    $"Server file repository should heave one file withou owners but has:: \n {String.Join(", \n", FileRepository.GetAllUserFiles(context, UserRepository.getUserByMail(context, email).id))} "
+                );
+            }
 
             Console.WriteLine("Test");
             #endregion
@@ -1245,7 +1243,12 @@ namespace Cloud_Storage_Test
         private string AddFileOnServerSide()
         {
             Guid guid = Guid.NewGuid();
-            long userID = UserRepository.getUserByMail(email).id;
+            long userID;
+            using (AbstractDataBaseContext context = new DatabaseContextSqLite())
+            {
+                userID = UserRepository.getUserByMail(context, email).id;
+            }
+
             MemoryStream memoryStream = new MemoryStream();
             string content = "Example file content______" + Guid.NewGuid();
             memoryStream.Write(
@@ -1258,28 +1261,30 @@ namespace Cloud_Storage_Test
             TestHelpers
                 .GetDeafultFileSystemService()
                 .SaveFile($"{userID}//{guid.ToString()}", memoryStream);
+            using (AbstractDataBaseContext context = new DatabaseContextSqLite())
+            {
+                FileRepository.SaveNewFile(
+                    context,
+                    new SyncFileData()
+                    {
+                        Name = Path.GetFileNameWithoutExtension(newfileName),
+                        Extenstion = Path.GetExtension(newfileName),
+                        Path = ".",
+                        OwnerId = userID,
+                        Hash = FileManager.getHashOfArrayBytes(memoryStream.ToArray()),
+                        Id = guid,
+                        Version = 0,
+                        DeviceOwner = new List<string>(),
+                    }
+                );
+            }
 
-            FileRepository.SaveNewFile(
-                new SyncFileData()
-                {
-                    Name = Path.GetFileNameWithoutExtension(newfileName),
-                    Extenstion = Path.GetExtension(newfileName),
-                    Path = ".",
-                    OwnerId = userID,
-                    Hash = FileManager.getHashOfArrayBytes(memoryStream.ToArray()),
-                    Id = guid,
-                    Version = 0,
-                    DeviceOwner = new List<string>(),
-                }
-            );
             return newfileName;
         }
 
         private void CheckIfTheSameContentOnClinetsAndServer(List<CloudDriveSyncSystem> systems)
         {
-            List<SyncFileData> filesOnTheServer = FileRepository.GetAllUserFiles(
-                UserRepository.getUserByMail(email).id
-            );
+            List<SyncFileData> filesOnTheServer = this.GetAllFilesOnServer();
             foreach (CloudDriveSyncSystem cloudDriveSyncSystem in systems)
             {
                 List<FileData> filesInUserLocation = FileManager.GetAllFilesInLocationRelative(
@@ -1314,7 +1319,16 @@ namespace Cloud_Storage_Test
 
         List<SyncFileData> GetAllFilesOnServer()
         {
-            return FileRepository.GetAllUserFiles(UserRepository.getUserByMail(email).id);
+            using (
+                AbstractDataBaseContext context =
+                    new SqliteDataBaseContextGenerator().GetDbContext()
+            )
+            {
+                return FileRepository.GetAllUserFiles(
+                    context,
+                    UserRepository.getUserByMail(context, email).id
+                );
+            }
         }
 
         void BothDevicesShouldHAveTheSameData()

@@ -2,6 +2,7 @@
 using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Database;
+using Cloud_Storage_Server.Interfaces;
 using Cloud_Storage_Server.Services;
 
 namespace Cloud_Storage_Server.Handlers
@@ -9,10 +10,15 @@ namespace Cloud_Storage_Server.Handlers
     public class SaveAndUpdateNewVersionOfFile : AbstactHandler
     {
         private IFileSystemService _fileSystemService;
+        private IDataBaseContextGenerator _dataBaseContextGenerator;
 
-        public SaveAndUpdateNewVersionOfFile(IFileSystemService fileSystemService)
+        public SaveAndUpdateNewVersionOfFile(
+            IFileSystemService fileSystemService,
+            IDataBaseContextGenerator dataBaseContextGenerator
+        )
         {
             _fileSystemService = fileSystemService;
+            _dataBaseContextGenerator = dataBaseContextGenerator;
         }
 
         private static string GetRealtivePathForFile(long userid, SyncFileData data)
@@ -32,7 +38,7 @@ namespace Cloud_Storage_Server.Handlers
             FileUploadRequest fileUploadRequest = (FileUploadRequest)request;
             SyncFileData uploudFileData = fileUploadRequest.syncFileData;
             SyncFileData saved = null;
-            using (DatabaseContext context = new DatabaseContext())
+            using (AbstractDataBaseContext context = _dataBaseContextGenerator.GetDbContext())
             {
                 using (var transaction = context.Database.BeginTransaction())
                 {
@@ -81,7 +87,7 @@ namespace Cloud_Storage_Server.Handlers
         }
 
         private bool getNewestVersionOfTheSameFile(
-            DatabaseContext context,
+            AbstractDataBaseContext context,
             SyncFileData file,
             out SyncFileData newestVersionAlreadyInDataBase
         )

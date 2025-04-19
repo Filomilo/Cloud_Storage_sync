@@ -13,13 +13,16 @@ public class UserRepositoryTest
     [Test]
     public void saveUser()
     {
-        using (var context = new DatabaseContext())
+        using (var context = new SqliteDataBaseContextGenerator().GetDbContext())
         {
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
             int amountOFUsersBefore = context.Users.ToList().Count;
 
-            UserRepository.saveUser(new User() { mail = "mail@mail.mail", password = "password" });
+            UserRepository.saveUser(
+                context,
+                new User() { mail = "mail@mail.mail", password = "password" }
+            );
 
             int amountOfUsersAfter = context.Users.ToList().Count;
             Assert.That(amountOfUsersAfter == amountOFUsersBefore + 1);
@@ -29,7 +32,7 @@ public class UserRepositoryTest
     [Test]
     public void saveUserIncorrectEmail()
     {
-        using (var context = new DatabaseContext())
+        using (var context = new SqliteDataBaseContextGenerator().GetDbContext())
         {
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
@@ -37,7 +40,10 @@ public class UserRepositoryTest
                 expectedExceptionType: typeof(ValidationException),
                 code: () =>
                 {
-                    UserRepository.saveUser(new User() { mail = "123", password = "password" });
+                    UserRepository.saveUser(
+                        context,
+                        new User() { mail = "123", password = "password" }
+                    );
                 }
             );
         }
@@ -46,13 +52,16 @@ public class UserRepositoryTest
     [Test]
     public void saveUserWithTheSameEmail()
     {
-        using (var context = new DatabaseContext())
+        using (var context = new SqliteDataBaseContextGenerator().GetDbContext())
         {
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
             int amountOFUsersBefore = context.Users.ToList().Count;
 
-            UserRepository.saveUser(new User() { mail = "123@123.123", password = "password" });
+            UserRepository.saveUser(
+                context,
+                new User() { mail = "123@123.123", password = "password" }
+            );
 
             int amountOfUsersAfter = context.Users.ToList().Count;
             Assert.That(amountOFUsersBefore + 1 == amountOfUsersAfter);
@@ -61,6 +70,7 @@ public class UserRepositoryTest
                 () =>
                 {
                     UserRepository.saveUser(
+                        context,
                         new User() { mail = "123@123.123", password = "password" }
                     );
                 }
