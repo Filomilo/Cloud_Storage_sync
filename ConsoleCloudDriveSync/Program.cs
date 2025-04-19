@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mime;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Channels;
-using System.Threading.Tasks;
-using Cloud_Storage_Desktop_lib;
+﻿using Cloud_Storage_Desktop_lib;
 using Lombok.NET;
 
 namespace ConsoleCloudDriveSync

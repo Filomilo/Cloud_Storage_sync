@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Net.WebSockets;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading.Tasks;
 using Cloud_Storage_Common;
+using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_Desktop_lib.Actions;
@@ -14,13 +10,41 @@ using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Services;
 using Cloud_Storage_Desktop_lib.Tests;
 using Cloud_Storage_Server.Database;
+using Cloud_Storage_Server.Interfaces;
 using Cloud_Storage_Server.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using NUnit.Framework;
+using AbstractDataBaseContext = Cloud_Storage_Desktop_lib.Interfaces.AbstractDataBaseContext;
+
+public class TestHadnlerChecker : AbstactHandler
+{
+    public bool didRun = false;
+
+    public override object Handle(object request)
+    {
+        didRun = true;
+        return null;
+    }
+}
+
+public class TestDataBaseSerwerContext : Cloud_Storage_Server.Database.AbstractDataBaseContext
+{
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseInMemoryDatabase("serwer");
+    }
+}
+
+public class TestDataBaseSerwerContextGenerator : IDataBaseContextGenerator
+{
+    public Cloud_Storage_Server.Database.AbstractDataBaseContext GetDbContext()
+    {
+        return new TestDataBaseSerwerContext();
+    }
+}
 
 public class TestConfig : IConfiguration
 {
@@ -299,7 +323,7 @@ namespace Cloud_Storage_Test
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
             }
-            using (var context = new DatabaseContext())
+            using (var context = new SqliteDataBaseContextGenerator().GetDbContext())
             {
                 Assert.DoesNotThrow(
                     () =>

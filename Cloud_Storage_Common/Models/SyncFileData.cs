@@ -1,9 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using Cloud_Storage_Server.Database.Models;
-using Lombok.NET;
 using Microsoft.EntityFrameworkCore;
 
 namespace Cloud_Storage_Common.Models
@@ -164,6 +162,11 @@ namespace Cloud_Storage_Common.Models
                 Version = this.Version,
             };
         }
+
+        public override string ToString()
+        {
+            return $"Path: {this.Path}, Name: {this.Name}, Extension: {this.Extenstion}, Hash: {this.Hash}, Version: {this.Version}";
+        }
     }
 
     [PrimaryKey(nameof(Id), nameof(Path), nameof(Name), nameof(Extenstion))]
@@ -236,7 +239,7 @@ namespace Cloud_Storage_Common.Models
         public override string ToString()
         {
             return base.ToString()
-                + $"\n Version ::: {this.Version} \n  Hash ::: [[{this.Hash}]]\n Device owners:: [[{String.Join(", ", this.DeviceOwner)}]] \n";
+                + $"\n Version ::: {this.Version} \n  Hash ::: [[{this.Hash}]]\n Device owners:: [[{String.Join(", ", this.DeviceOwner)}]] \n Owner id: [[{this.OwnerId}]]  \n";
         }
 
         public SyncFileData(LocalFileData data, long OnwerID)

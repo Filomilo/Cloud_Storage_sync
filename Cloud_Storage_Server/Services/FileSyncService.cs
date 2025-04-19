@@ -1,9 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Transactions;
-using Cloud_Storage_Common;
-using Cloud_Storage_Common.Interfaces;
+﻿using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
-using Cloud_Storage_Server.Database;
 using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Database.Repositories;
 using Cloud_Storage_Server.Handlers;
@@ -30,10 +26,11 @@ namespace Cloud_Storage_Server.Services
         public void AddNewFile(User user, string deviceId, UploudFileData data, Stream file);
         public Stream DownloadFile(User user, SyncFileData data);
         public List<SyncFileData> ListFilesForUser(User user);
-        public bool DoesFileAlreadyExist(User user, UploudFileData data);
+
         void RemoveFile(FileData fileData, long id, string deviceId);
 
         event FileUpdateHandler FileUpdated;
+        void SendFileUpdate(UpdateFileDataRequest update);
         void UpdateFileForDevice(string email, string deviceId, UpdateFileDataRequest file);
     }
 
@@ -41,20 +38,17 @@ namespace Cloud_Storage_Server.Services
     {
         private IFileSystemService _fileSystemService;
         private ILogger logger = CloudDriveLogging.Instance.GetLogger("FileSyncService");
-        private IHandler _AddNewFileHandler;
-        private IHandler _RemoveFileHandler;
-        private IHandler _UpdateFileHandler;
+        private IServerChainOfResposibiltyRepository _serverChainOfResposibiltyRepository;
+        private IDataBaseContextGenerator _dataBaseContextGenerator;
 
         public FileSyncService(
             IFileSystemService fileSystemService,
-            IWebsocketConnectedController websocketConnectedController
+            IWebsocketConnectedController websocketConnectedController,
+            IDataBaseContextGenerator dataBaseContextGenerator
         )
         {
             _fileSystemService = fileSystemService;
-            _AddNewFileHandler = new SkipIfTheSameFileAlreadyExist();
-            _AddNewFileHandler
-                .SetNext(new UpdateIfOnlyOwnerChanged())
-                .SetNext(new SaveAndUpdateNewVersionOfFile(this._fileSystemService));
+            _dataBaseContextGenerator = dataBaseContextGenerator;
             this.FileUpdated += (UpdateFileDataRequest file) =>
             {
                 websocketConnectedController.SendMessageToUser(
@@ -63,10 +57,11 @@ namespace Cloud_Storage_Server.Services
                 );
             };
 
-            this._RemoveFileHandler = new RemoveFileDeviceOwnership();
-
-            this._UpdateFileHandler = new UpdateIfOnlyOwnerChanged();
-            _UpdateFileHandler.SetNext(new RenameIfOnlyPathChangedHandler());
+            this._serverChainOfResposibiltyRepository = new ServerChainOfResposibiltyRepository(
+                this._fileSystemService,
+                this,
+                this._dataBaseContextGenerator
+            );
         }
 
         public void AddNewFile(User user, string deviceId, UploudFileData data, Stream file)
@@ -79,10 +74,13 @@ namespace Cloud_Storage_Server.Services
             FileUploadRequest fileUploadRequest = new FileUploadRequest(fileData, file);
             try
             {
-                SyncFileData sync = (SyncFileData)_AddNewFileHandler.Handle(fileUploadRequest);
+                SyncFileData sync = (SyncFileData)
+                    _serverChainOfResposibiltyRepository.OnFileAddHandler.Handle(fileUploadRequest);
                 if (FileUpdated != null)
                 {
-                    FileUpdated.Invoke(new UpdateFileDataRequest(null, sync, user.id));
+                    FileUpdated.Invoke(
+                        new UpdateFileDataRequest(UPDATE_TYPE.ADD, null, sync, user.id)
+                    );
                 }
             }
             catch (Exception ex)
@@ -92,44 +90,29 @@ namespace Cloud_Storage_Server.Services
             }
         }
 
-        public bool DoesFileAlreadyExist(User user, UploudFileData data)
-        {
-            try
-            {
-                SyncFileData fileInRepo = FileRepository.getNewestFileByPathNameExtensionAndUser(
-                    data.Path,
-                    data.Name,
-                    data.Extenstion,
-                    user.id
-                );
-                if (fileInRepo == null || fileInRepo.Hash == data.Hash)
-                {
-                    return true;
-                }
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return false;
-            }
-            return false;
-        }
-
         public void RemoveFile(FileData fileData, long ownerid, string deviceId)
         {
-            SyncFileData file =
-                this._RemoveFileHandler.Handle(
-                    new RemoveFileDeviceOwnershipRequest()
-                    {
-                        deviceId = deviceId,
-                        fileData = fileData,
-                        userID = ownerid,
-                    }
-                ) as SyncFileData;
-            if (file != null)
-                this.FileUpdated(new UpdateFileDataRequest(null, file, ownerid));
+            this._serverChainOfResposibiltyRepository.OnFileDeleteHandler.Handle(
+                new RemoveFileDeviceOwnershipRequest()
+                {
+                    deviceId = deviceId,
+                    fileData = fileData,
+                    userID = ownerid,
+                }
+            );
+            //if (file != null)
+            //    this.FileUpdated(
+            //        new UpdateFileDataRequest(UPDATE_TYPE.DELETE, null, file, ownerid)
+            //    );
         }
 
         public event FileUpdateHandler? FileUpdated;
+
+        public void SendFileUpdate(UpdateFileDataRequest update)
+        {
+            if (FileUpdated != null)
+                FileUpdated.Invoke(update);
+        }
 
         public void UpdateFileForDevice(
             string email,
@@ -137,10 +120,14 @@ namespace Cloud_Storage_Server.Services
             UpdateFileDataRequest fileUpdate
         )
         {
+            using (var context = _dataBaseContextGenerator.GetDbContext())
+            {
+                fileUpdate.UserID = UserRepository.getUserByMail(context, email).id;
+            }
             fileUpdate.DeviceReuqested = deviceId;
-            fileUpdate.UserID = UserRepository.getUserByMail(email).id;
             UpdateFileDataRequest resolved =
-                _UpdateFileHandler.Handle(fileUpdate) as UpdateFileDataRequest;
+                this._serverChainOfResposibiltyRepository.OnFileUpdateHandler.Handle(fileUpdate)
+                as UpdateFileDataRequest;
             if (resolved != null)
             {
                 this.FileUpdated(resolved);
@@ -160,8 +147,11 @@ namespace Cloud_Storage_Server.Services
 
         public List<SyncFileData> ListFilesForUser(User user)
         {
-            List<SyncFileData> files = FileRepository.GetAllUserFiles(user.id);
-            return files;
+            using (var context = _dataBaseContextGenerator.GetDbContext())
+            {
+                List<SyncFileData> files = FileRepository.GetAllUserFiles(context, user.id);
+                return files;
+            }
         }
     }
 }

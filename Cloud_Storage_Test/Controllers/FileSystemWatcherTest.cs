@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Cloud_Storage_Desktop_lib.Interfaces;
+﻿using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Test;
 using NUnit.Framework;
 
@@ -37,7 +32,7 @@ namespace Cloud_Storage_Desktop_lib.Services
             bool wasOnCreatedEventHandler = false;
             bool wasOnChangeEventHadnler = false;
             bool wasOnDeltedeEventHadnler = false;
-            this.fIleSystemWatcher.OnCreatedEventHandler += (
+            this.fIleSystemWatcher.OnChangedEventHandler += (
                 args =>
                 {
                     wasOnCreatedEventHandler = true;

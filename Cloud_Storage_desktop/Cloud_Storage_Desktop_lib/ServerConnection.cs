@@ -1,26 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Net.WebSockets;
-using System.Runtime.CompilerServices;
-using System.Security.Policy;
-using System.Security.Principal;
 using System.Text;
-using System.Threading.Tasks;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Services;
-using log4net;
-using log4net.Repository.Hierarchy;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NUnit.Framework;
 
 namespace Cloud_Storage_Desktop_lib
 {

@@ -1,16 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using Cloud_Storage_Common;
+﻿using Cloud_Storage_Common;
 using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
-using Cloud_Storage_Desktop_lib.Actions;
 using Cloud_Storage_Desktop_lib.Interfaces;
-using Cloud_Storage_Desktop_lib.SyncingHandlers;
-using Cloud_Storage_Server.Handlers;
 using Microsoft.Extensions.Logging;
 
 namespace Cloud_Storage_Desktop_lib.Services
@@ -24,11 +15,10 @@ namespace Cloud_Storage_Desktop_lib.Services
         private ITaskRunController _taskRunController;
         private IFileRepositoryService _fileRepositoryService;
 
-        private IHandler _InitialSyncHandler;
-        private IHandler _OnFileUpdateHandler;
-        private IHandler _OnFileCreatedHandler;
         private IHandler _OnFileDeletedHandler;
         private IHandler _RenameFileHandler;
+
+        private IClientChainOfResponsibilityRepository _clientChainOfResponsibilityRepository;
 
         public SyncFileService(
             IConfiguration configuration,
@@ -38,91 +28,21 @@ namespace Cloud_Storage_Desktop_lib.Services
         {
             _configuration = configuration;
             _taskRunController = new RunningTaskController(configuration);
-            _InitialSyncHandler = new GetLocalAndServerFileListHadndler(
-                configuration,
-                serverConnection,
-                this
-            );
+
             this._serverConnection = serverConnection;
             this._fileRepositoryService = fileRepositoryService;
             _taskRunController = new RunningTaskController(configuration);
-            _InitialSyncHandler
-                .SetNext(new DeleteCloudLocalFilesHandler())
-                .SetNext(
-                    new DownloadMissingFilesHandler(
-                        configuration,
-                        serverConnection,
-                        _taskRunController,
-                        fileRepositoryService
-                    )
-                )
-                .SetNext(
-                    new PerFileInitialSyncHandler(
-                        configuration,
-                        serverConnection,
-                        _taskRunController,
-                        fileRepositoryService
-                    )
-                );
-            _OnFileUpdateHandler = new ValidateIfFileAlreadyExisitInDataBase(fileRepositoryService);
-            _OnFileUpdateHandler
-                .SetNext(
-                    new RenameFileOnUpdateHandler(
-                        this._taskRunController,
-                        this._serverConnection,
-                        this._configuration,
-                        this._fileRepositoryService
-                    )
-                )
-                .SetNext(
-                    new DownloadNewFIleHandler(
-                        this._taskRunController,
-                        this._serverConnection,
-                        this._configuration,
-                        this._fileRepositoryService
-                    )
-                )
-                .SetNext(
-                    new DeleteUpdateFileHandler(
-                        this._taskRunController,
-                        this._serverConnection,
-                        this._configuration,
-                        this._fileRepositoryService
-                    )
-                );
 
             this._serverConnection.ConnectionChangeHandler += onConnnetionChange;
             this._serverConnection.ServerWerbsocketHadnler +=
                 _serverConnection_ServerWerbsocketHadnler;
-            // File created handler
-            this._OnFileCreatedHandler = new PrepareFileSyncData(this._configuration);
-            _OnFileCreatedHandler
-                .SetNext(
-                    new AddFileToDataBaseHandler(this._configuration, this._fileRepositoryService)
-                )
-                .SetNext(
-                    new UploadNewFileHandler(
-                        this._configuration,
-                        this._serverConnection,
-                        this._taskRunController,
-                        this._fileRepositoryService
-                    )
-                );
-            // On Lcoaly dleted
-            this._OnFileDeletedHandler = new RemoveFileFromDatabaseHandler(
-                this._configuration,
-                this._fileRepositoryService
-            );
-            this._OnFileDeletedHandler.SetNext(
-                new LocallyDeletedFileHandler(this._configuration, this._serverConnection)
-            );
 
-            this._RenameFileHandler = new UpdateDataBaseFileNameHandler(
-                this._fileRepositoryService,
-                this._configuration
-            );
-            this._RenameFileHandler.SetNext(
-                new SendLocalFileUpdateToServer(this._serverConnection)
+            this._clientChainOfResponsibilityRepository = new ClientChainOfResponsibilityRepository(
+                _taskRunController,
+                _serverConnection,
+                _fileRepositoryService,
+                _configuration,
+                this
             );
         }
 
@@ -136,7 +56,31 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         private void onFileUPdate(UpdateFileDataRequest syncFileData)
         {
-            this._OnFileUpdateHandler.Handle(syncFileData);
+            switch (syncFileData.UpdateType)
+            {
+                case UPDATE_TYPE.RENAME:
+                    _clientChainOfResponsibilityRepository.OnCloudFileRenamedHandler.Handle(
+                        syncFileData
+                    );
+                    break;
+                case UPDATE_TYPE.CONTNETS:
+                    _clientChainOfResponsibilityRepository.OnCloudFileChangeHandler.Handle(
+                        syncFileData
+                    );
+                    break;
+                case UPDATE_TYPE.DELETE:
+                    _clientChainOfResponsibilityRepository.OnCloudFileDeletedHandler.Handle(
+                        syncFileData
+                    );
+                    break;
+                case UPDATE_TYPE.ADD:
+                    _clientChainOfResponsibilityRepository.OnCloudFileCreatedHandler.Handle(
+                        syncFileData
+                    );
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         private void onConnnetionChange(bool state)
@@ -162,7 +106,7 @@ namespace Cloud_Storage_Desktop_lib.Services
         public void StartSync()
         {
             logger.LogInformation("Start Syncing");
-            _InitialSyncHandler.Handle(null);
+            _clientChainOfResponsibilityRepository.InitlalSyncHandler.Handle(null);
         }
 
         public IEnumerable<ISyncProcess> GetAllSyncProcesses()
@@ -197,34 +141,44 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         public void OnLocallyOnRenamed(RenamedEventArgs args)
         {
-            _RenameFileHandler.Handle(args);
+            _clientChainOfResponsibilityRepository.OnLocalyFileRenamedHandler.Handle(args);
         }
 
         public void OnLocallyDeleted(FileSystemEventArgs args)
         {
-            this._OnFileDeletedHandler.Handle(args.FullPath);
+            _clientChainOfResponsibilityRepository.OnLocalyFileDeletedHandler.Handle(args.FullPath);
         }
 
         public void OnLocallyCreated(FileSystemEventArgs args)
         {
-            _OnFileCreatedHandler.Handle(args.FullPath);
-            //if (Active)
-            //    _taskRunController.AddTask(
-            //        new UploadAction(
-            //            this._serverConnection,
-            //            this._configuration,
-            //            this._fileRepositoryService,
-            //            FileManager.GetUploadFileData(
-            //                args.FullPath,
-            //                this._configuration.StorageLocation
-            //            )
-            //        )
-            //    );
+            try
+            {
+                _clientChainOfResponsibilityRepository.OnLocallyFileChangeHandler.Handle(
+                    args.FullPath
+                );
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(
+                    $"Error while handling file creation for file [[{args.Name}]] :::: {ex.Message}"
+                );
+            }
         }
 
         public void OnLocallyChanged(FileSystemEventArgs args)
         {
-            logger.LogWarning($"OnLocallyChanged Not Implemented:: {args.ToString()}");
+            try
+            {
+                _clientChainOfResponsibilityRepository.OnLocallyFileChangeHandler.Handle(
+                    args.FullPath
+                );
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(
+                    $"Error while handling file creation for file [[{args.Name}]] :::: {ex.Message}"
+                );
+            }
         }
 
         public void StopAllSync()

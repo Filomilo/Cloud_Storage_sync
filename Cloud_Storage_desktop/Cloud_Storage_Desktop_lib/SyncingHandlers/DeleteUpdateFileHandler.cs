@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Cloud_Storage_Common;
+﻿using Cloud_Storage_Common;
 using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Actions;
 using Cloud_Storage_Desktop_lib.Interfaces;
-using log4net.Repository.Hierarchy;
 using Microsoft.Extensions.Logging;
 
 namespace Cloud_Storage_Desktop_lib.SyncingHandlers

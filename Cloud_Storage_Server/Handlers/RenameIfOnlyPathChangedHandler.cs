@@ -1,13 +1,19 @@
-﻿using Cloud_Storage_Common;
-using Cloud_Storage_Common.Interfaces;
+﻿using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
-using Cloud_Storage_Server.Database;
+using Cloud_Storage_Server.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Cloud_Storage_Server.Handlers
 {
     public class RenameIfOnlyPathChangedHandler : AbstactHandler
     {
+        private IDataBaseContextGenerator _dataBaseContextGenerator;
+
+        public RenameIfOnlyPathChangedHandler(IDataBaseContextGenerator dataBaseContextGenerator)
+        {
+            _dataBaseContextGenerator = dataBaseContextGenerator;
+        }
+
         public override object Handle(object request)
         {
             UpdateFileDataRequest update = null;
@@ -32,7 +38,7 @@ namespace Cloud_Storage_Server.Handlers
             }
 
             SyncFileData newFileVersion;
-            using (var ctx = new DatabaseContext())
+            using (var ctx = _dataBaseContextGenerator.GetDbContext())
             {
                 SyncFileData dbFileData = ctx
                     .Files.ToList()

@@ -1,21 +1,15 @@
-﻿using Cloud_Storage_Common.Models;
-using Cloud_Storage_Server.Database.Models;
+﻿using Cloud_Storage_Server.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.InMemory;
-using FileData = Cloud_Storage_Common.Models.FileData;
 
 namespace Cloud_Storage_Server.Database
 {
-    public class DatabaseContext : DbContext
+    public class DatabaseContextSqLite : AbstractDataBaseContext
     {
-        public DbSet<User> Users { get; set; }
-        public DbSet<SyncFileData> Files { get; set; }
-        public DbSet<Device> Devices { get; set; }
-
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             //optionsBuilder.UseInMemoryDatabase("cloud_storage");
             optionsBuilder.UseSqlite("Data Source=databse1.db");
+            optionsBuilder.EnableSensitiveDataLogging();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -33,10 +27,13 @@ namespace Cloud_Storage_Server.Database
             //    })
             //    .IsUnique();
         }
+    }
 
-        internal Device Find(string id)
+    public class SqliteDataBaseContextGenerator : IDataBaseContextGenerator
+    {
+        public AbstractDataBaseContext GetDbContext()
         {
-            throw new NotImplementedException();
+            return new DatabaseContextSqLite();
         }
     }
 }

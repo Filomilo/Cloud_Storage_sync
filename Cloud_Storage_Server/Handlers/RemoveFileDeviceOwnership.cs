@@ -1,21 +1,27 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Cloud_Storage_Common.Interfaces;
+﻿using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Database;
-using Cloud_Storage_Server.Services;
-using Microsoft.AspNetCore.Razor.TagHelpers;
+using Cloud_Storage_Server.Interfaces;
 
 namespace Cloud_Storage_Server.Handlers
 {
     public class RemoveFileDeviceOwnershipRequest
     {
         public FileData fileData;
+        public SyncFileData syncFileData;
         public long userID;
         public string deviceId;
     }
 
     public class RemoveFileDeviceOwnership : AbstactHandler
     {
+        private IDataBaseContextGenerator _dataBaseContextGenerator;
+
+        public RemoveFileDeviceOwnership(IDataBaseContextGenerator dataBaseContextGenerator)
+        {
+            _dataBaseContextGenerator = dataBaseContextGenerator;
+        }
+
         public override object Handle(object request)
         {
             if (request is not RemoveFileDeviceOwnershipRequest)
@@ -27,7 +33,7 @@ namespace Cloud_Storage_Server.Handlers
             RemoveFileDeviceOwnershipRequest removeFileDeviceOwnership =
                 request as RemoveFileDeviceOwnershipRequest;
             SyncFileData newFile = null;
-            using (DatabaseContext context = new DatabaseContext())
+            using (AbstractDataBaseContext context = _dataBaseContextGenerator.GetDbContext())
             {
                 var existingFile = GetExisitingFileOnThisDeviceFromDatabse(
                     context,
@@ -77,17 +83,18 @@ namespace Cloud_Storage_Server.Handlers
             {
                 throw new Exception("Filed to save new file data");
             }
+            removeFileDeviceOwnership.syncFileData = newFile;
 
             if (this._nextHandler != null)
             {
-                return this._nextHandler.Handle(newFile);
+                return this._nextHandler.Handle(removeFileDeviceOwnership);
             }
-            return newFile;
+            return removeFileDeviceOwnership;
         }
 
         private bool StopIFileLAlreadyDletedForThisDevice(
             SyncFileData? existingFile,
-            DatabaseContext context,
+            AbstractDataBaseContext context,
             out object syncFileData
         )
         {
@@ -108,7 +115,7 @@ namespace Cloud_Storage_Server.Handlers
         }
 
         private static SyncFileData? GetAlreadyDletedFileVersionFromDataBase(
-            DatabaseContext context,
+            AbstractDataBaseContext context,
             RemoveFileDeviceOwnershipRequest? removeFileDeviceOwnership,
             SyncFileData? existingFile
         )
@@ -126,7 +133,7 @@ namespace Cloud_Storage_Server.Handlers
         }
 
         private static SyncFileData? GetExisitingFileOnThisDeviceFromDatabse(
-            DatabaseContext context,
+            AbstractDataBaseContext context,
             RemoveFileDeviceOwnershipRequest? removeFileDeviceOwnership
         )
         {

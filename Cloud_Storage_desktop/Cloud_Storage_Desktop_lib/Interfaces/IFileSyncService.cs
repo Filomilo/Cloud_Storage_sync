@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Cloud_Storage_Desktop_lib.Interfaces
+﻿namespace Cloud_Storage_Desktop_lib.Interfaces
 {
     public interface ISyncProcess { }
 
@@ -26,7 +20,6 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
         void StartSync();
         void OnLocallyOnRenamed(RenamedEventArgs args);
         void OnLocallyDeleted(FileSystemEventArgs args);
-        void OnLocallyCreated(FileSystemEventArgs args);
         void OnLocallyChanged(FileSystemEventArgs args);
 
         void StopAllSync();

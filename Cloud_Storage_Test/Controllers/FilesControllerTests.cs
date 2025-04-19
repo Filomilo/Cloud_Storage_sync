@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_Desktop_lib.Services;
 using Cloud_Storage_Desktop_lib.Tests;
-using Cloud_Storage_Server.Controllers;
-using Cloud_Storage_Server.Database.Models;
 using NUnit.Framework;
 
 namespace Cloud_Storage_Server.Controllers.Tests

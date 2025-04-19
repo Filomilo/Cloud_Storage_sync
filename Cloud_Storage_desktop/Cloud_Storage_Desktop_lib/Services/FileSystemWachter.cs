@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Cloud_Storage_Desktop_lib.Interfaces;
+﻿using Cloud_Storage_Desktop_lib.Interfaces;
 
 namespace Cloud_Storage_Desktop_lib.Services
 {
@@ -36,7 +31,6 @@ namespace Cloud_Storage_Desktop_lib.Services
                     | NotifyFilters.Size;
 
                 _Watcher.Changed += _OnChanged;
-                _Watcher.Created += _OnCreated;
                 _Watcher.Deleted += _OnDeleted;
                 _Watcher.Renamed += _OnRenamed;
                 _Watcher.Error += _OnError;
@@ -53,14 +47,6 @@ namespace Cloud_Storage_Desktop_lib.Services
             {
                 if (e.ChangeType == WatcherChangeTypes.Changed)
                     this.OnChangedEventHandler.Invoke(e);
-            }
-        }
-
-        private void _OnCreated(object sender, FileSystemEventArgs e)
-        {
-            if (this.OnCreatedEventHandler != null)
-            {
-                this.OnCreatedEventHandler.Invoke(e);
             }
         }
 
@@ -91,7 +77,6 @@ namespace Cloud_Storage_Desktop_lib.Services
         public event OnError OnErrorEventHandler;
         public event OnRenamed OnRenamedEventHandler;
         public event OnDeleted OnDeletedEventHandler;
-        public event OnCreated OnCreatedEventHandler;
         public event OnChanged OnChangedEventHandler;
 
         public void Stop()

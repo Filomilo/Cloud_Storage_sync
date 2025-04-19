@@ -1,9 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Cloud_Storage_Common;
-using Cloud_Storage_Common.Interfaces;
+﻿using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Interfaces;
-using Cloud_Storage_Server.Database;
 
 namespace Cloud_Storage_Server.Handlers
 {
@@ -32,7 +29,20 @@ namespace Cloud_Storage_Server.Handlers
 
             UploudFileData fileUpload = request as UploudFileData;
             LocalFileData local = new LocalFileData(fileUpload);
-            this._fileRepositoryService.AddNewFile(local);
+            if (
+                this._fileRepositoryService.DoesFileExist(
+                    fileUpload,
+                    out LocalFileData exisitngFile
+                )
+            )
+            {
+                local.Version = exisitngFile.Version + 1;
+                this._fileRepositoryService.UpdateFile(exisitngFile, local);
+            }
+            else
+            {
+                this._fileRepositoryService.AddNewFile(local);
+            }
 
             if (_nextHandler != null)
             {

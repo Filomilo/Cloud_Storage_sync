@@ -489,3 +489,4 @@ Cloud_Storage_Server/databse.dat
 *.sqllite
 /Cloud_Storage_Server/dataStorage
 /Cloud_Storage_Test/tmp
+*.db

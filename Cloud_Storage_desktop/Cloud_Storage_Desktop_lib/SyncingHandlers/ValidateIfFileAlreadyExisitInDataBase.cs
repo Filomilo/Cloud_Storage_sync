@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Cloud_Storage_Common.Interfaces;
+﻿using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Interfaces;
 
@@ -20,22 +15,27 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 
         public override object Handle(object request)
         {
-            SyncFileData syncFileData = null;
+            LocalFileData syncFileData = null;
             if (request is SyncFileData)
-                syncFileData = request as SyncFileData;
+                syncFileData = (LocalFileData)((SyncFileData)request);
+            if (request is UploudFileData)
+            {
+                syncFileData = new LocalFileData((UploudFileData)request);
+            }
             if (request is UpdateFileDataRequest)
-                syncFileData = (request as UpdateFileDataRequest).newFileData;
+                syncFileData = (LocalFileData)(request as UpdateFileDataRequest).newFileData;
             if (syncFileData == null)
                 throw new ArgumentException(
-                    "ValidateIfFileAlreadyExisitInDataBase excepts argument of type SyncFileData or UpdateFileDataRequest"
+                    "ValidateIfFileAlreadyExisitInDataBase excepts argument of type SyncFileData or UpdateFileDataRequest or UploudFileData"
                 );
             bool doesEsist =
                 _fileRepositoryService
                     .GetAllFiles()
-                    .Count(x =>
+                    .Where(x =>
                         x.GetRealativePath().Equals(syncFileData.GetRealativePath())
                         && x.Hash.Equals(syncFileData.Hash)
-                    ) == 1;
+                    )
+                    .Count() >= 1;
             if (doesEsist)
                 return null;
             if (this._nextHandler != null)

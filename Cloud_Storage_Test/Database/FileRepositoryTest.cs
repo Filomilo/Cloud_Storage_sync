@@ -3,26 +3,25 @@ using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Database;
 using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Database.Repositories;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-using FileData = Cloud_Storage_Common.Models.FileData;
 
 namespace Cloud_Storage_Test.Database;
 
 public class FileRepositoryTest
 {
     private User? _savedUser;
-    private DatabaseContext? context;
+    private AbstractDataBaseContext? context;
 
     [SetUp]
     public void PrepareUser()
     {
-        context = new DatabaseContext();
+        context = new SqliteDataBaseContextGenerator().GetDbContext();
 
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
         _savedUser = UserRepository.saveUser(
+            context,
             new User() { mail = "mail@mail.mail", password = "password" }
         );
     }
@@ -38,6 +37,7 @@ public class FileRepositoryTest
     {
         int amountOfFilesBefore = context.Files.ToList().Count;
         FileRepository.SaveNewFile(
+            context,
             new SyncFileData()
             {
                 Extenstion = "jpg",
@@ -46,6 +46,8 @@ public class FileRepositoryTest
                 Path = "location1\\location2\\location\\3",
                 SyncDate = DateTime.Now,
                 OwnerId = _savedUser.id,
+                Version = 0,
+                DeviceOwner = new List<string>() { "123" },
             }
         );
 
@@ -62,6 +64,7 @@ public class FileRepositoryTest
                 () =>
                 {
                     FileRepository.SaveNewFile(
+                        context,
                         new SyncFileData()
                         {
                             Extenstion = "jpg",
@@ -70,6 +73,8 @@ public class FileRepositoryTest
                             Path = "location1\\location2\\location\\3",
                             SyncDate = DateTime.Now,
                             OwnerId = -1,
+                            Version = 0,
+                            DeviceOwner = new List<string>() { "123" },
                         }
                     );
                 }
@@ -81,7 +86,7 @@ public class FileRepositoryTest
     [TestCase("///.sadasd//as//")]
     public void SaveNewFile_IncorrectPAth(string inocorrectPathName)
     {
-        using (var context = new DatabaseContext())
+        using (var context = new SqliteDataBaseContextGenerator().GetDbContext())
         {
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
@@ -92,6 +97,7 @@ public class FileRepositoryTest
                     () =>
                     {
                         FileRepository.SaveNewFile(
+                            context,
                             new SyncFileData()
                             {
                                 Extenstion = "jpg",
@@ -116,35 +122,45 @@ public class FileRepositoryTest
     {
         SyncFileData fileToSave = new SyncFileData()
         {
+            Id = Guid.NewGuid(),
             Extenstion = "jpg",
             Hash = "3546",
             Name = "File",
             Path = ".",
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
+            Version = 0,
+            DeviceOwner = new List<string>() { "123" },
         };
         SyncFileData fileToSaveCopy = new SyncFileData()
         {
+            Id = fileToSave.Id,
             Extenstion = "jpg",
             Hash = "3456",
             Name = "File",
             Path = ".",
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
+            Version = 0,
+            DeviceOwner = new List<string>() { "123" },
         };
 
         int amountOfFilesBefore = context.Files.ToList().Count;
-        FileRepository.SaveNewFile(fileToSave);
-        Assert.Throws(
-            typeof(DbUpdateException),
-            () =>
-            {
-                FileRepository.SaveNewFile(fileToSaveCopy);
-            }
-        );
-
-        int amoutOfFilesAfter = context.Files.ToList().Count;
-        Assert.That(amountOfFilesBefore + 1 == amoutOfFilesAfter);
+        FileRepository.SaveNewFile(context, fileToSave);
+        context.SaveChanges();
+        context.Dispose();
+        using (var ctx = new SqliteDataBaseContextGenerator().GetDbContext())
+        {
+            Assert.Throws(
+                typeof(DbUpdateException),
+                () =>
+                {
+                    FileRepository.SaveNewFile(ctx, fileToSaveCopy);
+                }
+            );
+            int amoutOfFilesAfter = ctx.Files.ToList().Count;
+            Assert.That(amountOfFilesBefore + 1 == amoutOfFilesAfter);
+        }
     }
 
     [Test]
@@ -158,6 +174,8 @@ public class FileRepositoryTest
             Path = ".",
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
+            Version = 0,
+            DeviceOwner = new List<string>() { "123" },
         };
 
         SyncFileData fileUpdateData = new SyncFileData()
@@ -168,13 +186,15 @@ public class FileRepositoryTest
             Path = "newFolder",
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
+            Version = 0,
+            DeviceOwner = new List<string>() { "123" },
         };
 
-        SyncFileData savedFile = FileRepository.SaveNewFile(fileToSave);
+        SyncFileData savedFile = FileRepository.SaveNewFile(context, fileToSave);
 
-        FileRepository.UpdateFile(fileToSave, fileUpdateData);
+        FileRepository.UpdateFile(context, fileToSave, fileUpdateData);
 
-        SyncFileData fileInRepository = FileRepository.GetFileOfID(savedFile.Id);
+        SyncFileData fileInRepository = FileRepository.GetFileOfID(context, savedFile.Id);
         Assert.That(fileUpdateData.Extenstion == fileInRepository.Extenstion);
         Assert.That(fileUpdateData.Name == fileInRepository.Name);
         Assert.That(fileUpdateData.Path == fileInRepository.Path);
@@ -183,7 +203,7 @@ public class FileRepositoryTest
     [Test]
     public void UpdateFile_fileDoesntExist()
     {
-        using (var context = new DatabaseContext())
+        using (var context = new SqliteDataBaseContextGenerator().GetDbContext())
         {
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
@@ -196,6 +216,8 @@ public class FileRepositoryTest
                 Path = "/",
                 SyncDate = DateTime.Now,
                 OwnerId = _savedUser.id,
+                Version = 0,
+                DeviceOwner = new List<string>() { "123" },
             };
 
             SyncFileData fileUpdateData = new SyncFileData()
@@ -206,12 +228,14 @@ public class FileRepositoryTest
                 Path = "newFolder",
                 SyncDate = DateTime.Now,
                 OwnerId = _savedUser.id,
+                Version = 0,
+                DeviceOwner = new List<string>() { "123" },
             };
             Assert.Throws(
                 typeof(KeyNotFoundException),
                 () =>
                 {
-                    FileRepository.UpdateFile(fileToSave, fileUpdateData);
+                    FileRepository.UpdateFile(context, fileToSave, fileUpdateData);
                 }
             );
         }
@@ -228,11 +252,13 @@ public class FileRepositoryTest
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
             Hash = "123",
+            Version = 0,
+            DeviceOwner = new List<string>() { "123" },
         };
 
-        SyncFileData savedFile = FileRepository.SaveNewFile(fileToSave);
+        SyncFileData savedFile = FileRepository.SaveNewFile(context, fileToSave);
 
-        SyncFileData fileInRepository = FileRepository.GetFileOfID(savedFile.Id);
+        SyncFileData fileInRepository = FileRepository.GetFileOfID(context, savedFile.Id);
         Assert.That(fileToSave.Extenstion == fileInRepository.Extenstion);
         Assert.That(fileToSave.Hash == fileInRepository.Hash);
         Assert.That(fileToSave.Name == fileInRepository.Name);
@@ -247,7 +273,7 @@ public class FileRepositoryTest
             typeof(KeyNotFoundException),
             () =>
             {
-                SyncFileData fileInRepository = FileRepository.GetFileOfID(new Guid());
+                SyncFileData fileInRepository = FileRepository.GetFileOfID(context, new Guid());
             }
         );
     }
@@ -263,11 +289,14 @@ public class FileRepositoryTest
             Path = "123\\123",
             SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
+            Version = 0,
+            DeviceOwner = new List<string>() { "123" },
         };
 
-        SyncFileData savedFile = FileRepository.SaveNewFile(fileToSave);
+        SyncFileData savedFile = FileRepository.SaveNewFile(context, fileToSave);
 
         SyncFileData fileInRepository = FileRepository.getNewestFileByPathNameExtensionAndUser(
+            context,
             path: savedFile.Path,
             name: savedFile.Name,
             extenstion: savedFile.Extenstion,
@@ -283,7 +312,7 @@ public class FileRepositoryTest
     [Test]
     public void getFileByPathNameAndExtension_fileDousntExist()
     {
-        using (var context = new DatabaseContext())
+        using (var context = new SqliteDataBaseContextGenerator().GetDbContext())
         {
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
@@ -295,19 +324,18 @@ public class FileRepositoryTest
                 Name = "File",
                 Path = "/123/123",
                 SyncDate = DateTime.Now,
+
+                Version = 0,
+                DeviceOwner = new List<string>() { "123" },
             };
-            Assert.Throws(
-                typeof(KeyNotFoundException),
-                () =>
-                {
-                    SyncFileData fileInRepository =
-                        FileRepository.getNewestFileByPathNameExtensionAndUser(
-                            path: fileToSave.Path,
-                            name: fileToSave.Name,
-                            extenstion: fileToSave.Extenstion,
-                            ownerId: _savedUser.id
-                        );
-                }
+            Assert.That(
+                FileRepository.getNewestFileByPathNameExtensionAndUser(
+                    context,
+                    path: fileToSave.Path,
+                    name: fileToSave.Name,
+                    extenstion: fileToSave.Extenstion,
+                    ownerId: _savedUser.id
+                ) == null
             );
         }
     }
@@ -326,12 +354,14 @@ public class FileRepositoryTest
                 Path = "123\\1234",
                 SyncDate = DateTime.Now,
                 OwnerId = _savedUser.id,
+                Version = 0,
+                DeviceOwner = new List<string>() { "123" },
             };
 
-            SyncFileData savedFile = FileRepository.SaveNewFile(fileToSave);
+            SyncFileData savedFile = FileRepository.SaveNewFile(context, fileToSave);
         }
 
-        List<SyncFileData> files = FileRepository.GetAllUserFiles(_savedUser.id);
+        List<SyncFileData> files = FileRepository.GetAllUserFiles(context, _savedUser.id);
         Assert.That(files.Count == amountOfFile);
     }
 }
