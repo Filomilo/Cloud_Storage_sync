@@ -31,7 +31,7 @@ namespace Cloud_Storage_Server.Handlers
 
             FileUploadRequest fileUploadRequest = (FileUploadRequest)request;
             SyncFileData uploudFileData = fileUploadRequest.syncFileData;
-
+            SyncFileData saved = null;
             using (DatabaseContext context = new DatabaseContext())
             {
                 using (var transaction = context.Database.BeginTransaction())
@@ -40,8 +40,29 @@ namespace Cloud_Storage_Server.Handlers
                     var validationContext = new ValidationContext(file);
                     Validator.ValidateObject(file, validationContext, true);
 
-                    SyncFileData saved = context.Files.Add(file).Entity;
-                    context.SaveChanges();
+                    if (
+                        this.getNewestVersionOfTheSameFile(
+                            context,
+                            file,
+                            out SyncFileData newestVersionAlreadyInDataBase
+                        )
+                    )
+                    {
+                        file.Version = newestVersionAlreadyInDataBase.Version + 1;
+                        if (
+                            newestVersionAlreadyInDataBase.DeviceOwner.Contains(
+                                file.DeviceOwner.First()
+                            )
+                        )
+                        {
+                            newestVersionAlreadyInDataBase.DeviceOwner.Remove(
+                                file.DeviceOwner.FirstOrDefault()
+                            );
+                            context.Files.Update(newestVersionAlreadyInDataBase);
+                        }
+                    }
+
+                    saved = context.Files.Add(file).Entity;
 
                     this._fileSystemService.SaveFile(
                         GetRealtivePathForFile(saved.OwnerId, saved),
@@ -49,13 +70,31 @@ namespace Cloud_Storage_Server.Handlers
                     );
 
                     transaction.Commit();
-                    if (_nextHandler != null)
-                    {
-                        return _nextHandler.Handle(saved);
-                    }
-                    return saved;
+                    context.SaveChanges();
                 }
             }
+            if (_nextHandler != null && saved != null)
+            {
+                return _nextHandler.Handle(saved);
+            }
+            return saved;
+        }
+
+        private bool getNewestVersionOfTheSameFile(
+            DatabaseContext context,
+            SyncFileData file,
+            out SyncFileData newestVersionAlreadyInDataBase
+        )
+        {
+            newestVersionAlreadyInDataBase = context
+                .Files.ToList()
+                .Where(f =>
+                    f.GetRealativePath().Equals(file.GetRealativePath())
+                    && f.OwnerId == file.OwnerId
+                )
+                .OrderByDescending(f => f.Version)
+                .FirstOrDefault();
+            return newestVersionAlreadyInDataBase != null;
         }
     }
 }

@@ -162,6 +162,11 @@ namespace Cloud_Storage_Common.Models
                 Version = this.Version,
             };
         }
+
+        public override string ToString()
+        {
+            return $"Path: {this.Path}, Name: {this.Name}, Extension: {this.Extenstion}, Hash: {this.Hash}, Version: {this.Version}";
+        }
     }
 
     [PrimaryKey(nameof(Id), nameof(Path), nameof(Name), nameof(Extenstion))]

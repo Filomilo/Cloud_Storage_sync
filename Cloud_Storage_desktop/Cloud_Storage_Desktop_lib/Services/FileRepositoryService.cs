@@ -108,5 +108,15 @@ namespace Cloud_Storage_Desktop_lib.Services
                 }
             }
         }
+
+        public bool DoesFileExist(UploudFileData fileUpload, out LocalFileData localFileData)
+        {
+            localFileData = GetFileByPathNameExtension(
+                fileUpload.Path,
+                fileUpload.Name,
+                fileUpload.Extenstion
+            );
+            return localFileData != null;
+        }
     }
 }

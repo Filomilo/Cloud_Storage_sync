@@ -91,7 +91,7 @@ namespace Cloud_Storage_Server.Database.Repositories
                         && x.OwnerId == ownerId
                     )
                     .ToList()
-                    .OrderBy(x => x.Version)
+                    .OrderByDescending(x => x.Version)
                     .FirstOrDefault();
 
                 return file;

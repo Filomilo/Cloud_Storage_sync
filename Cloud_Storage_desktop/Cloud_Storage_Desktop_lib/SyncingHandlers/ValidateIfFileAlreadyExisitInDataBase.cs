@@ -27,10 +27,11 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
             bool doesEsist =
                 _fileRepositoryService
                     .GetAllFiles()
-                    .Count(x =>
+                    .Where(x =>
                         x.GetRealativePath().Equals(syncFileData.GetRealativePath())
                         && x.Hash.Equals(syncFileData.Hash)
-                    ) == 1;
+                    )
+                    .Count() >= 1;
             if (doesEsist)
                 return null;
             if (this._nextHandler != null)

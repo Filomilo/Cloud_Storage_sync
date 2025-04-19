@@ -12,5 +12,6 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
         void Reset();
         void DeleteFileByPath(string realitveDirectory, string name, string extesnion);
         LocalFileData GetFileByPathNameExtension(string path, string name, string extenstion);
+        bool DoesFileExist(UploudFileData fileUpload, out LocalFileData localFileData);
     }
 }
