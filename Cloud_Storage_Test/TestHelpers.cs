@@ -2,6 +2,7 @@
 using System.Net.WebSockets;
 using System.Text;
 using Cloud_Storage_Common;
+using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_Desktop_lib.Actions;
@@ -9,12 +10,41 @@ using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Services;
 using Cloud_Storage_Desktop_lib.Tests;
 using Cloud_Storage_Server.Database;
+using Cloud_Storage_Server.Interfaces;
 using Cloud_Storage_Server.Services;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using NUnit.Framework;
 using AbstractDataBaseContext = Cloud_Storage_Desktop_lib.Interfaces.AbstractDataBaseContext;
+
+public class TestHadnlerChecker : AbstactHandler
+{
+    public bool didRun = false;
+
+    public override object Handle(object request)
+    {
+        didRun = true;
+        return null;
+    }
+}
+
+public class TestDataBaseSerwerContext : Cloud_Storage_Server.Database.AbstractDataBaseContext
+{
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseInMemoryDatabase("serwer");
+    }
+}
+
+public class TestDataBaseSerwerContextGenerator : IDataBaseContextGenerator
+{
+    public Cloud_Storage_Server.Database.AbstractDataBaseContext GetDbContext()
+    {
+        return new TestDataBaseSerwerContext();
+    }
+}
 
 public class TestConfig : IConfiguration
 {

@@ -239,7 +239,7 @@ namespace Cloud_Storage_Common.Models
         public override string ToString()
         {
             return base.ToString()
-                + $"\n Version ::: {this.Version} \n  Hash ::: [[{this.Hash}]]\n Device owners:: [[{String.Join(", ", this.DeviceOwner)}]] \n";
+                + $"\n Version ::: {this.Version} \n  Hash ::: [[{this.Hash}]]\n Device owners:: [[{String.Join(", ", this.DeviceOwner)}]] \n Owner id: [[{this.OwnerId}]]  \n";
         }
 
         public SyncFileData(LocalFileData data, long OnwerID)

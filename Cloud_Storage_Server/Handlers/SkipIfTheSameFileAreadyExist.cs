@@ -17,7 +17,7 @@ namespace Cloud_Storage_Server.Handlers
 
         public override object Handle(object request)
         {
-            if (request.GetType() != typeof(FileUploadRequest))
+            if (request is not FileUploadRequest)
             {
                 throw new ArgumentException(
                     "SkipIfTheSameFileAreadyExist excepts argument of type FileUploadRequest"
