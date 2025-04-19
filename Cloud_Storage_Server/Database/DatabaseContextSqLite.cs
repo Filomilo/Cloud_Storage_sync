@@ -1,6 +1,4 @@
-﻿using Cloud_Storage_Common.Models;
-using Cloud_Storage_Server.Database.Models;
-using Cloud_Storage_Server.Interfaces;
+﻿using Cloud_Storage_Server.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Cloud_Storage_Server.Database
