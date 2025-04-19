@@ -65,6 +65,7 @@ namespace Cloud_Storage_Server.Database.Repositories
                 throw new KeyNotFoundException("No file iwth this guuid");
             context.Remove(file);
             fileUpdateData.Id = file.Id;
+            context.SaveChanges();
             context.Files.Add(fileUpdateData);
             context.SaveChanges();
         }
@@ -101,10 +102,10 @@ namespace Cloud_Storage_Server.Database.Repositories
         )
         {
             SyncFileData file = context.Files.FirstOrDefault(x =>
-                x.Path == path
-                && x.Name == name
-                && x.Extenstion == extenstion
-                && x.OwnerId == ownerId
+                x.Path.Equals(path)
+                && x.Name.Equals(name)
+                && x.Extenstion.Equals(extenstion)
+                && x.OwnerId.Equals(ownerId)
                 && x.DeviceOwner.Contains(deviceID)
             );
 

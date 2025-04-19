@@ -81,12 +81,13 @@ namespace Cloud_Storage_Server.Handlers
                             uploudFileData.Name,
                             uploudFileData.Extenstion,
                             uploudFileData.OwnerId,
-                            uploudFileData.DeviceOwner.First()
+                            uploudFileData.DeviceOwner.FirstOrDefault()
                         );
 
                     if (prevVersionOfFlieForThisDevice != null)
                     {
-                        SyncFileData prevVersionOfFlieForThisDeviceCopy = newestFileInRepository;
+                        SyncFileData prevVersionOfFlieForThisDeviceCopy =
+                            prevVersionOfFlieForThisDevice.Clone();
                         prevVersionOfFlieForThisDeviceCopy.DeviceOwner.Remove(
                             uploudFileData.DeviceOwner.First()
                         );
