@@ -98,6 +98,7 @@ namespace Cloud_Storage_Common
                 Extenstion =
                     Path.GetExtension(FullFilePath) == null ? "" : Path.GetExtension(FullFilePath),
                 Hash = GetHashOfFile(FullFilePath),
+                BytesSize = GetBytesSizeOfFile(FullFilePath),
             };
         }
 
@@ -150,6 +151,16 @@ namespace Cloud_Storage_Common
                     return Convert.ToBase64String(sha256.ComputeHash(stream));
                     ;
                 }
+            }
+        }
+
+        public static ulong GetBytesSizeOfFile(string filename)
+        {
+            using (var stream = FileManager.WaitForFile(filename, FileAccess.Read))
+            {
+                Logger.LogTrace($"Gettign Byttes size for file [[{filename}]]");
+                return (ulong)stream.Length;
+                ;
             }
         }
 

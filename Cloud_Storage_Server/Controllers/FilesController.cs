@@ -154,6 +154,14 @@ namespace Cloud_Storage_Server.Controllers
             return File(data, "application/octet-stream", fileData.Name);
         }
 
+        private void ValidateUpdateFileDataRequest(UpdateFileDataRequest fileUpdate)
+        {
+            if (fileUpdate.newFileData.BytesSize <= 0)
+            {
+                throw new Exception("BytesSize shoudl be larger than zero");
+            }
+        }
+
         /// <summary>
         /// Used after downlaod file to update verison
         /// </summary>
@@ -164,6 +172,7 @@ namespace Cloud_Storage_Server.Controllers
         [HttpPost]
         public IActionResult update([FromBody] UpdateFileDataRequest fileUpdate)
         {
+            ValidateUpdateFileDataRequest(fileUpdate);
             String email = JwtHelpers.GetEmailFromToken(Request.Headers.Authorization);
 
             string deviceId = JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization);

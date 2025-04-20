@@ -94,6 +94,20 @@ namespace Cloud_Storage_Common.Models
         [Required]
         public ulong Version { get; set; } = 0;
 
+        private ulong _bytesSize;
+
+        [Required]
+        [Newtonsoft.Json.JsonProperty]
+        public ulong BytesSize
+        {
+            get { return this._bytesSize; }
+            set
+            {
+                DataValidators.GreaterThan(value, 0, "BytesSize");
+                this._bytesSize = value;
+            }
+        }
+
         public override bool Equals(object? obj)
         {
             if (ReferenceEquals(this, obj))
@@ -107,12 +121,13 @@ namespace Cloud_Storage_Common.Models
                 && this.Name == other.Name
                 && this.Extenstion == other.Extenstion
                 && this.Hash == other.Hash
-                && this.Version == other.Version;
+                && this.Version == other.Version
+                && this.BytesSize == other.BytesSize;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Path, Name, Extenstion, Hash, Version);
+            return HashCode.Combine(Path, Name, Extenstion, Hash, Version, BytesSize);
         }
     }
 
@@ -128,6 +143,7 @@ namespace Cloud_Storage_Common.Models
             this.Hash = syncFileData.Hash;
             this.Extenstion = syncFileData.Extenstion == null ? "" : syncFileData.Extenstion;
             this.Version = syncFileData.Version;
+            this.BytesSize = syncFileData.BytesSize;
         }
 
         public LocalFileData(UploudFileData syncFileData)
@@ -137,6 +153,7 @@ namespace Cloud_Storage_Common.Models
             this.Hash = syncFileData.Hash;
             this.Extenstion = syncFileData.Extenstion == null ? "" : syncFileData.Extenstion;
             this.Version = syncFileData.Version;
+            this.BytesSize = syncFileData.BytesSize;
         }
 
         public static explicit operator LocalFileData(SyncFileData v)
@@ -148,6 +165,7 @@ namespace Cloud_Storage_Common.Models
                 Name = v.Name,
                 Path = v.Path,
                 Version = v.Version,
+                BytesSize = v.BytesSize,
             };
         }
 
@@ -160,12 +178,13 @@ namespace Cloud_Storage_Common.Models
                 Name = this.Name,
                 Path = this.Path,
                 Version = this.Version,
+                BytesSize = this.BytesSize,
             };
         }
 
         public override string ToString()
         {
-            return $"Path: {this.Path}, Name: {this.Name}, Extension: {this.Extenstion}, Hash: {this.Hash}, Version: {this.Version}";
+            return $"Path: {this.Path}, Name: {this.Name}, Extension: {this.Extenstion}, Hash: {this.Hash}, Version: {this.Version}, BytesSize: {this.BytesSize}";
         }
     }
 
@@ -180,6 +199,10 @@ namespace Cloud_Storage_Common.Models
             this.Hash = data.Hash;
             this.Extenstion = data.Extenstion == null ? "" : data.Extenstion;
             this.Path = data.Path;
+            this.BytesSize = data.BytesSize;
+            this.Version = data.Version;
+            this.DeviceOwner = new List<string>();
+            this.OwnersDevices = new List<Device>();
         }
 
         [Key]
@@ -217,6 +240,7 @@ namespace Cloud_Storage_Common.Models
                 && this.Id.Equals(obj.Id)
                 && this.OwnerId == obj.OwnerId
                 && this.SyncDate.Equals(obj.SyncDate)
+                && this.BytesSize == obj.BytesSize
                 && Enumerable.SequenceEqual(this.DeviceOwner, obj.DeviceOwner);
         }
 
@@ -233,13 +257,16 @@ namespace Cloud_Storage_Common.Models
                 OwnerId = this.OwnerId,
                 SyncDate = this.SyncDate,
                 DeviceOwner = new List<string>(this.DeviceOwner),
+                BytesSize = this.BytesSize,
+
+                Owner = this.Owner,
             };
         }
 
         public override string ToString()
         {
             return base.ToString()
-                + $"\n Version ::: {this.Version} \n  Hash ::: [[{this.Hash}]]\n Device owners:: [[{String.Join(", ", this.DeviceOwner)}]] \n Owner id: [[{this.OwnerId}]]  \n";
+                + $"\n Version ::: {this.Version} \n  Hash ::: [[{this.Hash}]]\n Device owners:: [[{String.Join(", ", this.DeviceOwner)}]] \n Owner id: [[{this.OwnerId}]]  \n Bytes size: [[{this.BytesSize}]]\n";
         }
 
         public SyncFileData(LocalFileData data, long OnwerID)
@@ -252,6 +279,8 @@ namespace Cloud_Storage_Common.Models
             Version = data.Version;
             OwnerId = OnwerID;
             SyncDate = DateTime.Now;
+            BytesSize = data.BytesSize;
+            OwnersDevices = new List<Device>();
         }
     }
 }

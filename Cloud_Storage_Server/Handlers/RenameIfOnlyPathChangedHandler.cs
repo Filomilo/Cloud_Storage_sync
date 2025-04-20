@@ -71,10 +71,11 @@ namespace Cloud_Storage_Server.Handlers
                         Name = update.newFileData.Name,
                         Extenstion = update.newFileData.Extenstion,
                         Hash = update.newFileData.Hash,
-                        Version = update.newFileData.Version + 1,
+                        Version = update.newFileData.Version,
                         OwnerId = update.UserID,
                         DeviceOwner = new List<string>() { update.DeviceReuqested },
                         SyncDate = DateTime.Now,
+                        BytesSize = update.newFileData.BytesSize,
                     };
 
                     ctx.Files.Add(newFileVersion);

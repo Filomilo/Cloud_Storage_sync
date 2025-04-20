@@ -207,6 +207,8 @@ namespace Cloud_Storage_Test
 {
     class TestHelpers
     {
+        public static IServerConfig serverConfig = new ServerConfig();
+
         public static string ExampleDataDirectory =
             AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin"))
             + "testData\\";
@@ -308,7 +310,7 @@ namespace Cloud_Storage_Test
 
         public static FileSystemService GetDeafultFileSystemService()
         {
-            return new FileSystemService("dataStorage\\");
+            return new FileSystemService(serverConfig);
         }
 
         public static void ResetDatabase()

@@ -1274,6 +1274,7 @@ namespace Cloud_Storage_Test
                         Id = guid,
                         Version = 0,
                         DeviceOwner = new List<string>(),
+                        BytesSize = 1,
                     }
                 );
             }

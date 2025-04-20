@@ -1,5 +1,6 @@
 ﻿using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
+using Cloud_Storage_Server.Interfaces;
 
 namespace Cloud_Storage_Server.Services
 {
@@ -12,11 +13,16 @@ namespace Cloud_Storage_Server.Services
 
     public class FileSystemService : IFileSystemService
     {
-        private string _basePath;
-
-        public FileSystemService(string path)
+        private static ILogger Logger = CloudDriveLogging.Instance.GetLogger("FileSystemService");
+        private IServerConfig _config;
+        private string _basePath
         {
-            this._basePath = path;
+            get { return _config.StorageLocation; }
+        }
+
+        public FileSystemService(IServerConfig config)
+        {
+            this._config = config;
         }
 
         public void DeleteFile(string path)
