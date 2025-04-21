@@ -1,9 +1,12 @@
-﻿using Cloud_Storage_Desktop_lib.Interfaces;
+﻿using Cloud_Storage_Common;
+using Cloud_Storage_Desktop_lib.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Cloud_Storage_Desktop_lib.Services
 {
     public class FileSystemWatcher : IFIleSystemWatcher
     {
+        private ILogger _logger = CloudDriveLogging.Instance.GetLogger("FileSystemWatcher");
         private System.IO.FileSystemWatcher _Watcher;
         private string _Path;
 
@@ -41,8 +44,12 @@ namespace Cloud_Storage_Desktop_lib.Services
             }
         }
 
+        private static ulong onChangeCounterTmp = 0;
+
         private void _OnChanged(object sender, FileSystemEventArgs e)
         {
+            onChangeCounterTmp++;
+            _logger.LogDebug($"_OnChanged:: {e.FullPath} :::: {onChangeCounterTmp}");
             if (this.OnChangedEventHandler != null)
             {
                 if (e.ChangeType == WatcherChangeTypes.Changed)

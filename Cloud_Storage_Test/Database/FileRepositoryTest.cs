@@ -44,7 +44,7 @@ public class FileRepositoryTest
                 Hash = "1234567",
                 Name = "File",
                 Path = "location1\\location2\\location\\3",
-                SyncDate = DateTime.Now,
+                //SyncDate = DateTime.Now,
                 OwnerId = _savedUser.id,
                 Version = 0,
                 DeviceOwner = new List<string>() { "123" },
@@ -71,7 +71,7 @@ public class FileRepositoryTest
                             Hash = "45678",
                             Name = "File",
                             Path = "location1\\location2\\location\\3",
-                            SyncDate = DateTime.Now,
+                            //SyncDate = DateTime.Now,
                             OwnerId = -1,
                             Version = 0,
                             DeviceOwner = new List<string>() { "123" },
@@ -104,7 +104,7 @@ public class FileRepositoryTest
                                 Hash = "",
                                 Name = "File",
                                 Path = inocorrectPathName,
-                                SyncDate = DateTime.Now,
+                                //SyncDate = DateTime.Now,
                                 OwnerId = _savedUser.id,
                             }
                         );
@@ -127,7 +127,7 @@ public class FileRepositoryTest
             Hash = "3546",
             Name = "File",
             Path = ".",
-            SyncDate = DateTime.Now,
+            //SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
             Version = 0,
             DeviceOwner = new List<string>() { "123" },
@@ -139,7 +139,7 @@ public class FileRepositoryTest
             Hash = "3456",
             Name = "File",
             Path = ".",
-            SyncDate = DateTime.Now,
+            //SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
             Version = 0,
             DeviceOwner = new List<string>() { "123" },
@@ -172,7 +172,7 @@ public class FileRepositoryTest
             Hash = "23re",
             Name = "File",
             Path = ".",
-            SyncDate = DateTime.Now,
+            //SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
             Version = 0,
             DeviceOwner = new List<string>() { "123" },
@@ -184,7 +184,7 @@ public class FileRepositoryTest
             Hash = "234567",
             Name = "File88",
             Path = "newFolder",
-            SyncDate = DateTime.Now,
+            //SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
             Version = 0,
             DeviceOwner = new List<string>() { "123" },
@@ -214,7 +214,7 @@ public class FileRepositoryTest
                 Hash = "",
                 Name = "File",
                 Path = "/",
-                SyncDate = DateTime.Now,
+                //SyncDate = DateTime.Now,
                 OwnerId = _savedUser.id,
                 Version = 0,
                 DeviceOwner = new List<string>() { "123" },
@@ -226,7 +226,7 @@ public class FileRepositoryTest
                 Hash = "234567",
                 Name = "File88",
                 Path = "newFolder",
-                SyncDate = DateTime.Now,
+                //SyncDate = DateTime.Now,
                 OwnerId = _savedUser.id,
                 Version = 0,
                 DeviceOwner = new List<string>() { "123" },
@@ -249,7 +249,7 @@ public class FileRepositoryTest
             Extenstion = ".jpg",
             Name = "File",
             Path = "folder",
-            SyncDate = DateTime.Now,
+            //SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
             Hash = "123",
             Version = 0,
@@ -263,7 +263,7 @@ public class FileRepositoryTest
         Assert.That(fileToSave.Hash == fileInRepository.Hash);
         Assert.That(fileToSave.Name == fileInRepository.Name);
         Assert.That(fileToSave.Path == fileInRepository.Path);
-        Assert.That(fileToSave.SyncDate == fileInRepository.SyncDate);
+        //Assert.That(fileToSave.SyncDate == fileInRepository.SyncDate);
     }
 
     [Test]
@@ -287,7 +287,7 @@ public class FileRepositoryTest
             Hash = "567890-",
             Name = "File",
             Path = "123\\123",
-            SyncDate = DateTime.Now,
+            //SyncDate = DateTime.Now,
             OwnerId = _savedUser.id,
             Version = 0,
             DeviceOwner = new List<string>() { "123" },
@@ -306,7 +306,7 @@ public class FileRepositoryTest
         Assert.That(fileToSave.Hash == fileInRepository.Hash);
         Assert.That(fileToSave.Name == fileInRepository.Name);
         Assert.That(fileToSave.Path == fileInRepository.Path);
-        Assert.That(fileToSave.SyncDate == fileInRepository.SyncDate);
+        //Assert.That(fileToSave.SyncDate == fileInRepository.SyncDate);
     }
 
     [Test]
@@ -323,7 +323,7 @@ public class FileRepositoryTest
                 Hash = "",
                 Name = "File",
                 Path = "/123/123",
-                SyncDate = DateTime.Now,
+                //SyncDate = DateTime.Now,
 
                 Version = 0,
                 DeviceOwner = new List<string>() { "123" },
@@ -352,7 +352,7 @@ public class FileRepositoryTest
                 Hash = "1234",
                 Name = $"File_{i}",
                 Path = "123\\1234",
-                SyncDate = DateTime.Now,
+                ///SyncDate = DateTime.Now,
                 OwnerId = _savedUser.id,
                 Version = 0,
                 DeviceOwner = new List<string>() { "123" },

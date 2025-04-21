@@ -74,7 +74,7 @@ namespace Cloud_Storage_Server.Handlers
                         Version = update.newFileData.Version,
                         OwnerId = update.UserID,
                         DeviceOwner = new List<string>() { update.DeviceReuqested },
-                        SyncDate = DateTime.Now,
+                        //SyncDate = DateTime.Now,
                         BytesSize = update.newFileData.BytesSize,
                     };
 

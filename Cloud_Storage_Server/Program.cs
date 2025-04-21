@@ -57,7 +57,8 @@ builder.Services.AddSingleton<IFileSystemService>(provider => fileSystemService)
 builder.Services.AddSingleton<IFileSyncService>(provider => new FileSyncService(
     fileSystemService,
     WebsocketConnectedController,
-    contextGenerator
+    contextGenerator,
+    serverConfig
 ));
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

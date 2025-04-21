@@ -29,7 +29,9 @@ namespace Cloud_Storage_Common
                 {
                     return File.Open(
                         filename,
-                        acces == FileAccess.Write ? FileMode.OpenOrCreate : FileMode.Open,
+                        acces == FileAccess.Write || acces == FileAccess.ReadWrite
+                            ? FileMode.OpenOrCreate
+                            : FileMode.Open,
                         acces
                     );
                 }
@@ -154,12 +156,12 @@ namespace Cloud_Storage_Common
             }
         }
 
-        public static ulong GetBytesSizeOfFile(string filename)
+        public static long GetBytesSizeOfFile(string filename)
         {
             using (var stream = FileManager.WaitForFile(filename, FileAccess.Read))
             {
                 Logger.LogTrace($"Gettign Byttes size for file [[{filename}]]");
-                return (ulong)stream.Length;
+                return (long)stream.Length;
                 ;
             }
         }
@@ -178,9 +180,9 @@ namespace Cloud_Storage_Common
             }
         }
 
-        public static FileStream GetStreamForFile(string fiePath)
+        public static FileStream GetStreamForFile(string fiePath, int ms = 500000)
         {
-            return WaitForFile(fiePath, FileAccess.ReadWrite);
+            return WaitForFile(fiePath, FileAccess.ReadWrite, 100, ms / 100);
         }
 
         public static void DeleteFile(string v)

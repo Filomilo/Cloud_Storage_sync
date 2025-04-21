@@ -271,8 +271,20 @@ namespace Cloud_Storage_Test
 
         public static void RemoveTmpDirectory()
         {
-            if (Directory.Exists(TmpDirecotry))
-                Directory.Delete(TmpDirecotry, true);
+            TestHelpers.EnsureTrue(() =>
+            {
+                try
+                {
+                    if (Directory.Exists(TmpDirecotry))
+                        Directory.Delete(TmpDirecotry, true);
+                }
+                catch (Exception ex)
+                {
+                    return false;
+                }
+
+                return true;
+            });
         }
 
         public static string CreateTmpFile(string dir, string fileContent, int i)
@@ -305,6 +317,35 @@ namespace Cloud_Storage_Test
                 Thread.Sleep(100);
                 if (stopwatch.ElapsedMilliseconds > timeout)
                     throw new TimeoutException($"Ensure true timouet {timeout}");
+            }
+        }
+
+        public static void EnsureNotThrows(Action action, long timeout = Timeout)
+        {
+            if (Debugger.IsAttached)
+            {
+                timeout *= 100;
+            }
+
+            bool state = false;
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            while (true)
+            {
+                try
+                {
+                    action.Invoke();
+                }
+                catch (Exception ex)
+                {
+                    Thread.Sleep(100);
+                    if (stopwatch.ElapsedMilliseconds > timeout)
+                        throw ex;
+                    else
+                    {
+                        continue;
+                    }
+                }
+                break;
             }
         }
 
@@ -351,6 +392,18 @@ namespace Cloud_Storage_Test
 
                 context.Database.EnsureCreated();
             }
+        }
+
+        public static string GetSeverStoragePath()
+        {
+            return Directory.GetCurrentDirectory() + "\\dataStorage\\";
+        }
+
+        public static void ClearServerStorage()
+        {
+            string serverStoragePath = GetSeverStoragePath();
+            if (Directory.Exists(serverStoragePath))
+                Directory.Delete(serverStoragePath, true);
         }
     }
 }

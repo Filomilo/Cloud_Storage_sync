@@ -59,7 +59,7 @@ namespace Cloud_Storage_Server.Controllers.Tests
                     Owner = null,
                     OwnerId = 2,
                     Path = "folder\\23456",
-                    SyncDate = new DateTime(),
+                    //SyncDate = new DateTime(),
                 },
                 exmpaleData
             );

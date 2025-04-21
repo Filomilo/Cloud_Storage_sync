@@ -21,11 +21,6 @@ namespace Cloud_Storage_Server.Handlers
             _dataBaseContextGenerator = dataBaseContextGenerator;
         }
 
-        private static string GetRealtivePathForFile(long userid, SyncFileData data)
-        {
-            return $"{userid}\\{data.Id}";
-        }
-
         public override object Handle(object request)
         {
             if (request.GetType() != typeof(FileUploadRequest))
@@ -70,10 +65,7 @@ namespace Cloud_Storage_Server.Handlers
 
                     saved = context.Files.Add(file).Entity;
 
-                    this._fileSystemService.SaveFile(
-                        GetRealtivePathForFile(saved.OwnerId, saved),
-                        fileUploadRequest.fileStream
-                    );
+                    this._fileSystemService.SaveFile(saved, fileUploadRequest.fileStream);
 
                     transaction.Commit();
                     context.SaveChanges();

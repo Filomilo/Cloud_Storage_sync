@@ -1,4 +1,6 @@
-﻿using Cloud_Storage_Common;
+﻿using System.IO;
+using System.IO.Pipes;
+using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Interfaces;
 
@@ -6,9 +8,9 @@ namespace Cloud_Storage_Server.Services
 {
     public interface IFileSystemService
     {
-        public void SaveFile(string path, Stream dataBytes);
-        public void DeleteFile(string path);
+        public void DeleteFile(SyncFileData data);
         public Stream GetFile(string path);
+        void SaveFile(SyncFileData dataBytes, Stream fileStream);
     }
 
     public class FileSystemService : IFileSystemService
@@ -25,8 +27,9 @@ namespace Cloud_Storage_Server.Services
             this._config = config;
         }
 
-        public void DeleteFile(string path)
+        public void DeleteFile(SyncFileData data)
         {
+            String path = GetRealtivePathForFile(data.OwnerId, data);
             File.Delete(this.GetFullPathToFile(path));
         }
 
@@ -36,14 +39,15 @@ namespace Cloud_Storage_Server.Services
             return data;
         }
 
+        public void SaveFile(SyncFileData dataBytes, Stream fileStream)
+        {
+            String path = GetRealtivePathForFile(dataBytes.OwnerId, dataBytes);
+            FileManager.SaveFile(GetFullPathToFile(path), fileStream);
+        }
+
         public string GetFullPathToFile(string path)
         {
             return Directory.GetCurrentDirectory() + "\\" + _basePath + path + ".dat";
-        }
-
-        public void SaveFile(string path, Stream stream)
-        {
-            FileManager.SaveFile(GetFullPathToFile(path), stream);
         }
 
         public void CreateDirectory(string path)
@@ -61,6 +65,11 @@ namespace Cloud_Storage_Server.Services
         internal string GetFullPathToFile(SyncFileData file)
         {
             return GetFullPathToFile(file.OwnerId + "//" + file.Id.ToString());
+        }
+
+        private static string GetRealtivePathForFile(long userid, SyncFileData data)
+        {
+            return $"{userid}\\{data.Id}";
         }
     }
 }

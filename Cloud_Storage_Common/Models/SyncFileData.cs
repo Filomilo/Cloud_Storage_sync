@@ -94,18 +94,14 @@ namespace Cloud_Storage_Common.Models
         [Required]
         public ulong Version { get; set; } = 0;
 
-        private ulong _bytesSize;
+        private long _bytesSize;
 
         [Required]
         [Newtonsoft.Json.JsonProperty]
-        public ulong BytesSize
+        public long BytesSize
         {
             get { return this._bytesSize; }
-            set
-            {
-                DataValidators.GreaterThan(value, 0, "BytesSize");
-                this._bytesSize = value;
-            }
+            set { this._bytesSize = value; }
         }
 
         public override bool Equals(object? obj)
@@ -214,8 +210,8 @@ namespace Cloud_Storage_Common.Models
         public long OwnerId { get; set; }
         public virtual User Owner { get; set; }
 
-        [Required]
-        public DateTime SyncDate { get; set; }
+        //[Required]
+        //public DateTime SyncDate { get; set; }
 
         [ForeignKey("Devices")]
         public List<string> DeviceOwner { get; set; }
@@ -239,7 +235,7 @@ namespace Cloud_Storage_Common.Models
                 && this.Version == obj.Version
                 && this.Id.Equals(obj.Id)
                 && this.OwnerId == obj.OwnerId
-                && this.SyncDate.Equals(obj.SyncDate)
+                //&& this.SyncDate.Equals(obj.SyncDate)
                 && this.BytesSize == obj.BytesSize
                 && Enumerable.SequenceEqual(this.DeviceOwner, obj.DeviceOwner);
         }
@@ -255,7 +251,7 @@ namespace Cloud_Storage_Common.Models
                 Version = this.Version,
                 Id = this.Id,
                 OwnerId = this.OwnerId,
-                SyncDate = this.SyncDate,
+                //SyncDate = this.SyncDate,
                 DeviceOwner = new List<string>(this.DeviceOwner),
                 BytesSize = this.BytesSize,
 
@@ -278,7 +274,7 @@ namespace Cloud_Storage_Common.Models
             Path = data.Path;
             Version = data.Version;
             OwnerId = OnwerID;
-            SyncDate = DateTime.Now;
+            //SyncDate = DateTime.Now;
             BytesSize = data.BytesSize;
             OwnersDevices = new List<Device>();
         }
