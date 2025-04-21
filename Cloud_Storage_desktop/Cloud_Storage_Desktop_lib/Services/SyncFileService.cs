@@ -3,6 +3,7 @@ using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Microsoft.Extensions.Logging;
+using Microsoft.Win32.SafeHandles;
 
 namespace Cloud_Storage_Desktop_lib.Services
 {
@@ -149,29 +150,16 @@ namespace Cloud_Storage_Desktop_lib.Services
             _clientChainOfResponsibilityRepository.OnLocalyFileDeletedHandler.Handle(args.FullPath);
         }
 
-        public void OnLocallyCreated(FileSystemEventArgs args)
-        {
-            try
-            {
-                _clientChainOfResponsibilityRepository.OnLocallyFileChangeHandler.Handle(
-                    args.FullPath
-                );
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError(
-                    $"Error while handling file creation for file [[{args.Name}]] :::: {ex.Message}"
-                );
-            }
-        }
-
         public void OnLocallyChanged(FileSystemEventArgs args)
         {
             try
             {
+                //SafeFileHandle handle = File.OpenHandle(args.FullPath);
+                logger.LogDebug($"On Locally changed: [[{args.FullPath}]]");
                 _clientChainOfResponsibilityRepository.OnLocallyFileChangeHandler.Handle(
                     args.FullPath
                 );
+                //handle.Close();
             }
             catch (Exception ex)
             {

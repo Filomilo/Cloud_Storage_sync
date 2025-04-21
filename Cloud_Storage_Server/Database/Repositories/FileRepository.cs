@@ -111,5 +111,13 @@ namespace Cloud_Storage_Server.Database.Repositories
 
             return file;
         }
+
+        internal static void RemoveFile(AbstractDataBaseContext context, SyncFileData fileToRemove)
+        {
+            SyncFileData sync = context
+                .Files.Where(x => x.Id.Equals(fileToRemove.Id))
+                .FirstOrDefault();
+            context.Files.Remove(sync);
+        }
     }
 }

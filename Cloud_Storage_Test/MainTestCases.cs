@@ -1,5 +1,7 @@
-﻿using System.Net.WebSockets;
+﻿using System.Linq;
+using System.Net.WebSockets;
 using System.Text;
+using System.Windows;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib;
@@ -28,6 +30,7 @@ namespace Cloud_Storage_Test
         private FileSystemService _fileSystemService = TestHelpers.GetDeafultFileSystemService();
         private IFileRepositoryService _localFileRepositoryService1;
         private MyWebApplication webApplication;
+        IServerConfig _serverConfig;
 
         private IFileRepositoryService _localFileRepositoryService2;
         private IWebsocketConnectedController websocketConnectedController;
@@ -38,6 +41,7 @@ namespace Cloud_Storage_Test
         public void Setup()
         {
             Thread.Sleep(2000);
+            TestHelpers.ClearServerStorage();
             TestHelpers.ResetDatabase();
             TestHelpers.EnsureTrue(() =>
             {
@@ -74,6 +78,8 @@ namespace Cloud_Storage_Test
 
             websocketConnectedController = (IWebsocketConnectedController)
                 webApplication.Server.Services.GetService(typeof(IWebsocketConnectedController));
+            _serverConfig = (IServerConfig)
+                webApplication.Server.Services.GetService(typeof(IServerConfig));
 
             WebSocketClient webSocketClient = webApplication.Server.CreateWebSocketClient();
             email = $"{Guid.NewGuid().ToString()}@mail.mail";
@@ -232,96 +238,302 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
-        public void Create_And_Sync_File_In_EmptyDirectory_With_Antoher_Device_connected()
+        public void Backup_Size_limit_Test()
         {
             #region Ensure connected and empty
             ConnectBothDevices();
 
             #endregion
 
-            #region Create New File
-            string fileContent = "Exmaple File Content_" + Guid.NewGuid();
-            String createdFileName = this.AddTMpFiles(1, this._Client1Config).FirstOrDefault();
+            #region Create New File 100 Mega
+            string fileName = "LargeFile";
+            string Extension = ".dat";
+            string fileNameWithExtension = $"{fileName}{Extension}";
+            int fileSize = /*1024 * 1024 **/
+                100;
+            _serverConfig.BackupMaxSize = fileSize * 2;
+            int overrideamount = (int)_serverConfig.BackupMaxSize / fileSize - 1;
 
-            #endregion
+            this.AddFileOfSize(fileNameWithExtension, fileSize, this._Client1Config, "Initial");
 
-            #region Ensure the same data on server and clinet
-
-            List<SyncFileData> files = new List<SyncFileData>();
-            Assert.DoesNotThrow(
-                () =>
+            this.FileInLocalStorageShouldBe(
+                this._localFileRepositoryService1,
+                new List<LocalFileData>()
                 {
-                    TestHelpers.EnsureTrue(() =>
+                    new LocalFileData()
                     {
-                        files = this.GetAllFilesOnServer();
-                        return files.Count == 1;
-                    });
-                },
-                $"File reposirotry did not reach files amount to one in desired time, exprect to file repository have 1 but has [[{files.Count}]] "
-            );
-
-            SyncFileData syncesFile = files.First();
-
-            Assert.That(
-                syncesFile.Name == Path.GetFileNameWithoutExtension(createdFileName),
-                $"File name in database {syncesFile.Name} is not equal to file name in folder {Path.GetFileNameWithoutExtension(createdFileName)}"
-            );
-
-            string serverFileHash = FileManager.GetHashOfFile(
-                _fileSystemService.GetFullPathToFile(syncesFile)
-            );
-            string newDevieFileHAs = "";
-            Assert.DoesNotThrow(
-                () =>
-                {
-                    TestHelpers.EnsureTrue(() =>
-                    {
-                        string newDevieFileHAs = FileManager.GetHashOfFile(
-                            _Client2Config.StorageLocation + createdFileName
-                        );
-                        return serverFileHash.Equals(newDevieFileHAs);
-                    });
-                },
-                $"new device file hash \n[[{newDevieFileHAs}]]\n IS not the same as file hash on server \n[[{serverFileHash}]]\n"
-            );
-
-            this.CheckIfTheSameContentOnClinetsAndServer(
-                new List<CloudDriveSyncSystem>()
-                {
-                    this._cloudDriveSyncSystemClient1,
-                    this._cloudDriveSyncSystemClient2,
+                        BytesSize = (long)fileSize,
+                        Name = fileName,
+                        Extenstion = Extension,
+                        Path = ".",
+                        Version = 0,
+                    },
                 }
             );
 
-            this.CheckIfFileContentTheSameAsClientDataBase(
-                _localFileRepositoryService2,
-                this._Client1Config
+            for (int i = 0; i < overrideamount; i++)
+            {
+                Thread.Sleep(10000); //todo: make it so works no matter the time spacing
+                this.AddFileOfSize(
+                    fileNameWithExtension,
+                    fileSize,
+                    this._Client1Config,
+                    $"Edited: [[[{i}]]]"
+                );
+            }
+            #endregion
+
+            this.FileInLocalStorageShouldBe(
+                this._localFileRepositoryService1,
+                new List<LocalFileData>()
+                {
+                    new LocalFileData()
+                    {
+                        BytesSize = (long)fileSize,
+                        Name = fileName,
+                        Extenstion = Extension,
+                        Path = ".",
+                        Version = (ulong)overrideamount,
+                    },
+                }
             );
 
-            // ensure file onwre sahip fo all devices
-            Assert.DoesNotThrow(
-                (
+            this.FileInLocalStorageShouldBe(
+                this._localFileRepositoryService2,
+                new List<LocalFileData>()
+                {
+                    new LocalFileData()
+                    {
+                        BytesSize = (long)fileSize,
+                        Name = fileName,
+                        Extenstion = Extension,
+                        Path = ".",
+                        Version = (ulong)overrideamount,
+                    },
+                }
+            );
+
+            List<SyncFileData> excpectedFilesOnServer = new List<SyncFileData>();
+            for (int i = 0; i < overrideamount + 1; i++)
+            {
+                SyncFileData syncFileData = new SyncFileData()
+                {
+                    BytesSize = (long)fileSize,
+                    Name = fileName,
+                    Extenstion = Extension,
+                    Path = ".",
+                    Version = (ulong)i,
+                    DeviceOwner = new List<string>(),
+                };
+                if (i == overrideamount)
+                {
+                    syncFileData.DeviceOwner.Add(
+                        this._cloudDriveSyncSystemClient1.CredentialManager.GetDeviceID()
+                    );
+                    syncFileData.DeviceOwner.Add(
+                        this._cloudDriveSyncSystemClient2.CredentialManager.GetDeviceID()
+                    );
+                }
+                excpectedFilesOnServer.Add(syncFileData);
+            }
+
+            this.EnsureServerDataBaseState(excpectedFilesOnServer.ToArray());
+
+            // overlaod backups
+
+
+            this.AddFileOfSize(fileNameWithExtension, fileSize, this._Client1Config, "Overload");
+
+            this.FileInLocalStorageShouldBe(
+                this._localFileRepositoryService1,
+                new List<LocalFileData>()
+                {
+                    new LocalFileData()
+                    {
+                        BytesSize = (long)fileSize,
+                        Name = fileName,
+                        Extenstion = Extension,
+                        Path = ".",
+                        Version = (ulong)overrideamount + 1,
+                    },
+                }
+            );
+
+            this.FileInLocalStorageShouldBe(
+                this._localFileRepositoryService2,
+                new List<LocalFileData>()
+                {
+                    new LocalFileData()
+                    {
+                        BytesSize = (long)fileSize,
+                        Name = fileName,
+                        Extenstion = Extension,
+                        Path = ".",
+                        Version = (ulong)overrideamount + 1,
+                    },
+                }
+            );
+
+            SyncFileData oldestVersionToFind = excpectedFilesOnServer.Find(x => x.Version == 0);
+            SyncFileData newestVersoinOfIFle = excpectedFilesOnServer
+                .Find(x => x.DeviceOwner.Count == 2)
+                .Clone();
+            excpectedFilesOnServer.Remove(oldestVersionToFind);
+            excpectedFilesOnServer.Find(x => x.DeviceOwner.Count == 2).DeviceOwner.Clear();
+            newestVersoinOfIFle.Version++;
+            excpectedFilesOnServer.Add(newestVersoinOfIFle);
+
+            this.EnsureServerDataBaseState(excpectedFilesOnServer.ToArray());
+            this.AmountOfFilesOnServerStorage((int)_serverConfig.BackupMaxSize / fileSize);
+        }
+
+        private void AmountOfFilesOnServerStorage(int mount)
+        {
+            Assert.DoesNotThrow(() =>
+            {
+                TestHelpers.EnsureTrue(() =>
+                {
+                    List<FileData> files = FileManager.GetAllFilesInLocation(
+                        TestHelpers.GetSeverStoragePath()
+                    );
+                    return files.Count == mount;
+                });
+            });
+        }
+
+        private void EnsureServerDataBaseState(SyncFileData[]? excpectedFilesOnServer)
+        {
+            Assert.DoesNotThrow(() =>
+            {
+                List<SyncFileData> syncFileDatas;
+                TestHelpers.EnsureNotThrows(
                     () =>
                     {
-                        TestHelpers.EnsureTrue(() =>
-                        {
-                            return GetAllFilesOnServer()
-                                    .Where(x =>
-                                        x.DeviceOwner.Contains(
-                                            this._cloudDriveSyncSystemClient1.CredentialManager.GetDeviceID()
-                                        )
-                                        && x.DeviceOwner.Contains(
-                                            this._cloudDriveSyncSystemClient2.CredentialManager.GetDeviceID()
-                                        )
-                                    )
-                                    .Count() == 1;
-                        });
-                    }
-                ),
-                $"Files: {String.Join(", ", this.GetAllFilesOnServer())} Do not  have both devies as owners"
-            );
+                        syncFileDatas = this.GetAllFilesOnServer();
+                        Assert.That(
+                            syncFileDatas.Count == excpectedFilesOnServer.Length,
+                            $"Expected amount in server file data is [[{excpectedFilesOnServer.Length}]] But got [[{syncFileDatas.Count}]]"
+                        );
 
-            #endregion
+                        foreach (SyncFileData syncFileData in excpectedFilesOnServer)
+                        {
+                            SyncFileData inDbData = syncFileDatas.Find(x =>
+                                x.GetRealativePath().Equals(syncFileData.GetRealativePath())
+                                && x.Version == syncFileData.Version
+                            );
+                            Assert.That(
+                                inDbData != null,
+                                $"Couldnt find mathcing file in data base for file [[{syncFileData}]] in \n[[\n{String.Join(", \n", syncFileDatas)}  \n ]]\n"
+                            );
+                            Assert.That(
+                                inDbData.DeviceOwner.SequenceEqual(syncFileData.DeviceOwner),
+                                $"File [[{syncFileData}]] should have 2 owners but has {inDbData.DeviceOwner.Count}"
+                            );
+                        }
+                    },
+                    5000
+                );
+            });
+        }
+
+        private void FileInLocalStorageShouldBe(
+            IFileRepositoryService localFileRepositoryService,
+            List<LocalFileData> expectedLocaldata
+        )
+        {
+            List<LocalFileData> fileInsLocalStorage = new List<LocalFileData>();
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            using (
+                                Cloud_Storage_Desktop_lib.Interfaces.AbstractDataBaseContext ctx =
+                                    localFileRepositoryService.GetDbContext()
+                            )
+                            {
+                                fileInsLocalStorage = localFileRepositoryService
+                                    .GetAllFiles()
+                                    .ToList();
+                            }
+
+                            return fileInsLocalStorage.Count == expectedLocaldata.Count;
+                        },
+                        500000
+                    );
+                },
+                $"Expected amount in local file data is [[{expectedLocaldata.Count}]] But got [[{fileInsLocalStorage.Count}]]"
+            );
+            Assert.DoesNotThrow(() =>
+            {
+                TestHelpers.EnsureNotThrows(
+                    () =>
+                    {
+                        fileInsLocalStorage = localFileRepositoryService.GetAllFiles().ToList();
+
+                        foreach (LocalFileData FileInStorage in fileInsLocalStorage)
+                        {
+                            LocalFileData expectedFileData = expectedLocaldata.Find(x =>
+                                x.GetRealativePath().Equals(FileInStorage.GetRealativePath())
+                            );
+                            Assert.That(
+                                expectedFileData != null,
+                                $"Couldnt find mathcing file in data base for file [[{FileInStorage}]] in \n[[\n{String.Join(", \n", expectedLocaldata)}  \n ]]\n"
+                            );
+
+                            if (expectedFileData.BytesSize != 0)
+                            {
+                                Assert.That(
+                                    FileInStorage.BytesSize.Equals(expectedFileData.BytesSize),
+                                    $"File ByteSize in storage [[{FileInStorage.BytesSize}]] not the same as expected [[{expectedFileData.BytesSize}]]"
+                                );
+                            }
+                            if (expectedFileData.Version != null)
+                            {
+                                Assert.That(
+                                    FileInStorage.Version.Equals(expectedFileData.Version),
+                                    $"File Version in storage [[{FileInStorage.Version}]] not the same as expected [[{expectedFileData.Version}]]"
+                                );
+                            }
+
+                            if (expectedFileData.Hash != null)
+                            {
+                                Assert.That(
+                                    FileInStorage.Hash.Equals(expectedFileData.Hash),
+                                    $"File Hash in storage [[{FileInStorage.Hash}]] not the same as expected [[{expectedFileData.Hash}]]"
+                                );
+                            }
+                        }
+                    },
+                    100000
+                );
+            });
+        }
+
+        static Random random = new Random();
+
+        private void AddFileOfSize(
+            string fileName,
+            int sizeINBytes,
+            IConfiguration client1Config,
+            string additionalString = ""
+        )
+        {
+            String path = client1Config.StorageLocation + fileName;
+            byte[] additinalstringcintent = Encoding.ASCII.GetBytes(additionalString);
+            byte[] buffer = new byte[sizeINBytes - additinalstringcintent.Length];
+            random.NextBytes(buffer);
+            byte[] combined = additinalstringcintent.Concat(buffer).ToArray();
+
+            using (FileStream fs = FileManager.GetStreamForFile(path, sizeINBytes / 10000))
+            {
+                fs.Seek(0, SeekOrigin.Begin);
+
+                fs.Write(combined, 0, sizeINBytes);
+
+                fs.Close();
+            }
         }
 
         private void ConnectBothDevices()
@@ -1257,9 +1469,10 @@ namespace Cloud_Storage_Test
             );
             memoryStream.Position = 0;
             string newfileName = Path.GetFileName(Path.GetTempFileName());
+
             TestHelpers
                 .GetDeafultFileSystemService()
-                .SaveFile($"{userID}//{guid.ToString()}", memoryStream);
+                .SaveFile(new SyncFileData() { Id = guid, OwnerId = userID }, memoryStream);
             using (AbstractDataBaseContext context = new DatabaseContextSqLite())
             {
                 FileRepository.SaveNewFile(
@@ -1274,6 +1487,7 @@ namespace Cloud_Storage_Test
                         Id = guid,
                         Version = 0,
                         DeviceOwner = new List<string>(),
+                        BytesSize = 1,
                     }
                 );
             }

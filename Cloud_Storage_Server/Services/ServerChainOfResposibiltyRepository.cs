@@ -10,16 +10,19 @@ namespace Cloud_Storage_Server.Services
         private IFileSystemService _fileSystemService;
         private IFileSyncService _fileSyncService;
         private IDataBaseContextGenerator _dataBaseContextGenerator;
+        private IServerConfig _serverConfig;
 
         public ServerChainOfResposibiltyRepository(
             IFileSystemService fileSystemService,
             IFileSyncService fileSyncService,
-            IDataBaseContextGenerator dataBaseContextGenerator
+            IDataBaseContextGenerator dataBaseContextGenerator,
+            IServerConfig serverConfig
         )
         {
             _dataBaseContextGenerator = dataBaseContextGenerator;
             _fileSystemService = fileSystemService;
             _fileSyncService = fileSyncService;
+            _serverConfig = serverConfig;
             OnFileAddHandler = CreateOnFileAddHandler();
             OnFileUpdateHandler = CreateOnFileUpdateHandler();
             OnFileRenameHandler = CreateOnFileDeleteHandler();
@@ -32,6 +35,13 @@ namespace Cloud_Storage_Server.Services
                 .Next(new RemoveFileDeviceOwnership(this._dataBaseContextGenerator))
                 .Next(new PrepareFileRemoveUpdateHandler())
                 .Next(new SendUpdateToClientsHandler(this._fileSyncService))
+                .Next(
+                    new ClearBackupsOverload(
+                        this._dataBaseContextGenerator,
+                        this._serverConfig,
+                        this._fileSystemService
+                    )
+                )
                 .Build();
         }
 
@@ -40,6 +50,13 @@ namespace Cloud_Storage_Server.Services
             return new ChainOfResponsiblityBuilder()
                 .Next(new UpdateIfOnlyOwnerChanged(this._dataBaseContextGenerator))
                 .Next(new RenameIfOnlyPathChangedHandler(this._dataBaseContextGenerator))
+                .Next(
+                    new ClearBackupsOverload(
+                        this._dataBaseContextGenerator,
+                        this._serverConfig,
+                        this._fileSystemService
+                    )
+                )
                 .Build();
         }
 
@@ -52,6 +69,13 @@ namespace Cloud_Storage_Server.Services
                     new SaveAndUpdateNewVersionOfFile(
                         this._fileSystemService,
                         _dataBaseContextGenerator
+                    )
+                )
+                .Next(
+                    new ClearBackupsOverload(
+                        this._dataBaseContextGenerator,
+                        this._serverConfig,
+                        this._fileSystemService
                     )
                 )
                 .Build();

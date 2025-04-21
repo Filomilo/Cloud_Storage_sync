@@ -49,12 +49,16 @@ WebsocketConnectedController WebsocketConnectedController = new WebsocketConnect
 builder.Services.AddSingleton<IWebsocketConnectedController, WebsocketConnectedController>(
     provider => WebsocketConnectedController
 );
-FileSystemService fileSystemService = new FileSystemService("dataStorage\\");
+
+IServerConfig serverConfig = new ServerConfig();
+builder.Services.AddSingleton<IServerConfig>(provider => serverConfig);
+FileSystemService fileSystemService = new FileSystemService(serverConfig);
 builder.Services.AddSingleton<IFileSystemService>(provider => fileSystemService);
 builder.Services.AddSingleton<IFileSyncService>(provider => new FileSyncService(
     fileSystemService,
     WebsocketConnectedController,
-    contextGenerator
+    contextGenerator,
+    serverConfig
 ));
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

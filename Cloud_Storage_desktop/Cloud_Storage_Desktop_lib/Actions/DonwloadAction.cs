@@ -34,11 +34,6 @@ namespace Cloud_Storage_Desktop_lib.Actions
                 {
                     try
                     {
-                        Stream stream = serverConnection.DownloadFile(syncFileData.Id);
-                        FileManager.SaveFile(
-                            syncFileData.getFullFilePathForBasePath(configuration.StorageLocation),
-                            stream
-                        );
                         // update file data
                         LocalFileData newData = (LocalFileData)syncFileData;
                         LocalFileData oldData = fileRepositoryService
@@ -52,6 +47,11 @@ namespace Cloud_Storage_Desktop_lib.Actions
                         {
                             fileRepositoryService.AddNewFile(newData);
                         }
+                        Stream stream = serverConnection.DownloadFile(syncFileData.Id);
+                        FileManager.SaveFile(
+                            syncFileData.getFullFilePathForBasePath(configuration.StorageLocation),
+                            stream
+                        );
                         serverConnection.UpdateFileData(
                             new UpdateFileDataRequest(UPDATE_TYPE.ADD, null, newData)
                         );

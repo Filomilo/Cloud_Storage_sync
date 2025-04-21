@@ -29,7 +29,9 @@ namespace Cloud_Storage_Common
                 {
                     return File.Open(
                         filename,
-                        acces == FileAccess.Write ? FileMode.OpenOrCreate : FileMode.Open,
+                        acces == FileAccess.Write || acces == FileAccess.ReadWrite
+                            ? FileMode.OpenOrCreate
+                            : FileMode.Open,
                         acces
                     );
                 }
@@ -98,6 +100,7 @@ namespace Cloud_Storage_Common
                 Extenstion =
                     Path.GetExtension(FullFilePath) == null ? "" : Path.GetExtension(FullFilePath),
                 Hash = GetHashOfFile(FullFilePath),
+                BytesSize = GetBytesSizeOfFile(FullFilePath),
             };
         }
 
@@ -153,6 +156,16 @@ namespace Cloud_Storage_Common
             }
         }
 
+        public static long GetBytesSizeOfFile(string filename)
+        {
+            using (var stream = FileManager.WaitForFile(filename, FileAccess.Read))
+            {
+                Logger.LogTrace($"Gettign Byttes size for file [[{filename}]]");
+                return (long)stream.Length;
+                ;
+            }
+        }
+
         public static void SaveFile(string path, Stream stream)
         {
             if (!Directory.Exists(Path.GetDirectoryName(path)))
@@ -167,9 +180,9 @@ namespace Cloud_Storage_Common
             }
         }
 
-        public static FileStream GetStreamForFile(string fiePath)
+        public static FileStream GetStreamForFile(string fiePath, int ms = 500000)
         {
-            return WaitForFile(fiePath, FileAccess.ReadWrite);
+            return WaitForFile(fiePath, FileAccess.ReadWrite, 100, ms / 100);
         }
 
         public static void DeleteFile(string v)

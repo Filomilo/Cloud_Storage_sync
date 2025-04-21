@@ -12,6 +12,8 @@ namespace Cloud_Storage_Desktop_lib.Services
             form.Add(new StringContent(data.Name), "fileData.Name");
             form.Add(new StringContent(data.Extenstion), "fileData.Extenstion");
             form.Add(new StringContent(data.Hash), "fileData.Hash");
+            //form.Add(new StringContent(data.Version.ToString()), "fileData.Version");
+            form.Add(new StringContent(data.BytesSize.ToString()), "fileData.BytesSize");
 
             return form;
         }

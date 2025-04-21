@@ -40,15 +40,18 @@ namespace Cloud_Storage_Server.Services
         private ILogger logger = CloudDriveLogging.Instance.GetLogger("FileSyncService");
         private IServerChainOfResposibiltyRepository _serverChainOfResposibiltyRepository;
         private IDataBaseContextGenerator _dataBaseContextGenerator;
+        private IServerConfig _serverConfig;
 
         public FileSyncService(
             IFileSystemService fileSystemService,
             IWebsocketConnectedController websocketConnectedController,
-            IDataBaseContextGenerator dataBaseContextGenerator
+            IDataBaseContextGenerator dataBaseContextGenerator,
+            IServerConfig serverConfig
         )
         {
             _fileSystemService = fileSystemService;
             _dataBaseContextGenerator = dataBaseContextGenerator;
+            _serverConfig = serverConfig;
             this.FileUpdated += (UpdateFileDataRequest file) =>
             {
                 websocketConnectedController.SendMessageToUser(
@@ -60,7 +63,8 @@ namespace Cloud_Storage_Server.Services
             this._serverChainOfResposibiltyRepository = new ServerChainOfResposibiltyRepository(
                 this._fileSystemService,
                 this,
-                this._dataBaseContextGenerator
+                this._dataBaseContextGenerator,
+                this._serverConfig
             );
         }
 
