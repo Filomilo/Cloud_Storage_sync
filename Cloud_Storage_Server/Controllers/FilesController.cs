@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
+using Cloud_Storage_Common.Requests;
 using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Database.Repositories;
 using Cloud_Storage_Server.Interfaces;
@@ -177,6 +178,23 @@ namespace Cloud_Storage_Server.Controllers
 
             string deviceId = JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization);
             _FileSyncService.UpdateFileForDevice(email, deviceId, fileUpdate);
+
+            return Ok("updated");
+        }
+
+        [Route("setVersion")]
+        [Authorize]
+        [HttpPost]
+        public IActionResult setVersion([FromBody] SetVersionRequest setVersionRequest)
+        {
+            String email = JwtHelpers.GetEmailFromToken(Request.Headers.Authorization);
+
+            string deviceId = JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization);
+            _FileSyncService.SetFileVersion(
+                email,
+                setVersionRequest.FileId,
+                setVersionRequest.Version
+            );
 
             return Ok("updated");
         }
