@@ -32,6 +32,7 @@ namespace Cloud_Storage_Server.Services
         event FileUpdateHandler FileUpdated;
         void SendFileUpdate(UpdateFileDataRequest update);
         void UpdateFileForDevice(string email, string deviceId, UpdateFileDataRequest file);
+        void SetFileVersion(long useiD, Guid fileId, ulong version);
     }
 
     public class FileSyncService : IFileSyncService
@@ -79,7 +80,7 @@ namespace Cloud_Storage_Server.Services
             try
             {
                 SyncFileData sync = (SyncFileData)
-                    _serverChainOfResposibiltyRepository.OnFileAddHandler.Handle(fileUploadRequest);
+                    _serverChainOfResposibiltyRepository.OnFileAddChain.Handle(fileUploadRequest);
                 if (FileUpdated != null)
                 {
                     FileUpdated.Invoke(
@@ -96,7 +97,7 @@ namespace Cloud_Storage_Server.Services
 
         public void RemoveFile(FileData fileData, long ownerid, string deviceId)
         {
-            this._serverChainOfResposibiltyRepository.OnFileDeleteHandler.Handle(
+            this._serverChainOfResposibiltyRepository.OnFileDeleteChain.Handle(
                 new RemoveFileDeviceOwnershipRequest()
                 {
                     deviceId = deviceId,
@@ -130,7 +131,7 @@ namespace Cloud_Storage_Server.Services
             }
             fileUpdate.DeviceReuqested = deviceId;
             UpdateFileDataRequest resolved =
-                this._serverChainOfResposibiltyRepository.OnFileUpdateHandler.Handle(fileUpdate)
+                this._serverChainOfResposibiltyRepository.OnFileUpdateChain.Handle(fileUpdate)
                 as UpdateFileDataRequest;
             if (resolved != null)
             {
@@ -155,6 +156,27 @@ namespace Cloud_Storage_Server.Services
             {
                 List<SyncFileData> files = FileRepository.GetAllUserFiles(context, user.id);
                 return files;
+            }
+        }
+
+        public void SetFileVersion(long userId, Guid fileId, ulong version)
+        {
+            UpdateNewestVersionRequest updateNewestVersionRequest = new UpdateNewestVersionRequest()
+            {
+                fileId = fileId.ToString(),
+                fileVession = version,
+                userID = userId,
+            };
+            SyncFileData resolved =
+                this._serverChainOfResposibiltyRepository.ChangeNewestVersionChain.Handle(
+                    updateNewestVersionRequest
+                ) as SyncFileData;
+
+            if (resolved != null)
+            {
+                this.FileUpdated(
+                    new UpdateFileDataRequest(UPDATE_TYPE.ADD, null, resolved, resolved.OwnerId)
+                );
             }
         }
     }

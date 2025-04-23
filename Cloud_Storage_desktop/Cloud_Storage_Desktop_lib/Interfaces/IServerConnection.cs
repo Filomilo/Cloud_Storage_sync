@@ -23,5 +23,6 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
         event OnServerWebSockerMessage ServerWerbsocketHadnler;
         WebSocketState WebSocketState { get; }
         void DeleteFile(string relativePath);
+        void SetFileVersion(Guid id, ulong version);
     }
 }

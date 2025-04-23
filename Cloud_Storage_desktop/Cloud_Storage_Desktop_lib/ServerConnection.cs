@@ -5,6 +5,7 @@ using System.Net.WebSockets;
 using System.Text;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
+using Cloud_Storage_Common.Requests;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Services;
 using Microsoft.Extensions.Logging;
@@ -326,6 +327,32 @@ namespace Cloud_Storage_Desktop_lib
                 logger.LogError(
                     $"Failed to update file  data [[{relativePath}]]: {responseMesage}"
                 );
+                throw new Exception($"{response.Content.ReadAsStringAsync().Result}");
+            }
+        }
+
+        public void SetFileVersion(Guid id, ulong version)
+        {
+            logger.LogDebug(
+                $"SetFileVersion file on device {this._credentialManager.GetDeviceID()}"
+            );
+            SetVersionRequest setVersionRequest = new SetVersionRequest()
+            {
+                FileId = id,
+                Version = version,
+            };
+            var response = this
+                .client.PostAsJsonAsync("api/Files/setVersion", setVersionRequest)
+                .Result;
+
+            if (response.IsSuccessStatusCode)
+            {
+                logger.LogInformation($"File  data changed vereion successfully!");
+            }
+            else
+            {
+                string responseMesage = response.Content.ReadAsStringAsync().Result;
+                logger.LogError($"Failed to set verstion file  data");
                 throw new Exception($"{response.Content.ReadAsStringAsync().Result}");
             }
         }

@@ -23,10 +23,25 @@ namespace Cloud_Storage_Server.Services
             _fileSystemService = fileSystemService;
             _fileSyncService = fileSyncService;
             _serverConfig = serverConfig;
-            OnFileAddHandler = CreateOnFileAddHandler();
-            OnFileUpdateHandler = CreateOnFileUpdateHandler();
-            OnFileRenameHandler = CreateOnFileDeleteHandler();
-            OnFileDeleteHandler = CreateOnFileDeleteHandler();
+            OnFileAddChain = CreateOnFileAddHandler();
+            OnFileUpdateChain = CreateOnFileUpdateHandler();
+            OnFileRenameChain = CreateOnFileDeleteHandler();
+            OnFileDeleteChain = CreateOnFileDeleteHandler();
+            ChangeNewestVersionChain = CreateChangeNewestVesrionHandler();
+        }
+
+        private IHandler? CreateChangeNewestVesrionHandler()
+        {
+            return new ChainOfResponsiblityBuilder()
+                .Next(new UpdateNewestVersionHandler(this._dataBaseContextGenerator))
+                .Next(
+                    new ClearBackupsOverload(
+                        this._dataBaseContextGenerator,
+                        this._serverConfig,
+                        this._fileSystemService
+                    )
+                )
+                .Build();
         }
 
         private IHandler? CreateOnFileDeleteHandler()
@@ -89,9 +104,10 @@ namespace Cloud_Storage_Server.Services
                 .Build();
         }
 
-        public IHandler OnFileRenameHandler { get; }
-        public IHandler OnFileAddHandler { get; }
-        public IHandler OnFileUpdateHandler { get; }
-        public IHandler OnFileDeleteHandler { get; }
+        public IHandler OnFileRenameChain { get; }
+        public IHandler OnFileAddChain { get; }
+        public IHandler OnFileUpdateChain { get; }
+        public IHandler OnFileDeleteChain { get; }
+        public IHandler ChangeNewestVersionChain { get; }
     }
 }

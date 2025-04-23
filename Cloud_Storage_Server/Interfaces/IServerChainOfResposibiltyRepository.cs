@@ -4,9 +4,10 @@ namespace Cloud_Storage_Server.Interfaces
 {
     public interface IServerChainOfResposibiltyRepository
     {
-        public IHandler OnFileRenameHandler { get; }
-        public IHandler OnFileAddHandler { get; }
-        public IHandler OnFileUpdateHandler { get; }
-        public IHandler OnFileDeleteHandler { get; }
+        public IHandler OnFileRenameChain { get; }
+        public IHandler OnFileAddChain { get; }
+        public IHandler OnFileUpdateChain { get; }
+        public IHandler OnFileDeleteChain { get; }
+        public IHandler ChangeNewestVersionChain { get; }
     }
 }

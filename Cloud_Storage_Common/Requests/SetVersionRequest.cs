@@ -8,7 +8,7 @@ namespace Cloud_Storage_Common.Requests
 {
     public class SetVersionRequest
     {
-        Guid FileId { get; set; }
-        int Version { get; set; }
+        public Guid FileId { get; set; }
+        public ulong Version { get; set; }
     }
 }

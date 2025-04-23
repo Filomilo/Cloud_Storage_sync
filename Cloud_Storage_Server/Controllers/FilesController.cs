@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
@@ -188,10 +189,17 @@ namespace Cloud_Storage_Server.Controllers
         public IActionResult setVersion([FromBody] SetVersionRequest setVersionRequest)
         {
             String email = JwtHelpers.GetEmailFromToken(Request.Headers.Authorization);
-
+            User user = null;
             string deviceId = JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization);
+            using (var context = _dataBaseContextGenerator.GetDbContext())
+            {
+                user = UserRepository.getUserByMail(
+                    context,
+                    JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
+                );
+            }
             _FileSyncService.SetFileVersion(
-                email,
+                user.id,
                 setVersionRequest.FileId,
                 setVersionRequest.Version
             );
