@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleCloudDriveSync", "Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cloud_Storage_Common", "Cloud_Storage_Common\Cloud_Storage_Common.csproj", "{80A297A3-528D-D816-A895-76E3D936A8AE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleDummy1", "ConsoleDummy1\ConsoleDummy1.csproj", "{1C05C619-F89B-4070-9C9C-8B2D3EB668D6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleDummy2", "ConsoleDummy2\ConsoleDummy2.csproj", "{A085502D-E4E4-4150-A3A0-5EDC4EE49370}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +49,14 @@ Global
 		{80A297A3-528D-D816-A895-76E3D936A8AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{80A297A3-528D-D816-A895-76E3D936A8AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{80A297A3-528D-D816-A895-76E3D936A8AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C05C619-F89B-4070-9C9C-8B2D3EB668D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C05C619-F89B-4070-9C9C-8B2D3EB668D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C05C619-F89B-4070-9C9C-8B2D3EB668D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C05C619-F89B-4070-9C9C-8B2D3EB668D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A085502D-E4E4-4150-A3A0-5EDC4EE49370}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A085502D-E4E4-4150-A3A0-5EDC4EE49370}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A085502D-E4E4-4150-A3A0-5EDC4EE49370}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A085502D-E4E4-4150-A3A0-5EDC4EE49370}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

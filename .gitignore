@@ -490,3 +490,5 @@ Cloud_Storage_Server/databse.dat
 /Cloud_Storage_Server/dataStorage
 /Cloud_Storage_Test/tmp
 *.db
+/ConsoleDummy2/dummy1
+/ConsoleDummy1/dummy0

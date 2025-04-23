@@ -160,7 +160,7 @@ namespace Cloud_Storage_Server.Controllers
         {
             if (fileUpdate.newFileData.BytesSize <= 0)
             {
-                throw new Exception("BytesSize shoudl be larger than zero");
+                //throw new Exception("BytesSize shoudl be larger than zero");
             }
         }
 

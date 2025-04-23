@@ -220,6 +220,12 @@ namespace Cloud_Storage_Test
             AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin"))
             + "tmp\\";
 
+        public static string getDummyLocation(int i)
+        {
+            return AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin"))
+                + $"dummy{i}\\";
+        }
+
         public static string GetNewTmpDir(string fodlerName)
         {
             return TmpDirecotry + fodlerName + "\\";
