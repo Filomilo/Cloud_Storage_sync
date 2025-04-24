@@ -120,12 +120,14 @@ namespace Cloud_Storage_Desktop_lib
         {
             this.SystemWatcher.Directory = this._Configuration.StorageLocation;
             this.FileSyncService.StopAllSync();
-            this.FileSyncService.StartSync();
+            if (this._ServerConnection.CheckIfAuthirized())
+                this.FileSyncService.StartSync();
         }
 
         public void SetStorageLocation(string dir)
         {
             this._Configuration.StorageLocation = dir;
+
             _setupStorgeDir();
         }
 

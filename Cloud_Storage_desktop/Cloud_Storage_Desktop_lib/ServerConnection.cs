@@ -5,6 +5,7 @@ using System.Net.WebSockets;
 using System.Text;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
+using Cloud_Storage_Common.Requests;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Services;
 using Microsoft.Extensions.Logging;
@@ -226,6 +227,7 @@ namespace Cloud_Storage_Desktop_lib
             {
                 this.ConnectionChangeHandler.Invoke(state);
             }
+            else { }
         }
 
         private void _LoadToken()
@@ -243,8 +245,12 @@ namespace Cloud_Storage_Desktop_lib
                     {
                         logger.LogWarning("Token authirzation failed");
                         this._credentialManager.RemoveToken();
+                        InovkeConnectionChange(false);
                     }
-                    InovkeConnectionChange(true);
+                    else
+                    {
+                        InovkeConnectionChange(true);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -278,7 +284,7 @@ namespace Cloud_Storage_Desktop_lib
             else
             {
                 string responseMesage = response.Content.ReadAsStringAsync().Result;
-                logger.LogError($"Failed to upload data: {responseMesage}");
+                logger.LogError($"Failed to upload data [[{fileData}]]: {responseMesage}");
                 throw new Exception($"{response.Content.ReadAsStringAsync().Result}");
             }
         }
@@ -330,6 +336,32 @@ namespace Cloud_Storage_Desktop_lib
             }
         }
 
+        public void SetFileVersion(Guid id, ulong version)
+        {
+            logger.LogDebug(
+                $"SetFileVersion file on device {this._credentialManager.GetDeviceID()}"
+            );
+            SetVersionRequest setVersionRequest = new SetVersionRequest()
+            {
+                FileId = id,
+                Version = version,
+            };
+            var response = this
+                .client.PostAsJsonAsync("api/Files/setVersion", setVersionRequest)
+                .Result;
+
+            if (response.IsSuccessStatusCode)
+            {
+                logger.LogInformation($"File  data changed vereion successfully!");
+            }
+            else
+            {
+                string responseMesage = response.Content.ReadAsStringAsync().Result;
+                logger.LogError($"Failed to set verstion file  data");
+                throw new Exception($"{response.Content.ReadAsStringAsync().Result}");
+            }
+        }
+
         public List<SyncFileData> GetListOfFiles()
         {
             var response = this.client.GetAsync("api/Files/list").Result;
@@ -360,7 +392,9 @@ namespace Cloud_Storage_Desktop_lib
                 .client.GetAsync($"api/Files/download?guid={guid.ToString()}")
                 .Result;
             if (!response.IsSuccessStatusCode)
-                throw new Exception("Couldn't get File form server");
+                throw new Exception(
+                    $"Couldn't get File [[{guid.ToString()}]] form server: {response.Content.ReadAsStringAsync().Result}"
+                );
             Stream stream = response.Content.ReadAsStream();
             return stream;
         }

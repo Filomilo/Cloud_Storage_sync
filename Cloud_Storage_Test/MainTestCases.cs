@@ -1238,7 +1238,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
-        public void Create_File_And_Edit_it()
+        public void Create_File_And_Edit_it_AndBringBackOlderVersion()
         {
             #region Ensure connected and empty
             ConnectBothDevices();
@@ -1265,6 +1265,121 @@ namespace Cloud_Storage_Test
             #region EditNew file
 
             string newAdditionalContent = "ADDitional Content";
+            EditFile(createdFileName, newAdditionalContent);
+
+            #endregion
+            EnsureTheSameFileOnBothDevices(
+                createdFileName,
+                this._Client1Config,
+                this._Client2Config
+            );
+            BothDevicesShouldHAveTheSameData();
+
+            EnsureAmoutntOFfILesWihtOwnerCount(0, 1);
+            EnsureAmoutntOFfILesWihtOwnerCount(2, 1);
+
+            EnsureAmountOfFilesOnServer(2);
+
+            EditFile(createdFileName, newAdditionalContent + "new");
+            EnsureAmountOfFilesOnServer(3);
+
+            List<SyncFileData> currentStateOfServerDb =
+                _cloudDriveSyncSystemClient1.ServerConnection.GetListOfFiles();
+
+            SyncFileData oldestFle = currentStateOfServerDb.OrderBy(x => x.Version).First();
+            _cloudDriveSyncSystemClient1.ServerConnection.SetFileVersion(
+                oldestFle.Id,
+                oldestFle.Version
+            );
+            EnsureAmountOfFilesOnServer(3);
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        return GetAllFilesOnServer()
+                                .OrderByDescending(x => x.Version)
+                                .First()
+                                .Version == 3;
+                    });
+                },
+                $"new File versoin in server db should be 3 but instead db is {String.Join(", \n", GetAllFilesOnServer())}"
+            );
+
+            SyncFileData newestFileDb = GetAllFilesOnServer()
+                .OrderByDescending(x => x.Version)
+                .First();
+
+            Assert.That(newestFileDb.Hash.Equals(oldestFle.Hash), "File hash is not the same");
+
+            Assert.That(
+                _localFileRepositoryService1.GetAllFiles().Count() == 1,
+                $"Local file repository should only one elements but has {_localFileRepositoryService1.GetAllFiles().Count()}"
+            );
+
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        return _localFileRepositoryService1.GetAllFiles().FirstOrDefault().Version
+                            == newestFileDb.Version;
+                    });
+                },
+                $"expect local repo sitoy to has {newestFileDb} but has {_localFileRepositoryService1.GetAllFiles().FirstOrDefault()}"
+            );
+            Assert.DoesNotThrow(() =>
+            {
+                TestHelpers.EnsureTrue(() =>
+                {
+                    return _localFileRepositoryService1
+                        .GetAllFiles()
+                        .FirstOrDefault()
+                        .Hash.Equals(newestFileDb.Hash);
+                });
+            });
+
+            BothDevicesShouldHAveTheSameData();
+        }
+
+        private void EnsureAmountOfFilesOnServer(int filesOnserver)
+        {
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            return GetAllFilesOnServer().Count == filesOnserver;
+                        },
+                        50000
+                    );
+                },
+                $"File entry on server database should be {filesOnserver} but there are [[{GetAllFilesOnServer().Count}]]"
+            );
+        }
+
+        private void EnsureAmoutntOFfILesWihtOwnerCount(int countOfdevcieOnwer, int amountOfFIles)
+        {
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            return this.GetAllFilesOnServer()
+                                    .Where(x => x.DeviceOwner.Count == countOfdevcieOnwer)
+                                    .Count() == amountOfFIles;
+                        },
+                        10000
+                    );
+                },
+                $"There should be one file witohut owner on server but instaead theere are :: \n {String.Join(", \n", this.GetAllFilesOnServer())} "
+            );
+        }
+
+        private void EditFile(string createdFileName, string newAdditionalContent)
+        {
             using (
                 FileStream file = File.Open(
                     $"{_Client1Config.StorageLocation}{createdFileName}",
@@ -1277,7 +1392,46 @@ namespace Cloud_Storage_Test
                     writer.WriteLine(newAdditionalContent);
                 }
             }
+        }
 
+        [Test]
+        [TestCase(0)]
+        [TestCase(10)]
+        [TestCase(100)]
+        [TestCase(200)]
+        [TestCase(500)]
+        [TestCase(1000)]
+        [TestCase(5000)]
+        [TestCase(10000)]
+        public void Create_File_And_Edit_it(int timeToCkeckAfter)
+        {
+            #region Ensure connected and empty
+            ConnectBothDevices();
+
+            #endregion
+
+            #region Create New File
+            String createdFileName = this.AddTMpFiles(1, this._Client1Config).FirstOrDefault();
+
+            #endregion
+
+            #region Ensure second device also has file
+
+            EnsureTheSameFileOnBothDevices(
+                createdFileName,
+                this._Client1Config,
+                this._Client2Config
+            );
+
+            #endregion
+
+
+
+            #region EditNew file
+
+            string newAdditionalContent = "ADDitional Content";
+            EditFile(createdFileName, newAdditionalContent);
+            Thread.Sleep(10000);
             #endregion
             EnsureTheSameFileOnBothDevices(
                 createdFileName,
@@ -1286,45 +1440,12 @@ namespace Cloud_Storage_Test
             );
             BothDevicesShouldHAveTheSameData();
 
-            //SyncFileData fileWithNewNameSyncData = GetAllFilesOnServer()
-            //    .FirstOrDefault(x => x.Name == "newName");
+            EnsureAmoutntOFfILesWihtOwnerCount(0, 1);
+            EnsureAmoutntOFfILesWihtOwnerCount(2, 1);
 
-            Assert.DoesNotThrow(
-                () =>
-                {
-                    TestHelpers.EnsureTrue(() =>
-                    {
-                        return this.GetAllFilesOnServer()
-                                .Where(x => x.DeviceOwner.Count == 0)
-                                .Count() == 1;
-                    });
-                },
-                $"There should be one file witohut owner on server but instaead theere are :: \n {String.Join(", \n", this.GetAllFilesOnServer())} "
-            );
-            Assert.DoesNotThrow(
-                () =>
-                {
-                    TestHelpers.EnsureTrue(() =>
-                    {
-                        return this.GetAllFilesOnServer()
-                                .Where(x => x.DeviceOwner.Count == 2)
-                                .Count() == 1;
-                    });
-                },
-                $"There should be one file with 2 device owners on server but instaead theere are :: \n {String.Join(", \n", this.GetAllFilesOnServer())} "
-            );
+            int filesOnserver = 2;
 
-            Assert.DoesNotThrow(
-                () =>
-                {
-                    TestHelpers.EnsureTrue(() =>
-                    {
-                        return GetAllFilesOnServer().Count == 2;
-                    });
-                },
-                $"File entry on server database should be 2 but there are [[{GetAllFilesOnServer().Count}]]"
-            );
-            Console.WriteLine("dummy");
+            EnsureAmountOfFilesOnServer(filesOnserver);
         }
 
         private void EnsureTheSameFileOnBothDevices(

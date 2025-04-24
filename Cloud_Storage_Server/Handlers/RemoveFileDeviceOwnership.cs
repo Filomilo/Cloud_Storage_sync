@@ -76,7 +76,7 @@ namespace Cloud_Storage_Server.Handlers
                 existingFile.DeviceOwner.Remove(removeFileDeviceOwnership.deviceId);
                 context.Files.Update(existingFile);
 
-                context.SaveChanges();
+                context.SaveChangesAsync().Wait();
             }
 
             if (newFile == null)
@@ -100,7 +100,7 @@ namespace Cloud_Storage_Server.Handlers
         {
             if (existingFile.Hash == "")
             {
-                context.SaveChanges();
+                context.SaveChangesAsync().Wait();
                 if (this._nextHandler != null)
                 {
                     syncFileData = this._nextHandler.Handle(existingFile);

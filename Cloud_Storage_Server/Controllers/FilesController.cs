@@ -1,7 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
+using Cloud_Storage_Common.Requests;
 using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Database.Repositories;
 using Cloud_Storage_Server.Interfaces;
@@ -45,7 +47,7 @@ namespace Cloud_Storage_Server.Controllers
                     context,
                     JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
                 );
-                List<SyncFileData> files = FileRepository.GetAllUserFiles(context, user.id);
+                List<SyncFileData> files = FileRepository.GetAllACtiveUserFiles(context, user.id);
                 return Ok(files);
             }
         }
@@ -137,28 +139,37 @@ namespace Cloud_Storage_Server.Controllers
         [HttpGet]
         public IActionResult DownlaodFile([FromQuery] Guid guid)
         {
-            User user = null;
-            SyncFileData fileData;
-            using (var context = _dataBaseContextGenerator.GetDbContext())
+            try
             {
-                user = UserRepository.getUserByMail(
-                    context,
-                    JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
+                User user = null;
+                SyncFileData fileData;
+                using (var context = _dataBaseContextGenerator.GetDbContext())
+                {
+                    user = UserRepository.getUserByMail(
+                        context,
+                        JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
+                    );
+                    fileData = FileRepository.GetFileOfID(context, guid);
+                }
+
+                string deviceId = JwtHelpers.GetDeviceIDFromAuthString(
+                    Request.Headers.Authorization
                 );
-                fileData = FileRepository.GetFileOfID(context, guid);
+                Stream data = _FileSyncService.DownloadFile(user, fileData);
+
+                return File(data, "application/octet-stream", fileData.Name);
             }
-
-            string deviceId = JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization);
-            Stream data = _FileSyncService.DownloadFile(user, fileData);
-
-            return File(data, "application/octet-stream", fileData.Name);
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         private void ValidateUpdateFileDataRequest(UpdateFileDataRequest fileUpdate)
         {
             if (fileUpdate.newFileData.BytesSize <= 0)
             {
-                throw new Exception("BytesSize shoudl be larger than zero");
+                //throw new Exception("BytesSize shoudl be larger than zero");
             }
         }
 
@@ -177,6 +188,30 @@ namespace Cloud_Storage_Server.Controllers
 
             string deviceId = JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization);
             _FileSyncService.UpdateFileForDevice(email, deviceId, fileUpdate);
+
+            return Ok("updated");
+        }
+
+        [Route("setVersion")]
+        [Authorize]
+        [HttpPost]
+        public IActionResult setVersion([FromBody] SetVersionRequest setVersionRequest)
+        {
+            String email = JwtHelpers.GetEmailFromToken(Request.Headers.Authorization);
+            User user = null;
+            string deviceId = JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization);
+            using (var context = _dataBaseContextGenerator.GetDbContext())
+            {
+                user = UserRepository.getUserByMail(
+                    context,
+                    JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
+                );
+            }
+            _FileSyncService.SetFileVersion(
+                user.id,
+                setVersionRequest.FileId,
+                setVersionRequest.Version
+            );
 
             return Ok("updated");
         }

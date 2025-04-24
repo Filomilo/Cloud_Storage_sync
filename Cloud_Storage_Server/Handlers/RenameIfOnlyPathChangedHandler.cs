@@ -58,7 +58,7 @@ namespace Cloud_Storage_Server.Handlers
                 {
                     dbFileData.DeviceOwner.Remove(update.DeviceReuqested);
                     ctx.Update(dbFileData);
-                    ctx.SaveChanges();
+                    ctx.SaveChangesAsync().Wait();
                     ctx.Entry(dbFileData).State = EntityState.Detached;
                 }
 
@@ -80,19 +80,20 @@ namespace Cloud_Storage_Server.Handlers
 
                     ctx.Files.Add(newFileVersion);
 
-                    ctx.SaveChanges();
+                    ctx.SaveChangesAsync().Wait();
                 }
                 else
                 {
                     newFileVersion.DeviceOwner.Add(update.DeviceReuqested);
                     ctx.Files.Update(newFileVersion);
-                    ctx.SaveChanges();
+                    ctx.SaveChangesAsync().Wait();
                 }
             }
 
-            if (_nextHandler != null)
-                return this._nextHandler.Handle(newFileVersion);
             update.newFileData = newFileVersion;
+
+            if (_nextHandler != null)
+                return this._nextHandler.Handle(update);
             return update;
         }
     }

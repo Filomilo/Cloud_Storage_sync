@@ -14,5 +14,6 @@
         public int ActiveTasksCount { get; }
         public int QueuedTasksCount { get; }
         public int AllTasksCount { get; }
+        public bool Active { get; set; }
     }
 }
