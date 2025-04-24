@@ -1,43 +1,82 @@
-﻿using Cloud_Storage_Desktop_lib.Interfaces;
+﻿using System.ComponentModel.DataAnnotations;
+using Cloud_Storage_Common;
+using Cloud_Storage_Desktop_lib.Interfaces;
 using Lombok.NET;
+using Newtonsoft.Json;
 
 namespace Cloud_Storage_Desktop_lib
 {
-    [ToString]
+    [AllArgsConstructor]
+    [NoArgsConstructor]
     public partial class Configuration : IConfiguration
     {
-        private const string _ApiUrl = "http://localhost:5087";
+        [JsonProperty("ApiUrl")]
+        public string ApiUrl { get; set; } = "http://localhost:5087";
 
-        public string ApiUrl
+        [JsonProperty("MaxStimulationsFileSync")]
+        public int MaxStimulationsFileSync { get; set; }
+
+        [JsonProperty("StorageLocation")]
+        [RegularExpression(
+            @"^@""^[a-zA-Z]:\\(?:[a-zA-Z0-9 _-]+\\)*[a-zA-Z0-9 _-]+\.txt$""",
+            ErrorMessage = "Path string doesn't match path syntax"
+        )]
+        public string StorageLocation { get; set; }
+
+        public void LoadConfiguration()
         {
-            get { return _ApiUrl; }
-        }
-        private string _StorageLocation = "";
-
-        private const int _MaxStimulationsFileSync = 5;
-
-        public int MaxStimulationsFileSync
-        {
-            get { return _MaxStimulationsFileSync; }
-        }
-
-        public string DeviceUUID
-        {
-            get
+            string content;
+            using (StreamReader sr = new StreamReader(GetConfigurationPath()))
             {
-                throw new NotImplementedException("not  yet implemned");
-                return "Not implented";
+                content = sr.ReadToEnd();
+            }
+            IConfiguration config = JsonOperations.ObjectFromJSon<Configuration>(content);
+            this.StorageLocation = config.StorageLocation;
+            this.ApiUrl = config.ApiUrl;
+            this.MaxStimulationsFileSync = config.MaxStimulationsFileSync;
+        }
+
+        public static IConfiguration InitConfig()
+        {
+            IConfiguration config = new Configuration();
+            try
+            {
+                config.LoadConfiguration();
+            }
+            catch (Exception ex)
+            {
+                config.SaveConfiguration();
+            }
+            return config;
+        }
+
+        public void SaveConfiguration()
+        {
+            string path = GetConfigurationPath();
+            if (!Directory.Exists(GetAppDirectory()))
+            {
+                Directory.CreateDirectory(GetAppDirectory());
+            }
+            using (StreamWriter sw = new StreamWriter(GetConfigurationPath()))
+            {
+                sw.Write(JsonOperations.jsonFromObject(this));
             }
         }
 
-        //[RegularExpression(
-        //    @"^@""^[a-zA-Z]:\\(?:[a-zA-Z0-9 _-]+\\)*[a-zA-Z0-9 _-]+\.txt$""",
-        //    ErrorMessage = "Path string doesn't match path syntax"
-        //)]
-        public string StorageLocation
+        private static string GetConfigurationPath()
         {
-            get { return _StorageLocation; }
-            set { _StorageLocation = value; }
+            return $"{GetAppDirectory()}\\config.json";
+        }
+
+        public static string GetAppDirectory()
+        {
+            return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
+                + "\\CloudDriveSync";
+        }
+
+        public override string ToString()
+        {
+            return $"ApiUrl: {ApiUrl}, MaxStimulationsFileSync: {MaxStimulationsFileSync}, StorageLocation: {StorageLocation}";
         }
     }
 }

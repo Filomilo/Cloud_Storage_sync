@@ -37,7 +37,8 @@ namespace Cloud_Storage_Desktop_lib
         {
             get { return _Configuration; }
         }
-        private IConfiguration _Configuration = new Configuration();
+        private IConfiguration _Configuration =
+            Cloud_Storage_Desktop_lib.Configuration.InitConfig();
 
         private IFileRepositoryService _FileRepositoryService;
 

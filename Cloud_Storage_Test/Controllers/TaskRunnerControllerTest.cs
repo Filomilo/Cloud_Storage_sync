@@ -29,7 +29,7 @@ namespace Cloud_Storage_Desktop_lib.Services
 
     internal class TestConfiuguration : IConfiguration
     {
-        public string ApiUrl => throw new NotImplementedException();
+        public string ApiUrl { get; set; }
 
         public int MaxStimulationsFileSync
         {
@@ -41,11 +41,11 @@ namespace Cloud_Storage_Desktop_lib.Services
             get { return "test"; }
         }
 
-        public string StorageLocation
-        {
-            get => throw new NotImplementedException();
-            set => throw new NotImplementedException();
-        }
+        public string StorageLocation { get; set; }
+
+        public void LoadConfiguration() { }
+
+        public void SaveConfiguration() { }
     }
 
     [TestFixture()]
