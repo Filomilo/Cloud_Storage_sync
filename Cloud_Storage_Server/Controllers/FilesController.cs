@@ -47,7 +47,7 @@ namespace Cloud_Storage_Server.Controllers
                     context,
                     JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
                 );
-                List<SyncFileData> files = FileRepository.GetAllUserFiles(context, user.id);
+                List<SyncFileData> files = FileRepository.GetAllACtiveUserFiles(context, user.id);
                 return Ok(files);
             }
         }
@@ -139,21 +139,30 @@ namespace Cloud_Storage_Server.Controllers
         [HttpGet]
         public IActionResult DownlaodFile([FromQuery] Guid guid)
         {
-            User user = null;
-            SyncFileData fileData;
-            using (var context = _dataBaseContextGenerator.GetDbContext())
+            try
             {
-                user = UserRepository.getUserByMail(
-                    context,
-                    JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
+                User user = null;
+                SyncFileData fileData;
+                using (var context = _dataBaseContextGenerator.GetDbContext())
+                {
+                    user = UserRepository.getUserByMail(
+                        context,
+                        JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
+                    );
+                    fileData = FileRepository.GetFileOfID(context, guid);
+                }
+
+                string deviceId = JwtHelpers.GetDeviceIDFromAuthString(
+                    Request.Headers.Authorization
                 );
-                fileData = FileRepository.GetFileOfID(context, guid);
+                Stream data = _FileSyncService.DownloadFile(user, fileData);
+
+                return File(data, "application/octet-stream", fileData.Name);
             }
-
-            string deviceId = JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization);
-            Stream data = _FileSyncService.DownloadFile(user, fileData);
-
-            return File(data, "application/octet-stream", fileData.Name);
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         private void ValidateUpdateFileDataRequest(UpdateFileDataRequest fileUpdate)

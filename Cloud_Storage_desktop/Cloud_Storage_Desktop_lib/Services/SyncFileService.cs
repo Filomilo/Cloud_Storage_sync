@@ -108,6 +108,7 @@ namespace Cloud_Storage_Desktop_lib.Services
         {
             logger.LogInformation("Start Syncing");
             _clientChainOfResponsibilityRepository.InitlalSyncHandler.Handle(null);
+            _taskRunController.Active = true;
         }
 
         public IEnumerable<ISyncProcess> GetAllSyncProcesses()
@@ -174,6 +175,7 @@ namespace Cloud_Storage_Desktop_lib.Services
             logger.LogInformation("STOP all sync");
             this._taskRunController.CancelAllTasks();
             _state = SyncState.STOPPED;
+            _taskRunController.Active = false;
         }
 
         public void PauseAllSync()

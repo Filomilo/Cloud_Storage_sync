@@ -9,7 +9,7 @@ namespace Cloud_Storage_Server.Database.Repositories
         {
             Device Device = new Device { Id = Guid.NewGuid(), OwnerId = user.id };
             context.Devices.Add(Device);
-            context.SaveChanges();
+            context.SaveChangesAsync().Wait();
             return Device;
         }
 

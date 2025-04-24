@@ -12,7 +12,7 @@ namespace Cloud_Storage_Server.Database.Repositories
             var validationContext = new ValidationContext(user);
             Validator.ValidateObject(user, validationContext, true);
             usersaved = context.Add(user).Entity;
-            context.SaveChanges();
+            context.SaveChangesAsync().Wait();
 
             return usersaved;
         }

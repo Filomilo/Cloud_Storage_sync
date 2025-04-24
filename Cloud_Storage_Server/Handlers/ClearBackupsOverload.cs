@@ -82,7 +82,7 @@ namespace Cloud_Storage_Server.Handlers
                     _fileSystemService.DeleteFile(fileToRemove);
                 }
 
-                context.SaveChanges();
+                context.SaveChangesAsync().Wait();
             }
 
             if (this._nextHandler != null)

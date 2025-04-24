@@ -15,16 +15,16 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 
         public override object Handle(object request)
         {
-            if (request.GetType() != typeof(LocalAndServerFileData))
-            {
-                throw new ArgumentException(
-                    "DeleteCloudLocalFilesHandler excepts argument of type LocalAndServerFileData"
-                );
-            }
+            //if (request.GetType() != typeof(LocalAndServerFileData))
+            //{
+            //    throw new ArgumentException(
+            //        "DeleteCloudLocalFilesHandler excepts argument of type LocalAndServerFileData"
+            //    );
+            //}
 
-            logger.LogWarning(
-                "DeleteCloudLocalFilesHandler Not implemented, it should delete local files that were deleted on server"
-            );
+            //logger.LogWarning(
+            //    "DeleteCloudLocalFilesHandler Not implemented, it should delete local files that were deleted on server"
+            //);
             if (this._nextHandler != null)
                 this._nextHandler.Handle(request);
             return null;

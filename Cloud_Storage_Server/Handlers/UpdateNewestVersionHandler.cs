@@ -58,7 +58,7 @@ namespace Cloud_Storage_Server.Handlers
                     //newestFileData = fileInDataBase.Clone();
                     fileInDataBase.Version = newestFileInRepositoryNow.Version + 1;
                     ctx.Files.Update(fileInDataBase);
-                    ctx.SaveChanges();
+                    ctx.SaveChangesAsync().Wait();
                 }
                 else
                 {
@@ -85,7 +85,7 @@ namespace Cloud_Storage_Server.Handlers
                 .FirstOrDefault();
             if (fileInDataBase != null)
             {
-                ctx.SaveChanges();
+                ctx.SaveChangesAsync().Wait();
             }
             else
             {

@@ -12,7 +12,7 @@ namespace Cloud_Storage_Server.Database.Repositories
             var validationContext = new ValidationContext(file);
             Validator.ValidateObject(file, validationContext, true);
             savedFile = context.Files.Add(file).Entity;
-            context.SaveChanges();
+            context.SaveChangesAsync().Wait();
 
             return savedFile;
         }
@@ -65,9 +65,9 @@ namespace Cloud_Storage_Server.Database.Repositories
                 throw new KeyNotFoundException("No file iwth this guuid");
             context.Remove(file);
             fileUpdateData.Id = file.Id;
-            context.SaveChanges();
+            context.SaveChangesAsync().Wait();
             context.Files.Add(fileUpdateData);
-            context.SaveChanges();
+            context.SaveChangesAsync().Wait();
         }
 
         internal static SyncFileData getNewestFileByPathNameExtensionAndUser(
@@ -118,6 +118,17 @@ namespace Cloud_Storage_Server.Database.Repositories
                 .Files.Where(x => x.Id.Equals(fileToRemove.Id))
                 .FirstOrDefault();
             context.Files.Remove(sync);
+        }
+
+        public static List<SyncFileData> GetAllACtiveUserFiles(
+            AbstractDataBaseContext context,
+            long userId
+        )
+        {
+            List<SyncFileData> files = context.Files.Where(x => x.OwnerId == userId).ToList();
+            var uniqeFiles = files.GroupBy(x => x.GetRealativePath());
+
+            return files;
         }
     }
 }

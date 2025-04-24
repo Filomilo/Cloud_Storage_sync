@@ -133,10 +133,6 @@ namespace Cloud_Storage_Server.Services
             UpdateFileDataRequest resolved =
                 this._serverChainOfResposibiltyRepository.OnFileUpdateChain.Handle(fileUpdate)
                 as UpdateFileDataRequest;
-            if (resolved != null)
-            {
-                this.FileUpdated(resolved);
-            }
         }
 
         private static string GetRealtivePathForFile(User user, SyncFileData data)

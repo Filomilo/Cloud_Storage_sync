@@ -25,7 +25,16 @@ namespace Cloud_Storage_Desktop_lib.Services
         private object Locker = new object();
         private Dictionary<object, TaskObject> _RunningTask = new Dictionary<object, TaskObject>();
         private Queue<ITaskToRun> _QueuedTasks = new Queue<ITaskToRun>();
-        public bool Active { get; set; } = true;
+        private bool _active = false;
+        public bool Active
+        {
+            get { return _active; }
+            set
+            {
+                _active = value;
+                ActivateNewestTaks();
+            }
+        }
 
         private delegate void TaskFinished(object id);
 
@@ -84,6 +93,20 @@ namespace Cloud_Storage_Desktop_lib.Services
                     }
                 }
             }
+        }
+
+        private void ActivateNewestTaks()
+        {
+            if (this._QueuedTasks.Count == 0)
+            {
+                return;
+            }
+
+            ITaskToRun task = this._QueuedTasks.Dequeue();
+
+            TaskObject takTaskObject = _CreateTaskObject(task);
+            _RunningTask.Add(task.Id, takTaskObject);
+            takTaskObject.task.Start();
         }
 
         private void _AddAndActivateTaskObject(ITaskToRun task)

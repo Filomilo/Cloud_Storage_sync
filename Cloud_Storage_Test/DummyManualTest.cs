@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Cloud_Storage_Desktop_lib;
+using Cloud_Storage_Server.Database;
 using Microsoft.Win32;
 
 namespace Cloud_Storage_Test
@@ -16,14 +17,14 @@ namespace Cloud_Storage_Test
         private static string password = "password+12313ABC";
         private static object isRegisteredLock = new object();
 
-        public static void register(bool register)
+        public static void login(bool register)
         {
-            //if (register)
-            //{
-            //    isRegistered = true;
-            //    CloudDriveSyncSystem.Instance.ServerConnection.Register(email, password);
-            //    return;
-            //}
+            if (register)
+            {
+                isRegistered = true;
+                CloudDriveSyncSystem.Instance.ServerConnection.Register(email, password);
+                return;
+            }
 
             TestHelpers.EnsureNotThrows(() =>
             {
@@ -31,8 +32,21 @@ namespace Cloud_Storage_Test
             });
         }
 
+        static void setupDb()
+        {
+            using (var ctx = new SqliteDataBaseContextGenerator().GetDbContext())
+            {
+                ctx.Database.EnsureDeleted();
+                ctx.Database.EnsureCreated();
+            }
+        }
+
         public static void startDummy(int i, List<string> startingFiles)
         {
+            if (i == 0)
+            {
+                setupDb();
+            }
             TestHelpers.EnsureNotThrows(() =>
             {
                 CloudDriveSyncSystem.Instance.ServerConnection.CheckIfHelathy();
@@ -53,7 +67,7 @@ namespace Cloud_Storage_Test
             }
             HttpClient client = new HttpClient();
             CloudDriveSyncSystem.Instance.SetStorageLocation(path);
-            register(i == 0);
+            login(i == 0);
             while (true) { }
         }
     }

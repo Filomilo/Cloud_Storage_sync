@@ -65,6 +65,7 @@ namespace Cloud_Storage_Server.Services
             return new ChainOfResponsiblityBuilder()
                 .Next(new UpdateIfOnlyOwnerChanged(this._dataBaseContextGenerator))
                 .Next(new RenameIfOnlyPathChangedHandler(this._dataBaseContextGenerator))
+                .Next(new SendUpdateToClientsHandler(this._fileSyncService))
                 .Next(
                     new ClearBackupsOverload(
                         this._dataBaseContextGenerator,

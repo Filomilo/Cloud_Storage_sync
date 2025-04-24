@@ -58,8 +58,9 @@ namespace Cloud_Storage_Desktop_lib.Actions
                     }
                     catch (Exception EX)
                     {
-                        //TODO: ADD ERROR HADNLER
-                        logger.LogError($"Exception while Downloading file file:: [{this.file}]");
+                        logger.LogError(
+                            $"Exception while Downloading file :: [{this.file}] ::: [[{EX.Message}]]"
+                        );
                     }
                 }
             );

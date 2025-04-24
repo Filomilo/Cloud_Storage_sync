@@ -227,6 +227,7 @@ namespace Cloud_Storage_Desktop_lib
             {
                 this.ConnectionChangeHandler.Invoke(state);
             }
+            else { }
         }
 
         private void _LoadToken()
@@ -244,8 +245,12 @@ namespace Cloud_Storage_Desktop_lib
                     {
                         logger.LogWarning("Token authirzation failed");
                         this._credentialManager.RemoveToken();
+                        InovkeConnectionChange(false);
                     }
-                    InovkeConnectionChange(true);
+                    else
+                    {
+                        InovkeConnectionChange(true);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -279,7 +284,7 @@ namespace Cloud_Storage_Desktop_lib
             else
             {
                 string responseMesage = response.Content.ReadAsStringAsync().Result;
-                logger.LogError($"Failed to upload data: {responseMesage}");
+                logger.LogError($"Failed to upload data [[{fileData}]]: {responseMesage}");
                 throw new Exception($"{response.Content.ReadAsStringAsync().Result}");
             }
         }
@@ -387,7 +392,9 @@ namespace Cloud_Storage_Desktop_lib
                 .client.GetAsync($"api/Files/download?guid={guid.ToString()}")
                 .Result;
             if (!response.IsSuccessStatusCode)
-                throw new Exception("Couldn't get File form server");
+                throw new Exception(
+                    $"Couldn't get File [[{guid.ToString()}]] form server: {response.Content.ReadAsStringAsync().Result}"
+                );
             Stream stream = response.Content.ReadAsStream();
             return stream;
         }

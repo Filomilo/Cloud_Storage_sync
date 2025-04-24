@@ -68,7 +68,7 @@ namespace Cloud_Storage_Server.Handlers
                     this._fileSystemService.SaveFile(saved, fileUploadRequest.fileStream);
 
                     transaction.Commit();
-                    context.SaveChanges();
+                    context.SaveChangesAsync().Wait();
                 }
             }
             if (_nextHandler != null && saved != null)
