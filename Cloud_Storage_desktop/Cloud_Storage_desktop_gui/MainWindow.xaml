@@ -5,8 +5,32 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Cloud_Storage_desktop"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="300" Width="215">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"  />
+        </Grid.ColumnDefinitions>
+        <StackPanel>
+            <Label Height="32" Content="Api url:"/>
+            <TextBox x:Name="TextBox_ApiURl" TextWrapping="Wrap"/>
+        </StackPanel>
+        <StackPanel Grid.Row="1">
+            <Label x:Name="MaxFilesLabel" Content="Max simulation File sync: " RenderTransformOrigin="0.045,0.77"/>
+            <TextBox x:Name="TextBox_MaxFilesSync" TextWrapping="Wrap" Text="TextBox"/>
+        </StackPanel>
+        <StackPanel Grid.Row="2">
+            <Label Content="Sync location: "/>
+            <Label x:Name="Label_Location" Content="[[Location]]"/>
+            <Button x:Name="Button_changelocation" Content="Change " HorizontalAlignment="Right" Margin="0,0,20,0"/>
+        </StackPanel>
+        <Button x:Name="Button_Save" Content="Save" Grid.Row="4" Margin="10,0,10,20" VerticalAlignment="Bottom"/>
 
     </Grid>
 </Window>
