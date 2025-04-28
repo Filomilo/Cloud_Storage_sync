@@ -11,16 +11,16 @@ namespace Cloud_Storage_Desktop_lib
     public partial class Configuration : IConfiguration
     {
         [JsonProperty("ApiUrl")]
-        public string ApiUrl { get; set; } = "http://localhost:5087";
+        public string ApiUrl { get; set; }
 
         [JsonProperty("MaxStimulationsFileSync")]
         public int MaxStimulationsFileSync { get; set; }
 
         [JsonProperty("StorageLocation")]
-        [RegularExpression(
-            @"^@""^[a-zA-Z]:\\(?:[a-zA-Z0-9 _-]+\\)*[a-zA-Z0-9 _-]+\.txt$""",
-            ErrorMessage = "Path string doesn't match path syntax"
-        )]
+        //[RegularExpression(
+        //    @"^@""^[a-zA-Z]:\\(?:[a-zA-Z0-9 _-]+\\)*[a-zA-Z0-9 _-]+\.txt$""",
+        //    ErrorMessage = "Path string doesn't match path syntax"
+        //)]
         public string StorageLocation { get; set; }
 
         public void LoadConfiguration()
@@ -53,9 +53,9 @@ namespace Cloud_Storage_Desktop_lib
         public void SaveConfiguration()
         {
             string path = GetConfigurationPath();
-            if (!Directory.Exists(GetAppDirectory()))
+            if (!Directory.Exists(SharedData.GetAppDirectory()))
             {
-                Directory.CreateDirectory(GetAppDirectory());
+                Directory.CreateDirectory(SharedData.GetAppDirectory());
             }
             using (StreamWriter sw = new StreamWriter(GetConfigurationPath()))
             {
@@ -65,13 +65,7 @@ namespace Cloud_Storage_Desktop_lib
 
         private static string GetConfigurationPath()
         {
-            return $"{GetAppDirectory()}\\config.json";
-        }
-
-        public static string GetAppDirectory()
-        {
-            return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
-                + "\\CloudDriveSync";
+            return $"{SharedData.GetAppDirectory()}\\config.json";
         }
 
         public override string ToString()

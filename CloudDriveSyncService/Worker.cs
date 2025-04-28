@@ -1,23 +1,32 @@
+using Cloud_Storage_Common;
+using Cloud_Storage_Desktop_lib;
+
 namespace CloudDriveSyncService
 {
     public class Worker : BackgroundService
     {
-        private readonly ILogger<Worker> _logger;
+        private readonly ILogger _logger;
 
-        public Worker(ILogger<Worker> logger)
+        public Worker()
         {
-            _logger = logger;
+            _logger = CloudDriveLogging.Instance.GetLogger("Service");
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                if (_logger.IsEnabled(LogLevel.Information))
-                {
-                    _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                }
-                await Task.Delay(1000, stoppingToken);
+                CloudDriveSyncSystem.Instance.Configuration.LoadConfiguration();
+                while (!stoppingToken.IsCancellationRequested) { }
+                CloudDriveSyncSystem.Instance.FileSyncService.StopAllSync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred in the worker.");
+            }
+            finally
+            {
+                _logger.LogInformation("Worker stopped.");
             }
         }
     }
