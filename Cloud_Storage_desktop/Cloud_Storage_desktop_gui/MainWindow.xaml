@@ -104,7 +104,7 @@ HorizontalAlignment="Left" VerticalAlignment="Top"/>
         >  <Button x:Name="Button_Login" Grid.Row="1" HorizontalAlignment="Stretch" Content="Login
 " Margin="10,10,10,10" Click="Button_Login_Click" />
                 <Button x:Name="Button_Logout" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" Content="Logout" Margin="10,10,10,10" Click="Button_Logout_Click" />
-                <Button x:Name="Button_Register" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" Content="Register" Margin="10,0,10,0" />
+                <Button x:Name="Button_Register" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" Content="Register" Margin="10,0,10,0" Click="Button_Register_Click" />
 </StackPanel>
               
             </Grid>

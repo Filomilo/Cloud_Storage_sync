@@ -239,4 +239,9 @@ public partial class MainWindow : Window
     {
         LoginWindow.Login(ServerConnection);
     }
+
+    private void Button_Register_Click(object sender, RoutedEventArgs e)
+    {
+        RegisterWindow.Register(ServerConnection);
+    }
 }
