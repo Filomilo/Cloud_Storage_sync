@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_desktop.Logic;
 
 namespace Cloud_Storage_desktop;
@@ -18,6 +19,14 @@ public partial class MainWindow : Window
     }
 
     #region Serivice
+
+    private void ValidateSavedConfig()
+    {
+        Configuration config = new Configuration();
+
+        config.LoadConfiguration();
+        config.ValidateConfiguration();
+    }
 
     private void OnSerivceUdpate()
     {
@@ -69,6 +78,7 @@ public partial class MainWindow : Window
     {
         try
         {
+            ValidateSavedConfig();
             Operator.StartService();
         }
         catch (Exception ex)

@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Drawing;
+using System.Security.Policy;
 using Cloud_Storage_Common;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Lombok.NET;
@@ -71,6 +73,31 @@ namespace Cloud_Storage_Desktop_lib
         public override string ToString()
         {
             return $"ApiUrl: {ApiUrl}, MaxStimulationsFileSync: {MaxStimulationsFileSync}, StorageLocation: {StorageLocation}";
+        }
+
+        private bool IsValidUrl(string url)
+        {
+            return Uri.TryCreate(url, UriKind.Absolute, out Uri uriResult)
+                && (
+                    uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps
+                );
+        }
+
+        public void ValidateConfiguration()
+        {
+            if (!Directory.Exists(StorageLocation))
+            {
+                throw new ValidationException("Storage location is not a directory");
+            }
+
+            if (IsValidUrl(ApiUrl))
+            {
+                throw new ValidationException("ApiUrl is not a valid URL");
+            }
+            if (MaxStimulationsFileSync < 1)
+            {
+                throw new ValidationException("MaxStimulationsFileSync must be greater than 0");
+            }
         }
     }
 }

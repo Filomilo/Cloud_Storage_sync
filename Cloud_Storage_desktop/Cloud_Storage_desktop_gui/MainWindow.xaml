@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Cloud_Storage_desktop"
         mc:Ignorable="d"
-        Title="MainWindow" Height="537" Width="411"   
-        MinHeight=" 540" MinWidth="410"
+        Title="MainWindow" Height="682" Width="581"   
+        MinHeight=" 700" MinWidth="410"
         xmlns:ui="http://schemas.modernwpf.com/2019"
         ui:WindowHelper.UseModernWindowStyle="True">
     <Grid Margin="10,10,10,10">
@@ -52,7 +52,7 @@
 
             </Grid>
         </GroupBox>
-        <GroupBox BorderBrush="Black" BorderThickness="1" Grid.Row="1" Margin="0,10,0,0" Header="Service">
+        <GroupBox BorderBrush="Black" BorderThickness="1" Grid.Row="2" Margin="0,10,0,0" Header="Service">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto" />
@@ -81,6 +81,35 @@ HorizontalAlignment="Left" VerticalAlignment="Top"/>
         </GroupBox>
         <GroupBox BorderBrush="{DynamicResource DynamicTextBrush}" BorderThickness="1" Grid.Column="1" Grid.RowSpan="3" Margin="10,0,0,0" Header="Cloud">
             <Border BorderBrush="{DynamicResource SystemControlForegroundBaseHighBrush}" BorderThickness="1"/>
+        </GroupBox>
+        <GroupBox x:Name="GroupBox_coneciotn" BorderBrush="Black" BorderThickness="1" Grid.Row="1" Margin="0,10,0,0" Header="Connection">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+
+                </Grid.RowDefinitions>
+
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.ColumnSpan="2">
+
+                    <Label Content="User:" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                    <Label x:Name="Label_ConnectionStatus" Content="[[[Sataus]]]"
+                        HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                </StackPanel>
+    <StackPanel Orientation="Horizontal" Grid.Row="1"
+        >  <Button x:Name="Button_Login" Grid.Row="1" HorizontalAlignment="Stretch" Content="Login
+" Margin="10,10,10,10" />
+                <Button x:Name="Button_Logout" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" Content="Logout" Margin="10,10,10,10" />
+                <Button x:Name="Button_Register" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" Content="Register" Margin="10,0,10,0" />
+</StackPanel>
+              
+            </Grid>
         </GroupBox>
     </Grid>
 </Window>
