@@ -23,7 +23,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         Operator = new ServiceOperator();
         OnSerivceUdpate();
-        EditedConfig = new Configuration();
+        EditedConfig = (Configuration?)Configuration.InitConfig();
         CredentialManager = new CredentialManager();
         EditedConfig.LoadConfiguration();
         OnConfigChanged();
