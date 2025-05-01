@@ -22,6 +22,7 @@
     <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.1" />
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="System.Diagnostics.EventLog" Version="8.0.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,5 +37,12 @@
     <Folder Include="testData\" />
   </ItemGroup>
 
+	<Target Name="CopyFromAnotherProject" AfterTargets="Build">
+		<Exec Command='dotnet publish "..\CloudDriveSyncService\CloudDriveSyncService.csproj" -c Release -r win-x64 --self-contained true' ConsoleToMSBuild="true" />
+		<ItemGroup>
+			<FilesToCopy Include="..\CloudDriveSyncService\bin\Release\net8.0\win-x64\publish\**\*.*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(OutDir)\Service" SkipUnchangedFiles="true" />
+	</Target>
 
 </Project>

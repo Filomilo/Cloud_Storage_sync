@@ -18,4 +18,16 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\CloudDriveSyncService\CloudDriveSyncService.csproj" />
+  </ItemGroup>
+	<Target Name="CopyFromAnotherProject" AfterTargets="Build">
+		<Exec Command='dotnet publish "..\..\CloudDriveSyncService\CloudDriveSyncService.csproj" -c Release -r win-x64 --self-contained true' ConsoleToMSBuild="true" />
+
+		<ItemGroup>
+			<FilesToCopy Include="..\..\CloudDriveSyncService\bin\$(Configuration)\net8.0\**\*.*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(OutDir)\Service" SkipUnchangedFiles="true" />
+	</Target>
+
 </Project>
