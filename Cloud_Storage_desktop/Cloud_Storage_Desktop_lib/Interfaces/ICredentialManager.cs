@@ -6,5 +6,6 @@
         string GetToken();
         void RemoveToken();
         string GetDeviceID();
+        string GetEmail();
     }
 }

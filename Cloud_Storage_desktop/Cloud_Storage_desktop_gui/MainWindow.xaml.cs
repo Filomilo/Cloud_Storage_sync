@@ -1,6 +1,9 @@
 ﻿using System.Windows;
 using Cloud_Storage_Desktop_lib;
+using Cloud_Storage_Desktop_lib.Interfaces;
+using Cloud_Storage_Desktop_lib.Services;
 using Cloud_Storage_desktop.Logic;
+using Microsoft.Win32;
 
 namespace Cloud_Storage_desktop;
 
@@ -10,13 +13,77 @@ namespace Cloud_Storage_desktop;
 public partial class MainWindow : Window
 {
     private ServiceOperator Operator;
+    private Configuration EditedConfig;
+    private IConfiguration Config;
+    private IServerConnection ServerConnection;
+    private ICredentialManager CredentialManager;
 
     public MainWindow()
     {
         InitializeComponent();
         Operator = new ServiceOperator();
         OnSerivceUdpate();
+        EditedConfig = new Configuration();
+        CredentialManager = new CredentialManager();
+        EditedConfig.LoadConfiguration();
+        OnConfigChanged();
+        OnConfigSaved();
     }
+
+    #region Server Connction
+
+    private void OnConfigSaved()
+    {
+        Config = new Configuration();
+        Config.LoadConfiguration();
+        try
+        {
+            ServerConnection = new ServerConnection(
+                Config.ApiUrl,
+                this.CredentialManager,
+                new NullWebSocket()
+            );
+            OnConnectionStateChange(true);
+            ServerConnection.ConnectionChangeHandler += OnConnectionStateChange;
+        }
+        catch (Exception ex)
+        {
+            OnConnectionStateChange(false);
+        }
+    }
+
+    private void OnConnectionStateChange(bool isConnected)
+    {
+        if (!isConnected)
+        {
+            Label_ConnectionStatus.Content = "Not Connected";
+            Button_Login.IsEnabled = false;
+            Button_Logout.Visibility = Visibility.Collapsed;
+            Button_Register.IsEnabled = false;
+        }
+        else
+        {
+            Label_ConnectionStatus.Content = "Connected";
+            if (ServerConnection.CheckIfAuthirized())
+            {
+                Button_Logout.Visibility = Visibility.Visible;
+                Button_Register.Visibility = Visibility.Collapsed;
+                Button_Login.Visibility = Visibility.Collapsed;
+                Label_ConnectionStatus.Content = CredentialManager.GetEmail();
+            }
+            else
+            {
+                Button_Logout.Visibility = Visibility.Collapsed;
+                Button_Register.Visibility = Visibility.Visible;
+                Button_Login.Visibility = Visibility.Visible;
+                Label_ConnectionStatus.Content = "Not Authirized";
+            }
+        }
+    }
+
+    #endregion
+
+
 
     #region Serivice
 
@@ -123,4 +190,53 @@ public partial class MainWindow : Window
     }
 
     #endregion
+
+    #region Configuraiton
+
+
+    private void OnConfigChanged()
+    {
+        this.TextBox_apiUrl.Text = EditedConfig.ApiUrl;
+        this.TextBox_maxFileSync.Text = EditedConfig.MaxStimulationsFileSync.ToString();
+        this.Label_Location.Content = EditedConfig.StorageLocation;
+    }
+
+    private void Button_Save_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            EditedConfig.ApiUrl = this.TextBox_apiUrl.Text;
+            EditedConfig.MaxStimulationsFileSync = int.Parse(this.TextBox_maxFileSync.Text);
+            EditedConfig.StorageLocation = this.Label_Location.Content?.ToString();
+            EditedConfig.ValidateConfiguration();
+            EditedConfig.SaveConfiguration();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void Button_changelocation_Click(object sender, RoutedEventArgs e)
+    {
+        var folderDialog = new OpenFolderDialog { };
+        if (folderDialog.ShowDialog() == true)
+        {
+            EditedConfig.StorageLocation = folderDialog.FolderName;
+        }
+
+        OnConfigChanged();
+    }
+    #endregion
+
+    private void Button_Logout_Click(object sender, RoutedEventArgs e)
+    {
+        ServerConnection.Logout();
+        OnConnectionStateChange(true);
+    }
+
+    private void Button_Login_Click(object sender, RoutedEventArgs e)
+    {
+        LoginWindow.Login(ServerConnection);
+    }
 }

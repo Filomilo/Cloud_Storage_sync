@@ -3,6 +3,8 @@ using System.Drawing;
 using System.Security.Policy;
 using Cloud_Storage_Common;
 using Cloud_Storage_Desktop_lib.Interfaces;
+using Cloud_Storage_Desktop_lib.Mocks;
+using Cloud_Storage_desktop.Logic;
 using Lombok.NET;
 using Newtonsoft.Json;
 
@@ -77,10 +79,19 @@ namespace Cloud_Storage_Desktop_lib
 
         private bool IsValidUrl(string url)
         {
-            return Uri.TryCreate(url, UriKind.Absolute, out Uri uriResult)
-                && (
-                    uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps
+            try
+            {
+                ServerConnection serverConnection = new ServerConnection(
+                    this.ApiUrl,
+                    new NullCredentialMange(),
+                    new NullWebSocket()
                 );
+                return serverConnection.CheckIfHelathy();
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
 
         public void ValidateConfiguration()
@@ -90,7 +101,7 @@ namespace Cloud_Storage_Desktop_lib
                 throw new ValidationException("Storage location is not a directory");
             }
 
-            if (IsValidUrl(ApiUrl))
+            if (!IsValidUrl(ApiUrl))
             {
                 throw new ValidationException("ApiUrl is not a valid URL");
             }
