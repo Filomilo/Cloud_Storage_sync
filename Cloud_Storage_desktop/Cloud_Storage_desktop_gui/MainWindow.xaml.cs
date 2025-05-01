@@ -210,6 +210,7 @@ public partial class MainWindow : Window
             EditedConfig.StorageLocation = this.Label_Location.Content?.ToString();
             EditedConfig.ValidateConfiguration();
             EditedConfig.SaveConfiguration();
+            OnConfigSaved();
         }
         catch (Exception ex)
         {

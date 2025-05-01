@@ -47,7 +47,7 @@ namespace Cloud_Storage_Server.Services
 
         public string GetFullPathToFile(string path)
         {
-            return Directory.GetCurrentDirectory() + "\\" + _basePath + path + ".dat";
+            return Path.Combine(Directory.GetCurrentDirectory(), _basePath, path + ".dat");
         }
 
         public void CreateDirectory(string path)
@@ -55,21 +55,21 @@ namespace Cloud_Storage_Server.Services
             Directory.CreateDirectory(_basePath + TrimFileName(path));
         }
 
-        private static string TrimFileName(string parhFile)
+        private static string TrimFileName(string pathFile)
         {
-            List<string> splits = parhFile.Split("\\").ToList();
+            List<string> splits = pathFile.Split(Path.DirectorySeparatorChar).ToList();
             splits.RemoveAt(splits.Count - 1);
-            return string.Join("\\", splits);
+            return Path.Combine(splits.ToArray());
         }
 
         internal string GetFullPathToFile(SyncFileData file)
         {
-            return GetFullPathToFile(file.OwnerId + "//" + file.Id.ToString());
+            return GetFullPathToFile(Path.Combine(file.OwnerId.ToString(), file.Id.ToString()));
         }
 
         private static string GetRealtivePathForFile(long userid, SyncFileData data)
         {
-            return $"{userid}\\{data.Id}";
+            return Path.Combine(userid.ToString(), data.Id.ToString());
         }
     }
 }

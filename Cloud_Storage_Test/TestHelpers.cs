@@ -103,7 +103,7 @@ public class TestCredentialMangager : ICredentialManager
         return JwtHelpers.GetDeviceIDFromToken(_token);
     }
 
-    internal string GetUserEmail()
+    public string GetEmail()
     {
         return JwtHelpers.GetEmailFromToken(_token);
     }
