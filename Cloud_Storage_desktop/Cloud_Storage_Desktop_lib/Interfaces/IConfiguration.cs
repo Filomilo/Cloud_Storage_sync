@@ -8,5 +8,8 @@
         int MaxStimulationsFileSync { get; }
         string StorageLocation { get; set; }
         string ToString();
+
+        void LoadConfiguration();
+        void SaveConfiguration();
     }
 }

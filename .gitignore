@@ -492,3 +492,5 @@ Cloud_Storage_Server/databse.dat
 *.db
 /ConsoleDummy2/dummy1
 /ConsoleDummy1/dummy0
+*.db-shm
+*.db-wal

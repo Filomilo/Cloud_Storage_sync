@@ -38,5 +38,10 @@ namespace Cloud_Storage_Desktop_lib.Services
         {
             return JwtHelpers.GetDeviceIDFromToken(this.GetToken());
         }
+
+        public string GetEmail()
+        {
+            return JwtHelpers.GetEmailFromToken(this.GetToken());
+        }
     }
 }

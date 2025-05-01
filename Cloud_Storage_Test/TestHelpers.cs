@@ -67,6 +67,10 @@ public class TestConfig : IConfiguration
         set { TmpDirecotry = value; }
     }
 
+    public void LoadConfiguration() { }
+
+    public void SaveConfiguration() { }
+
     public TestConfig() { }
 
     public TestConfig(string storageLocation)

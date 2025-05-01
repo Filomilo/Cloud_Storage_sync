@@ -20,12 +20,17 @@ namespace Cloud_Storage_Common
             return loggerFactory.CreateLogger(name);
         }
 
+        public string getLogFilePath()
+        {
+            return SharedData.GetAppDirectory() + "\\logs\\log.log";
+        }
+
         protected CloudDriveLogging()
         {
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Console()
-                .WriteTo.File("logs/log.txt")
+                .WriteTo.File(getLogFilePath())
                 .CreateLogger();
         }
 

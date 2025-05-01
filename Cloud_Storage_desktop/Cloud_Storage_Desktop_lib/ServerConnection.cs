@@ -166,10 +166,19 @@ namespace Cloud_Storage_Desktop_lib
 
         public bool CheckIfHelathy()
         {
-            HttpResponseMessage response = client.GetAsync("/api/Helath/health").Result;
-            if (response.StatusCode != HttpStatusCode.OK)
+            try
             {
-                logger.LogError($"Cannot connect to server on url {this.client.BaseAddress}");
+                HttpResponseMessage response = client.GetAsync("/api/Helath/health").Result;
+
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    logger.LogError($"Cannot connect to server on url {this.client.BaseAddress}");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex.Message);
                 return false;
             }
 

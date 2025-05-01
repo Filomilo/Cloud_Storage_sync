@@ -5,8 +5,109 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Cloud_Storage_desktop"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="MainWindow" Height="682" Width="581"   
+        MinHeight=" 700" MinWidth="410"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        ui:WindowHelper.UseModernWindowStyle="True">
+    <Grid Margin="10,10,10,10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
 
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" MaxWidth="200"  />
+            <ColumnDefinition Width="*"  />
+        </Grid.ColumnDefinitions>
+
+
+
+        <GroupBox BorderBrush="Black" BorderThickness="1" Header="Configuration">
+            <Grid Margin="10,10,10,10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"  />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <Label Content="Api url:"/>
+                    <TextBox x:Name="TextBox_apiUrl" TextWrapping="Wrap"/>
+                </StackPanel>
+                <StackPanel Grid.Row="1" Margin="0,10,0,0">
+                    <Label x:Name="MaxFilesLabel" Content="Max simulation File sync: " RenderTransformOrigin="0.045,0.77"/>
+                    <TextBox x:Name="TextBox_maxFileSync" TextWrapping="Wrap" Text="TextBox"/>
+                </StackPanel>
+                <StackPanel Grid.Row="2">
+                    <Label Content="Sync location: "/>
+                    <Label x:Name="Label_Location" Content="[[Location]]"/>
+                    <Button x:Name="Button_changelocation" Content="..." HorizontalAlignment="Right" Margin="0,0,20,0" Click="Button_changelocation_Click"/>
+                </StackPanel>
+                <Button x:Name="Button_Save" Content="Save" Grid.Row="4" Margin="10,0,10,20" VerticalAlignment="Bottom" Click="Button_Save_Click"/>
+
+            </Grid>
+        </GroupBox>
+        <GroupBox BorderBrush="Black" BorderThickness="1" Grid.Row="2" Margin="0,10,0,0" Header="Service">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+
+                </Grid.RowDefinitions>
+
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.ColumnSpan="2">
+
+                    <Label Content="Service status:
+" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                    <Label x:Name="Label_serviceStatus" Content="[[[Sataus]]]"
+HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                </StackPanel>
+
+                <Button x:Name="Button_createDestroy" Grid.Row="1" HorizontalAlignment="Stretch" Content="Create\Destory" Margin="10,10,10,10" Click="Button_createDestroy_Click"/>
+                <Button x:Name="Button_startStop" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" Content="Start/Stop" Margin="10,10,10,10" Click="Button_startStop_Click"/>
+
+            </Grid>
+        </GroupBox>
+        <GroupBox BorderBrush="{DynamicResource DynamicTextBrush}" BorderThickness="1" Grid.Column="1" Grid.RowSpan="3" Margin="10,0,0,0" Header="Cloud">
+            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseHighBrush}" BorderThickness="1"/>
+        </GroupBox>
+        <GroupBox x:Name="GroupBox_coneciotn" BorderBrush="Black" BorderThickness="1" Grid.Row="1" Margin="0,10,0,0" Header="Connection">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+
+                </Grid.RowDefinitions>
+
+
+              
+
+                <StackPanel Grid.ColumnSpan="2" HorizontalAlignment="Stretch">
+
+                    <Label Content="User:" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                    
+                    <Label x:Name="Label_ConnectionStatus" Content="[[[Sataus]]]"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
+                </StackPanel>
+    <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Stretch"
+        >  <Button x:Name="Button_Login" Grid.Row="1" HorizontalAlignment="Stretch" Content="Login
+" Margin="10,10,10,10" Click="Button_Login_Click" />
+                <Button x:Name="Button_Logout" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" Content="Logout" Margin="10,10,10,10" Click="Button_Logout_Click" />
+                <Button x:Name="Button_Register" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" Content="Register" Margin="10,0,10,0" Click="Button_Register_Click" />
+</StackPanel>
+              
+            </Grid>
+        </GroupBox>
     </Grid>
 </Window>
