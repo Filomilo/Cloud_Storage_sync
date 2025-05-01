@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,7 +27,7 @@
 		<Exec Command="dotnet publish &quot;..\..\CloudDriveSyncService\CloudDriveSyncService.csproj&quot; -c Release -r win-x64 --self-contained true" ConsoleToMSBuild="true" />
 
 		<ItemGroup>
-			<FilesToCopy Include="..\..\CloudDriveSyncService\bin\$(Configuration)\net8.0\**\*.*" />
+			<FilesToCopy Include="..\..\CloudDriveSyncService\bin\Release\net8.0\win-x64\publish\**\*.*" />
 		</ItemGroup>
 		<Copy SourceFiles="@(FilesToCopy)" DestinationFolder="$(OutDir)\Service" SkipUnchangedFiles="true" />
 	</Target>
