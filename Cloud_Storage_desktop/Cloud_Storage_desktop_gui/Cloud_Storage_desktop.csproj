@@ -7,6 +7,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+	  <PublishTrimmed>false</PublishTrimmed>
+	  <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	  <SelfContained>true</SelfContained>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +23,6 @@
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\CloudDriveSyncService\CloudDriveSyncService.csproj" />
   </ItemGroup>
