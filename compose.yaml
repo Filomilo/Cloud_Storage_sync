@@ -1,0 +1,11 @@
+services:
+  web:
+    mem_limit: 512m
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 512M
+    build: .
+    ports:
+      - "8080:8080" 
