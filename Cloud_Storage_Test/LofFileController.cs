@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,7 +34,17 @@ namespace Cloud_Storage_Test
         {
             if (!File.Exists(CloudDriveLogging.Instance.getLogFilePath()))
                 return;
-            File.Delete(CloudDriveLogging.Instance.getLogFilePath());
+            using (
+                FileStream file = File.Open(
+                    CloudDriveLogging.Instance.getLogFilePath(),
+                    FileMode.Open,
+                    FileAccess.Write,
+                    FileShare.ReadWrite
+                )
+            )
+            {
+                file.SetLength(0);
+            }
         }
     }
 }

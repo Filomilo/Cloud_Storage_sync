@@ -36,16 +36,18 @@ namespace Cloud_Storage_Desktop_lib.Services
             OnCloudFileCreatedHandler = CreateOnCloudFileCreatedHandler();
             OnCloudFileDeletedHandler = CreateOnCloudFileDeletedHandler();
             InitlalConnectedSyncHandler = CreateInitialConnectedSyncHandler();
-            InitlalLocalySyncHandler = CreateInitalLoaclySyncHandler();
+            InitlalLocalySyncHandler = CreateInitalLoaclySyncHandler(InitlalConnectedSyncHandler);
         }
 
-        private IHandler? CreateInitalLoaclySyncHandler()
+        private IHandler? CreateInitalLoaclySyncHandler(IHandler onServerConntioNhandler)
         {
             return new ChainOfResponsiblityBuilder()
                 .Next(new GetUploudFiles(this._configuration))
                 .Next(
                     new AddFileToDataBaseHandler(this._configuration, this._fileRepositoryService)
                 )
+                .Next(new ContinueIfConncetdHandler(_serverConnection))
+                .Next(onServerConntioNhandler)
                 .Build();
         }
 

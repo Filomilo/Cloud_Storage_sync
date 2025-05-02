@@ -75,7 +75,9 @@ namespace Cloud_Storage_Test
                 }
             }
             HttpClient client = new HttpClient();
-            CloudDriveSyncSystem.Instance.SetStorageLocation(path);
+            CloudDriveSyncSystem.Instance.Configuration.StorageLocation = (path);
+            CloudDriveSyncSystem.Instance.Configuration.SaveConfiguration();
+            ;
             login(i == 0);
             while (true) { }
         }

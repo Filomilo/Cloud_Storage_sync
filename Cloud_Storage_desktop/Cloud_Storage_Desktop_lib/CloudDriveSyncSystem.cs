@@ -113,8 +113,7 @@ namespace Cloud_Storage_Desktop_lib
             this._Configuration = configuration;
             this._FileRepositoryService = localFileRepositoryService;
             _init();
-            _setupStorgeDir();
-
+            SetupSystemWachter();
             _instance = this;
         }
         //Testt only do not use
@@ -133,15 +132,6 @@ namespace Cloud_Storage_Desktop_lib
             SetupSystemWachter();
             SetupSererConeciotn();
             this.FileSyncService.StartSync();
-        }
-
-        private void _setupStorgeDir() { }
-
-        public void SetStorageLocation(string dir)
-        {
-            this._Configuration.StorageLocation = dir;
-
-            _setupStorgeDir();
         }
 
         public void Dispose()
