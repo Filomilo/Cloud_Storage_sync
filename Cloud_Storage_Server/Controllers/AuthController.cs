@@ -16,14 +16,17 @@ namespace Cloud_Storage_Server.Controllers
     {
         private readonly IDataBaseContextGenerator _dataBaseContextGenerator;
         private readonly IAuthService _authService;
+        private readonly ILogger<AuthController> logger;
 
         public AuthController(
             IDataBaseContextGenerator dataBaseContextGenerator,
-            IAuthService authService
+            IAuthService authService,
+            ILogger<AuthController> logger
         )
         {
             _dataBaseContextGenerator = dataBaseContextGenerator;
             _authService = authService;
+            this.logger = logger;
         }
 
         [HttpPost]
@@ -49,6 +52,7 @@ namespace Cloud_Storage_Server.Controllers
         [Route("register")]
         public IActionResult register(AuthRequest loginRequest)
         {
+            logger.LogInformation($"Registering: {loginRequest.Email}");
             User user = _authService.CreateNewUserBeasedOnLoginRequest(loginRequest);
             User savedUser;
             try

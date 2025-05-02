@@ -66,7 +66,7 @@ public class UserRepositoryTest
             int amountOfUsersAfter = context.Users.ToList().Count;
             Assert.That(amountOFUsersBefore + 1 == amountOfUsersAfter);
             Assert.Catch(
-                typeof(DbUpdateException),
+                typeof(AggregateException),
                 () =>
                 {
                     UserRepository.saveUser(

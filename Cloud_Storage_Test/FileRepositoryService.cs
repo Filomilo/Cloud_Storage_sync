@@ -13,7 +13,7 @@ namespace Cloud_Storage_Test
             FileRepositoryService fileRepositoryService = new FileRepositoryService(
                 new TestDbContextGenerator1()
             );
-
+            fileRepositoryService.Reset();
             UploudFileData uploudFileData = new UploudFileData()
             {
                 Extenstion = ".txt",
@@ -22,7 +22,10 @@ namespace Cloud_Storage_Test
                 Hash = "33",
             };
             fileRepositoryService.AddNewFile(new LocalFileData(uploudFileData));
-            Assert.That(fileRepositoryService.GetAllFiles().Count() == 1, "file not saved proprly");
+            Assert.That(
+                fileRepositoryService.GetAllFiles().Count() == 1,
+                $"file not saved proprly expected one file got {fileRepositoryService.GetAllFiles().Count()}"
+            );
         }
     }
 }

@@ -11,6 +11,8 @@ namespace Cloud_Storage_Server.Database.Repositories
 
             var validationContext = new ValidationContext(file);
             Validator.ValidateObject(file, validationContext, true);
+            if (GetFileByKeysParams(context, file) != null)
+                throw new ArgumentException("File with this data already exist");
             savedFile = context.Files.Add(file).Entity;
             context.SaveChangesAsync().Wait();
 
@@ -41,6 +43,20 @@ namespace Cloud_Storage_Server.Database.Repositories
             );
 
             return files;
+        }
+
+        public static SyncFileData GetFileByKeysParams(
+            AbstractDataBaseContext context,
+            SyncFileData syncFiledata
+        )
+        {
+            return context
+                .Files.ToList()
+                .Where(x =>
+                    x.GetRealativePath().Equals(syncFiledata.GetRealativePath())
+                    && x.Id.Equals(syncFiledata.Id)
+                )
+                .FirstOrDefault();
         }
 
         public static List<SyncFileData> GetAllUserFiles(

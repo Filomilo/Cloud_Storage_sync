@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Cloud_Storage_Desktop_lib;
+using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Server.Database;
 using Microsoft.Win32;
 
@@ -41,8 +42,16 @@ namespace Cloud_Storage_Test
             }
         }
 
+        static void setupConifg()
+        {
+            IConfiguration config = Configuration.InitConfig();
+            config.ApiUrl = "http://localhost:5087/";
+            config.SaveConfiguration();
+        }
+
         public static void startDummy(int i, List<string> startingFiles)
         {
+            setupConifg();
             if (i == 0)
             {
                 setupDb();
