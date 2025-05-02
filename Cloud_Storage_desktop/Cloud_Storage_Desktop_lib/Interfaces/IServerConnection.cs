@@ -4,6 +4,7 @@ using Cloud_Storage_Common.Models;
 namespace Cloud_Storage_Desktop_lib.Interfaces
 {
     public delegate void OnConnectionStateChange(bool isConnected);
+    public delegate void OnAuthStateChange(bool isConnected);
 
     public delegate void OnServerWebSockerMessage(WebSocketMessage message);
 
@@ -20,6 +21,7 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
         void UploudFile(UploudFileData fileData, Stream value);
         void UpdateFileData(UpdateFileDataRequest file);
         event OnConnectionStateChange ConnectionChangeHandler;
+        event OnAuthStateChange AuthChangeHandler;
         event OnServerWebSockerMessage ServerWerbsocketHadnler;
         WebSocketState WebSocketState { get; }
         void DeleteFile(string relativePath);

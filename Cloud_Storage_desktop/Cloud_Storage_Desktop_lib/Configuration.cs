@@ -6,6 +6,7 @@ using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Mocks;
 using Cloud_Storage_desktop.Logic;
 using Lombok.NET;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Cloud_Storage_Desktop_lib
@@ -14,6 +15,8 @@ namespace Cloud_Storage_Desktop_lib
     [NoArgsConstructor]
     public partial class Configuration : IConfiguration
     {
+        private ILogger _logger = CloudDriveLogging.Instance.GetLogger("Configuration");
+
         [JsonProperty("ApiUrl")]
         public string ApiUrl { get; set; }
 
@@ -29,6 +32,7 @@ namespace Cloud_Storage_Desktop_lib
 
         public void LoadConfiguration()
         {
+            _logger.LogDebug("Load configuraiotn");
             string content;
             using (StreamReader sr = new StreamReader(GetConfigurationPath()))
             {

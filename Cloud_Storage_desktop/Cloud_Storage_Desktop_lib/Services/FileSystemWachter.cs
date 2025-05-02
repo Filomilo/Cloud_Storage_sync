@@ -61,7 +61,14 @@ namespace Cloud_Storage_Desktop_lib.Services
         {
             if (this.OnDeletedEventHandler != null)
             {
-                this.OnDeletedEventHandler.Invoke(e);
+                try
+                {
+                    this.OnDeletedEventHandler.Invoke(e);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning($"failed to handle file deletion: {ex.Message}");
+                }
             }
         }
 

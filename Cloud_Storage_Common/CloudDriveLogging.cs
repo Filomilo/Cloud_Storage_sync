@@ -28,7 +28,7 @@ namespace Cloud_Storage_Common
         protected CloudDriveLogging()
         {
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
+                .MinimumLevel.Verbose()
                 .WriteTo.Console()
                 .WriteTo.File(getLogFilePath(), shared: true)
                 .CreateLogger();

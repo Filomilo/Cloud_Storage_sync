@@ -28,12 +28,15 @@ namespace Cloud_Storage_Desktop_lib.Actions
             UploudFileData fileData
         )
         {
+            logger.LogTrace($"Create UploadAction ::: {fileData}");
             this.file = fileData.getFullFilePathForBasePath(configuration.StorageLocation);
             _uploudAction = (
                 () =>
                 {
                     try
                     {
+                        logger.LogTrace($"Executing UploadAction ::: {fileData}");
+
                         using (
                             Stream stream = FileManager.GetStreamForFile(
                                 fileData.getFullFilePathForBasePath(configuration.StorageLocation)
@@ -41,7 +44,10 @@ namespace Cloud_Storage_Desktop_lib.Actions
                         )
                         {
                             //fileRepositoryService.AddNewFile(new LocalFileData(fileData));
+                            logger.LogTrace($"Executing UploudFile ::: {fileData}");
+
                             serverConnection.UploudFile(fileData, stream);
+                            logger.LogTrace($"Finished UploadAction ::: {fileData}");
                         }
                     }
                     catch (Exception EX)

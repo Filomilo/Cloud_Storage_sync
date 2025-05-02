@@ -46,9 +46,6 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
                 )
             );
 
-            logger.LogWarning(
-                "UploadNewFileHandler Not implemented, it should Uploud new File to cloud"
-            );
             if (this._nextHandler != null)
                 this._nextHandler.Handle(request);
             return null;

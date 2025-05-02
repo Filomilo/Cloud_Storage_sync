@@ -423,5 +423,15 @@ namespace Cloud_Storage_Test
             if (Directory.Exists(serverStoragePath))
                 Directory.Delete(serverStoragePath, true);
         }
+
+        internal static string GetPassoword()
+        {
+            return Guid.NewGuid().ToString("N");
+        }
+
+        internal static string getEmail()
+        {
+            return $"test{Guid.NewGuid().ToString().Split("-")[0]}@wp.pl";
+        }
     }
 }

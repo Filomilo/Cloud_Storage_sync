@@ -153,6 +153,7 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         public void CancelAllTasks()
         {
+            logger.LogTrace("CancelAllTasks - start");
             lock (Locker)
             {
                 this._QueuedTasks.Clear();
@@ -162,6 +163,7 @@ namespace Cloud_Storage_Desktop_lib.Services
                 }
                 this._QueuedTasks.Clear();
             }
+            logger.LogTrace("CancelAllTasks - Stop");
         }
 
         public void CancelTask(object key)

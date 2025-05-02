@@ -3,11 +3,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Cloud_Storage_Server.Database.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Cloud_Storage_Common.Models
 {
     public class FileData : IComparable
     {
+        private ILogger _logger = CloudDriveLogging.Instance.GetLogger("FileData");
+
         public FileData() { }
 
         public FileData(string relativePath)
@@ -68,6 +71,7 @@ namespace Cloud_Storage_Common.Models
 
         public string getFullFilePathForBasePath(string basepath)
         {
+            _logger.LogTrace($"getFullFilePathForBasePath");
             return System.IO.Path.GetFullPath(this.Path, basepath)
                 + $"\\{this.Name}{this.Extenstion}";
         }
