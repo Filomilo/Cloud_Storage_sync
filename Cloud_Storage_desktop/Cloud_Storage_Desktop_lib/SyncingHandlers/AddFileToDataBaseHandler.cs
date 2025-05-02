@@ -23,6 +23,7 @@ namespace Cloud_Storage_Server.Handlers
 
         public override object Handle(object request)
         {
+            _logger.LogTrace($" AddFileToDataBaseHandler - {request}");
             List<UploudFileData> data = null;
             if (request is UploudFileData)
             {
@@ -44,6 +45,7 @@ namespace Cloud_Storage_Server.Handlers
             foreach (UploudFileData fileUpload in data)
             {
                 LocalFileData local = new LocalFileData(fileUpload);
+                _logger.LogTrace($"AddFileToDataBaseHandler:: {fileUpload}");
                 if (
                     this._fileRepositoryService.DoesFileExist(
                         fileUpload,

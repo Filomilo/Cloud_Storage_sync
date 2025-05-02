@@ -32,11 +32,11 @@ namespace Cloud_Storage_Desktop_lib.Services
 
             this._serverConnection = serverConnection;
             this._fileRepositoryService = fileRepositoryService;
-            _taskRunController = new RunningTaskController(configuration);
 
-            this._serverConnection.ConnectionChangeHandler += onConnnetionChange;
+            this._serverConnection.AuthChangeHandler += onConnnetionChange;
             this._serverConnection.ServerWerbsocketHadnler +=
                 _serverConnection_ServerWerbsocketHadnler;
+            this._serverConnection.AuthChangeHandler += onAuthChange;
 
             this._clientChainOfResponsibilityRepository = new ClientChainOfResponsibilityRepository(
                 _taskRunController,
@@ -99,6 +99,17 @@ namespace Cloud_Storage_Desktop_lib.Services
             }
         }
 
+        private void onAuthChange(bool state)
+        {
+            logger.LogInformation($"Connection For sync file serviece change to {state}");
+            if (state)
+            {
+                _clientChainOfResponsibilityRepository.InitlalConnectedSyncHandler.Handle(null);
+            }
+
+            this._taskRunController.Active = state;
+        }
+
         public bool Active
         {
             get { return this.State == SyncState.CONNECTED; }
@@ -108,7 +119,6 @@ namespace Cloud_Storage_Desktop_lib.Services
         {
             logger.LogInformation("Start Syncing");
             _clientChainOfResponsibilityRepository.InitlalLocalySyncHandler.Handle(null);
-            _taskRunController.Active = true;
         }
 
         public IEnumerable<ISyncProcess> GetAllSyncProcesses()
@@ -143,6 +153,7 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         public void ResetSync()
         {
+            logger.LogInformation("ResetSync");
             this._taskRunController.CancelAllTasks();
             this._fileRepositoryService.Reset();
         }
@@ -181,7 +192,6 @@ namespace Cloud_Storage_Desktop_lib.Services
             logger.LogInformation("STOP all sync");
             this._taskRunController.CancelAllTasks();
             _state = SyncState.STOPPED;
-            _taskRunController.Active = false;
         }
 
         public void PauseAllSync()

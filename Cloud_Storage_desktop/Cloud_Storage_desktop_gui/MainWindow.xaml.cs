@@ -80,6 +80,7 @@ public partial class MainWindow : Window
             );
             OnConnectionStateChange(true);
             ServerConnection.ConnectionChangeHandler += OnConnectionStateChange;
+            ServerConnection.AuthChangeHandler += OnConnectionStateChange;
         }
         catch (Exception ex)
         {
@@ -89,31 +90,36 @@ public partial class MainWindow : Window
 
     private void OnConnectionStateChange(bool isConnected)
     {
-        if (!isConnected)
+        Dispatcher.Invoke(() =>
         {
-            Label_ConnectionStatus.Content = "Not Connected";
-            Button_Login.IsEnabled = false;
-            Button_Logout.Visibility = Visibility.Collapsed;
-            Button_Register.IsEnabled = false;
-        }
-        else
-        {
-            Label_ConnectionStatus.Content = "Connected";
-            if (ServerConnection.CheckIfAuthirized())
+            if (!isConnected)
             {
-                Button_Logout.Visibility = Visibility.Visible;
-                Button_Register.Visibility = Visibility.Collapsed;
-                Button_Login.Visibility = Visibility.Collapsed;
-                Label_ConnectionStatus.Content = CredentialManager.GetEmail();
+                Label_ConnectionStatus.Content = "Not Connected";
+                Button_Login.IsEnabled = false;
+                Button_Logout.Visibility = Visibility.Collapsed;
+                Button_Register.IsEnabled = false;
             }
             else
             {
-                Button_Logout.Visibility = Visibility.Collapsed;
-                Button_Register.Visibility = Visibility.Visible;
-                Button_Login.Visibility = Visibility.Visible;
-                Label_ConnectionStatus.Content = "Not Authirized";
+                Label_ConnectionStatus.Content = "Connected";
+                if (ServerConnection.CheckIfAuthirized())
+                {
+                    Button_Logout.Visibility = Visibility.Visible;
+                    Button_Register.Visibility = Visibility.Collapsed;
+                    Button_Login.Visibility = Visibility.Collapsed;
+                    Label_ConnectionStatus.Content = CredentialManager.GetEmail();
+                }
+                else
+                {
+                    Button_Logout.Visibility = Visibility.Collapsed;
+                    Button_Register.Visibility = Visibility.Visible;
+                    Button_Login.Visibility = Visibility.Visible;
+                    Button_Login.IsEnabled = true;
+                    Button_Register.IsEnabled = true;
+                    Label_ConnectionStatus.Content = "Not Authirized";
+                }
             }
-        }
+        });
     }
 
     #endregion

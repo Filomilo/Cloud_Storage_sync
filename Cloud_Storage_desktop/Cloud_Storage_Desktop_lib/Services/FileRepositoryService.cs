@@ -23,10 +23,25 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         public void AddNewFile(LocalFileData file)
         {
-            using (var context = GetDbContext())
+            try
             {
-                context.Files.Add(file);
-                context.SaveChanges();
+                if (DoesFileExist(file, out LocalFileData local))
+                {
+                    return;
+                }
+
+                using (var context = GetDbContext())
+                {
+                    context.Files.Add(file);
+                    context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!DoesFileExist(file, out LocalFileData local))
+                {
+                    throw ex;
+                }
             }
         }
 

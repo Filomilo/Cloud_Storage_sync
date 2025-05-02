@@ -15,6 +15,7 @@ namespace CloudDriveSyncService
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            _logger.LogInformation("Start wokrker taks");
             try
             {
                 if (!Debugger.IsAttached)
@@ -23,11 +24,13 @@ namespace CloudDriveSyncService
                 }
                 CloudDriveSyncSystem.Instance.Configuration.LoadConfiguration();
                 while (!stoppingToken.IsCancellationRequested) { }
+
+                _logger.LogInformation("Start wokrker Cancleation requesterd - stopin");
                 CloudDriveSyncSystem.Instance.FileSyncService.StopAllSync();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred in the worker.");
+                _logger.LogError(ex, $"An error occurred in the worker.:: {ex.Message}");
             }
             finally
             {

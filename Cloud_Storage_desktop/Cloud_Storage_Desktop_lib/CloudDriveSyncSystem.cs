@@ -55,6 +55,7 @@ namespace Cloud_Storage_Desktop_lib
 
         private void SetupSererConeciotn()
         {
+            logger.LogTrace($"SetupSererConeciotn");
             this._ServerConnection = new ServerConnection(
                 this._Configuration.ApiUrl,
                 this.CredentialManager,
@@ -122,13 +123,16 @@ namespace Cloud_Storage_Desktop_lib
 
         private void SetupSystemWachter()
         {
+            logger.LogInformation("SetupSystemWachter");
             this.SystemWatcher.Directory = this._Configuration.StorageLocation;
         }
 
         private void ReloadSyncSystem()
         {
+            logger.LogInformation("Reloading sync system");
             this.FileSyncService.StopAllSync();
             this.FileSyncService.ResetSync();
+
             SetupSystemWachter();
             SetupSererConeciotn();
             this.FileSyncService.StartSync();

@@ -40,7 +40,14 @@ namespace Cloud_Storage_desktop.Logic
 
         public void StartService()
         {
-            runServiceOperation("start", false);
+            Awaiters.AwaitNotThrows(
+                () =>
+                {
+                    runServiceOperation("start", false);
+                },
+                5000
+            );
+
             Awaiters.AwaitTrue(() => IsServiceRunning());
         }
 

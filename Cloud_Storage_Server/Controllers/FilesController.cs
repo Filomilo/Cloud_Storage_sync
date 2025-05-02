@@ -27,20 +27,24 @@ namespace Cloud_Storage_Server.Controllers
     {
         private readonly IFileSyncService _FileSyncService;
         private readonly IDataBaseContextGenerator _dataBaseContextGenerator;
+        private readonly ILogger<FilesController> _logger;
 
         public FilesController(
             IFileSyncService fileSyncService,
-            IDataBaseContextGenerator dataBaseContextGenerator
+            IDataBaseContextGenerator dataBaseContextGenerator,
+            ILogger<FilesController> logger
         )
         {
             _FileSyncService = fileSyncService;
             _dataBaseContextGenerator = dataBaseContextGenerator;
+            _logger = logger;
         }
 
         [Route("list")]
         [HttpGet]
         public IActionResult listOfFiles()
         {
+            _logger.LogInformation("listOfFiles");
             using (var context = _dataBaseContextGenerator.GetDbContext())
             {
                 User user = UserRepository.getUserByMail(
@@ -74,6 +78,7 @@ namespace Cloud_Storage_Server.Controllers
         {
             try
             {
+                _logger.LogInformation($"UploadFile:: {filerequest}");
                 if (filerequest == null)
                 {
                     return BadRequest("Request cannot be null");
@@ -112,6 +117,7 @@ namespace Cloud_Storage_Server.Controllers
         [HttpDelete]
         public IActionResult delete([FromQuery] string relativePath)
         {
+            _logger.LogInformation($"delete:: {relativePath}");
             if (string.IsNullOrEmpty(relativePath))
             {
                 return BadRequest("relativePath cannot be null or empty.");
@@ -141,6 +147,8 @@ namespace Cloud_Storage_Server.Controllers
         {
             try
             {
+                _logger.LogInformation($"DownlaodFile:: {guid.ToString()}");
+
                 User user = null;
                 SyncFileData fileData;
                 using (var context = _dataBaseContextGenerator.GetDbContext())
@@ -183,6 +191,8 @@ namespace Cloud_Storage_Server.Controllers
         [HttpPost]
         public IActionResult update([FromBody] UpdateFileDataRequest fileUpdate)
         {
+            _logger.LogInformation($"update:: {fileUpdate}");
+
             ValidateUpdateFileDataRequest(fileUpdate);
             String email = JwtHelpers.GetEmailFromToken(Request.Headers.Authorization);
 
@@ -197,6 +207,8 @@ namespace Cloud_Storage_Server.Controllers
         [HttpPost]
         public IActionResult setVersion([FromBody] SetVersionRequest setVersionRequest)
         {
+            _logger.LogInformation($"setVersion:: {setVersionRequest}");
+
             String email = JwtHelpers.GetEmailFromToken(Request.Headers.Authorization);
             User user = null;
             string deviceId = JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization);

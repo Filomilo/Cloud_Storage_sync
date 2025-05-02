@@ -1,37 +1,60 @@
-﻿using Cloud_Storage_Common;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Cloud_Storage_Common;
 using Cloud_Storage_Desktop_lib.Interfaces;
-using CredentialManagement;
+using Microsoft.Extensions.Logging;
+using NUnit.Framework.Interfaces;
 
 namespace Cloud_Storage_Desktop_lib.Services
 {
     public class CredentialManager : ICredentialManager
     {
-        private const string target = "CloudDrive";
+        private ILogger _logger = CloudDriveLogging.Instance.GetLogger("CredentialManager");
+
+        public CredentialManager()
+        {
+            if (!File.Exists(getTokenFilePaath()))
+            {
+                SaveToken("");
+            }
+        }
+
+        string getTokenFilePaath()
+        {
+            return Path.Combine(Cloud_Storage_Common.SharedData.GetAppDirectory(), "token");
+        }
 
         public void SaveToken(string token)
         {
-            using (var cred = new Credential())
+            using (var file = File.OpenWrite(getTokenFilePaath()))
             {
-                cred.Password = token;
-                cred.Type = CredentialType.Generic;
-                cred.PersistanceType = PersistanceType.LocalComputer;
-                cred.Target = (target);
-                cred.Save();
+                StreamWriter writer = new StreamWriter(file);
+                writer.Write(token);
+                writer.Close();
             }
         }
 
         public string GetToken()
         {
-            Credential cd = new Credential() { Target = target };
-            cd.Load();
-            return cd.Password;
+            string token = "";
+            using (var file = File.OpenRead(getTokenFilePaath()))
+            {
+                StreamReader writer = new StreamReader(file);
+                token = writer.ReadToEnd();
+            }
+            //_logger.LogTrace($"Get token:: {token}");
+            return token;
         }
 
         public void RemoveToken()
         {
-            Credential cd = new Credential() { Target = target };
-            cd.Load();
-            cd.Delete();
+            using (var file = File.OpenWrite(getTokenFilePaath()))
+            {
+                file.SetLength(0);
+            }
         }
 
         public string GetDeviceID()

@@ -494,3 +494,4 @@ Cloud_Storage_Server/databse.dat
 /ConsoleDummy1/dummy0
 *.db-shm
 *.db-wal
+/Cloud_Storage_desktop/CloudStorageInstaller/Output

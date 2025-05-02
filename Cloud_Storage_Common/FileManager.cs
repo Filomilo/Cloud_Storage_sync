@@ -182,6 +182,7 @@ namespace Cloud_Storage_Common
 
         public static FileStream GetStreamForFile(string fiePath, int ms = 500000)
         {
+            Logger.LogTrace($"GetStreamForFile:: [[{fiePath}]]");
             return WaitForFile(fiePath, FileAccess.ReadWrite, 100, ms / 100);
         }
 

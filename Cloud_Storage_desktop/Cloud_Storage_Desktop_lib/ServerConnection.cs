@@ -21,6 +21,43 @@ namespace Cloud_Storage_Desktop_lib
         private Thread WsThread;
         private CancellationTokenSource _cts = new CancellationTokenSource();
         private ICredentialManager _credentialManager;
+        private Task serverWatcherTask;
+        private CancellationTokenSource cancellationTokenSourceServerWatcher;
+        private bool _ServerStatus = false;
+
+        private void CreateServerStatusWatcher()
+        {
+            cancellationTokenSourceServerWatcher = new CancellationTokenSource();
+            serverWatcherTask = Task.Run(ServerWarcher, cancellationTokenSourceServerWatcher.Token);
+        }
+
+        ~ServerConnection()
+        {
+            cancellationTokenSourceServerWatcher.Cancel();
+        }
+
+        private void ServerWarcher()
+        {
+            while (!cancellationTokenSourceServerWatcher.IsCancellationRequested)
+            {
+                Thread.Sleep(100 * 10);
+                bool serverStatus = CheckIfHelathy();
+                if (serverStatus != this._ServerStatus)
+                {
+                    _ServerStatus = serverStatus;
+                    UpdateOnConncotionChange(_ServerStatus);
+                }
+            }
+        }
+
+        private void UpdateOnConncotionChange(bool state)
+        {
+            logger.LogTrace($"Conneciton change: {state}");
+            if (ConnectionChangeHandler != null)
+            {
+                ConnectionChangeHandler.Invoke(state);
+            }
+        }
 
         public ServerConnection(
             string ConnetionAdress,
@@ -32,11 +69,12 @@ namespace Cloud_Storage_Desktop_lib
                 return;
             try
             {
+                CreateServerStatusWatcher();
                 this._credentialManager = credentialManager;
                 client.BaseAddress = new Uri(ConnetionAdress);
                 this._webSocket = webSocketWrapper;
-                _LoadToken();
-                this.ConnectionChangeHandler += UpdateWebsocketOnConnetionChange;
+                this.AuthChangeHandler += UpdateWebsocketOnConnetionChange;
+                this.ConnectionChangeHandler += LoadTokenOnConnectionChnage;
             }
             catch (Exception ex)
             {
@@ -48,17 +86,28 @@ namespace Cloud_Storage_Desktop_lib
             }
         }
 
+        private void LoadTokenOnConnectionChnage(bool state)
+        {
+            logger.LogTrace($"LoadTokenOnConnectionChnage: {state}");
+            if (state)
+            {
+                _LoadToken();
+            }
+        }
+
         public ServerConnection(
             HttpClient client,
             ICredentialManager credentialManager,
             IWebSocketWrapper webSocketWrapper
         )
         {
+            CreateServerStatusWatcher();
             this.client = client;
             this._credentialManager = credentialManager;
             this.ConnectionChangeHandler += UpdateWebsocketOnConnetionChange;
+            this.ConnectionChangeHandler += LoadTokenOnConnectionChnage;
+
             this._webSocket = webSocketWrapper;
-            _LoadToken();
         }
 
         private void UpdateWebsocketOnConnetionChange(bool state)
@@ -199,6 +248,9 @@ namespace Cloud_Storage_Desktop_lib
             HttpResponseMessage response;
             try
             {
+                //logger.LogTrace(
+                //    $"trying to get authorized server connction:: Credential magenr: {this._credentialManager.GetToken()} ---- server config :: {client.DefaultRequestHeaders}"
+                //);
                 response = client.GetAsync("/api/Helath/healthSecured").Result;
             }
             catch (Exception ex)
@@ -243,15 +295,20 @@ namespace Cloud_Storage_Desktop_lib
                 logger.LogError($"Couldn't login for auth {email}");
                 throw new UnauthorizedAccessException($"invalid login parameters");
             }
+            else
+            {
+                logger.LogInformation($"Succesfully regsitered with email {email}");
+            }
             this._credentialManager.SaveToken(response.Content.ReadAsStringAsync().Result);
             _LoadToken();
         }
 
-        private void InovkeConnectionChange(bool state)
+        private void InovkeAuthChange(bool state)
         {
-            if (this.ConnectionChangeHandler != null)
+            logger.LogTrace($"Auth change: {state}");
+            if (this.AuthChangeHandler != null)
             {
-                this.ConnectionChangeHandler.Invoke(state);
+                this.AuthChangeHandler.Invoke(state);
             }
             else { }
         }
@@ -259,6 +316,7 @@ namespace Cloud_Storage_Desktop_lib
         private void _LoadToken()
         {
             string token = this._credentialManager.GetToken();
+            logger.LogTrace($"_LoadToken :: {token}");
             if (token.Length > 0)
             {
                 try
@@ -271,11 +329,11 @@ namespace Cloud_Storage_Desktop_lib
                     {
                         logger.LogWarning("Token authirzation failed");
                         this._credentialManager.RemoveToken();
-                        InovkeConnectionChange(false);
+                        InovkeAuthChange(false);
                     }
                     else
                     {
-                        InovkeConnectionChange(true);
+                        InovkeAuthChange(true);
                     }
                 }
                 catch (Exception e)
@@ -284,13 +342,17 @@ namespace Cloud_Storage_Desktop_lib
                     Console.WriteLine(e);
                 }
             }
+            else
+            {
+                InovkeAuthChange(false);
+            }
         }
 
         public void Logout()
         {
             this.client.DefaultRequestHeaders.Authorization = null;
             this._credentialManager.RemoveToken();
-            InovkeConnectionChange(false);
+            InovkeAuthChange(false);
         }
 
         public void UploudFile(UploudFileData fileData, Stream stream)
@@ -335,6 +397,7 @@ namespace Cloud_Storage_Desktop_lib
         }
 
         public event OnConnectionStateChange? ConnectionChangeHandler;
+        public event OnAuthStateChange? AuthChangeHandler;
         public event OnServerWebSockerMessage? ServerWerbsocketHadnler;
 
         public WebSocketState WebSocketState
