@@ -54,6 +54,7 @@ public class TestConfig : IConfiguration
     public string ApiUrl
     {
         get { return ""; }
+        set { }
     }
 
     public int MaxStimulationsFileSync
