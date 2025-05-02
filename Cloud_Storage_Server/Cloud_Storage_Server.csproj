@@ -8,6 +8,7 @@
     <DockerfileContext>.</DockerfileContext>
 	  <SelfContained>true</SelfContained>
 	  <UseAppHost>true</UseAppHost>
+	  <GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
   </PropertyGroup>
 
   <ItemGroup>

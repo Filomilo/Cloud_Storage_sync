@@ -32,5 +32,6 @@
         delegate void OnSyncProcessUpdate(ISyncProcessEventArgs args);
 
         SyncState State { get; }
+        void ResetSync();
     }
 }

@@ -35,10 +35,21 @@ namespace Cloud_Storage_Desktop_lib.Services
             OnCloudFileRenamedHandler = CreateOnCloudFileRenamedHandler();
             OnCloudFileCreatedHandler = CreateOnCloudFileCreatedHandler();
             OnCloudFileDeletedHandler = CreateOnCloudFileDeletedHandler();
-            InitlalSyncHandler = CreateInitialSyncHandler();
+            InitlalConnectedSyncHandler = CreateInitialConnectedSyncHandler();
+            InitlalLocalySyncHandler = CreateInitalLoaclySyncHandler();
         }
 
-        private IHandler? CreateInitialSyncHandler()
+        private IHandler? CreateInitalLoaclySyncHandler()
+        {
+            return new ChainOfResponsiblityBuilder()
+                .Next(new GetUploudFiles(this._configuration))
+                .Next(
+                    new AddFileToDataBaseHandler(this._configuration, this._fileRepositoryService)
+                )
+                .Build();
+        }
+
+        private IHandler? CreateInitialConnectedSyncHandler()
         {
             return new ChainOfResponsiblityBuilder()
                 .Next(
@@ -237,7 +248,8 @@ namespace Cloud_Storage_Desktop_lib.Services
                 .Build();
         }
 
-        public IHandler InitlalSyncHandler { get; }
+        public IHandler InitlalLocalySyncHandler { get; }
+        public IHandler InitlalConnectedSyncHandler { get; }
         public IHandler OnLocallyFileChangeHandler { get; }
         public IHandler OnLocalyFileRenamedHandler { get; }
         public IHandler OnLocalyFileDeletedHandler { get; }

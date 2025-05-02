@@ -40,7 +40,7 @@ namespace Cloud_Storage_Desktop_lib
         private IConfiguration _Configuration =
             Cloud_Storage_Desktop_lib.Configuration.InitConfig();
 
-        private IFileRepositoryService _FileRepositoryService;
+        public IFileRepositoryService _FileRepositoryService;
 
         public ICredentialManager CredentialManager
         {
@@ -50,17 +50,22 @@ namespace Cloud_Storage_Desktop_lib
 
         public IFileSyncService FileSyncService;
         public IFIleSystemWatcher SystemWatcher;
+        private WebSocketWrapper _WebSocketWrapper = new WebSocketWrapper();
         #endregion
-        private CloudDriveSyncSystem()
+
+        private void SetupSererConeciotn()
         {
             this._ServerConnection = new ServerConnection(
                 this._Configuration.ApiUrl,
                 this.CredentialManager,
                 new WebSocketWrapper()
             );
-            this._FileRepositoryService = new FileRepositoryService(
-                new InMemoryDataBAseContextGenerator()
-            );
+        }
+
+        private CloudDriveSyncSystem()
+        {
+            SetupSererConeciotn();
+            this._FileRepositoryService = new FileRepositoryService(new LocalSqlLiteDbGeneraor());
             _init();
         }
 
@@ -76,9 +81,8 @@ namespace Cloud_Storage_Desktop_lib
             this.SystemWatcher.OnDeletedEventHandler += this.FileSyncService.OnLocallyDeleted;
             this.SystemWatcher.OnChangedEventHandler += this.FileSyncService.OnLocallyChanged;
             this.SystemWatcher.OnRenamedEventHandler += this.FileSyncService.OnLocallyOnRenamed;
+            this.Configuration.OnConfigurationChange += ReloadSyncSystem;
         }
-
-        //private IHandler _FileSyncHandler;
 
         #region Test only constuctors
         public CloudDriveSyncSystem(HttpClient client)
@@ -117,13 +121,21 @@ namespace Cloud_Storage_Desktop_lib
 
         #endregion
 
-        private void _setupStorgeDir()
+        private void SetupSystemWachter()
         {
             this.SystemWatcher.Directory = this._Configuration.StorageLocation;
-            this.FileSyncService.StopAllSync();
-            if (this._ServerConnection.CheckIfAuthirized())
-                this.FileSyncService.StartSync();
         }
+
+        private void ReloadSyncSystem()
+        {
+            this.FileSyncService.StopAllSync();
+            this.FileSyncService.ResetSync();
+            SetupSystemWachter();
+            SetupSererConeciotn();
+            this.FileSyncService.StartSync();
+        }
+
+        private void _setupStorgeDir() { }
 
         public void SetStorageLocation(string dir)
         {

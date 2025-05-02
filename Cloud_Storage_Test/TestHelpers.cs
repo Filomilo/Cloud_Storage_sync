@@ -72,6 +72,8 @@ public class TestConfig : IConfiguration
 
     public void SaveConfiguration() { }
 
+    public event ConfigurationChange? OnConfigurationChange;
+
     public TestConfig() { }
 
     public TestConfig(string storageLocation)
@@ -231,9 +233,14 @@ namespace Cloud_Storage_Test
                 + $"dummy{i}\\";
         }
 
-        public static string GetNewTmpDir(string fodlerName)
+        public static string GetNewTmpDir(string fodlerName, bool shoudlCreate = false)
         {
-            return TmpDirecotry + fodlerName + "\\";
+            String path = TmpDirecotry + fodlerName + "\\";
+            if (shoudlCreate)
+            {
+                Directory.CreateDirectory(path);
+            }
+            return path;
         }
 
         public static IServerConnection getTestServerConnetion()

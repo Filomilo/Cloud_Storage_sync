@@ -107,7 +107,7 @@ namespace Cloud_Storage_Desktop_lib.Services
         public void StartSync()
         {
             logger.LogInformation("Start Syncing");
-            _clientChainOfResponsibilityRepository.InitlalSyncHandler.Handle(null);
+            _clientChainOfResponsibilityRepository.InitlalLocalySyncHandler.Handle(null);
             _taskRunController.Active = true;
         }
 
@@ -139,6 +139,12 @@ namespace Cloud_Storage_Desktop_lib.Services
         public SyncState State
         {
             get { return _state; }
+        }
+
+        public void ResetSync()
+        {
+            this._taskRunController.CancelAllTasks();
+            this._fileRepositoryService.Reset();
         }
 
         public void OnLocallyOnRenamed(RenamedEventArgs args)
