@@ -30,7 +30,7 @@ namespace Cloud_Storage_Common
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Console()
-                .WriteTo.File(getLogFilePath())
+                .WriteTo.File(getLogFilePath(), shared: true)
                 .CreateLogger();
         }
 
