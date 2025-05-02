@@ -61,6 +61,7 @@ namespace Cloud_Storage_Desktop_lib.Services
         {
             int AimTasks = 50;
             int activatedTasks = 0;
+            _controller.Active = true;
 
             for (int i = 0; i < 50; i++)
             {
@@ -75,6 +76,7 @@ namespace Cloud_Storage_Desktop_lib.Services
                     )
                 );
             }
+
             Thread.Sleep(100);
             Assert.That(activatedTasks == _configuration.MaxStimulationsFileSync);
             Assert.That(_controller.ActiveTasksCount == _configuration.MaxStimulationsFileSync);

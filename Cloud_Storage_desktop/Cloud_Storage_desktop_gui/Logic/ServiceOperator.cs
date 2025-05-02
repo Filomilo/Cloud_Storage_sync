@@ -106,7 +106,7 @@ namespace Cloud_Storage_desktop.Logic
             if (IsServiceRunning())
                 StopService();
             runServiceOperation("delete");
-            Awaiters.AwaitTrue(() => !Exist);
+            Awaiters.AwaitTrue(() => !Exist, 5000);
         }
     }
 }

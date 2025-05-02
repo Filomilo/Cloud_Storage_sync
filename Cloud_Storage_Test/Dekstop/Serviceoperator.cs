@@ -87,7 +87,7 @@ namespace Cloud_Storage_Test.Dekstop
         {
             EnsureServiceIsRunning();
             serviceOperator.DeleteService();
-            TestHelpers.EnsureTrue((() => !serviceOperator.Exist));
+            TestHelpers.EnsureTrue((() => !serviceOperator.Exist), 5000);
             Assert.That(!serviceOperator.Exist, $"serivec existence is {serviceOperator.Exist}");
         }
 

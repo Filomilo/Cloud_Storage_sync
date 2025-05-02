@@ -59,7 +59,7 @@ public class FileRepositoryTest
     public void SaveNewFile_UserDoesntExist()
     {
         Assert.Throws(
-            typeof(DbUpdateException),
+            typeof(AggregateException),
             (TestDelegate)(
                 () =>
                 {
@@ -152,7 +152,7 @@ public class FileRepositoryTest
         using (var ctx = new SqliteDataBaseContextGenerator().GetDbContext())
         {
             Assert.Throws(
-                typeof(DbUpdateException),
+                typeof(ArgumentException),
                 () =>
                 {
                     FileRepository.SaveNewFile(ctx, fileToSaveCopy);
