@@ -1,6 +1,6 @@
 ﻿namespace Cloud_Storage_Desktop_lib.Interfaces
 {
-    public delegate void StorageLocationChangedDelgate(string newLocation);
+    public delegate void ConfigurationChange();
 
     public interface IConfiguration
     {
@@ -11,5 +11,6 @@
 
         void LoadConfiguration();
         void SaveConfiguration();
+        event ConfigurationChange OnConfigurationChange;
     }
 }

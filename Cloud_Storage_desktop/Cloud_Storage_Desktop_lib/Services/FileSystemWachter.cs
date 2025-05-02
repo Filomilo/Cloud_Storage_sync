@@ -88,12 +88,14 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         public void Stop()
         {
-            this._Watcher.Dispose();
+            if (this._Watcher != null)
+                this._Watcher.Dispose();
         }
 
         public void Dispose()
         {
-            this._Watcher.Dispose();
+            if (this._Watcher != null)
+                this._Watcher.Dispose();
         }
     }
 }

@@ -61,8 +61,8 @@ namespace Cloud_Storage_Desktop_lib.Services
         {
             using (var context = GetDbContext())
             {
-                context.Database.EnsureDeleted();
-                context.Database.EnsureCreated();
+                context.Files.RemoveRange(context.Files);
+                context.SaveChanges();
             }
         }
 

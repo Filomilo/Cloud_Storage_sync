@@ -61,14 +61,13 @@ namespace Cloud_Storage_Desktop_lib.Tests
         [Test()]
         public void ServerConnectionTest_incorrect()
         {
-            Assert.Throws<ArgumentException>(() =>
-            {
-                ServerConnection server = new ServerConnection(
-                    "http://localhost:1234",
-                    new TestCredentialMangager(),
-                    new WebSocketWrapper()
-                );
-            });
+            ServerConnection server = new ServerConnection(
+                "http://localhost:1234",
+                new TestCredentialMangager(),
+                new WebSocketWrapper()
+            );
+
+            Assert.That(!server.CheckIfHelathy());
         }
 
         [Test()]

@@ -28,15 +28,24 @@ namespace Cloud_Storage_Desktop_lib
             IWebSocketWrapper webSocketWrapper
         )
         {
-            this._credentialManager = credentialManager;
-            client.BaseAddress = new Uri(ConnetionAdress);
-            this._webSocket = webSocketWrapper;
-            //if (!CheckIfHelathy())
-            //{
-            //    throw new ArgumentException("Server is not healthy");
-            //}
-            _LoadToken();
-            this.ConnectionChangeHandler += UpdateWebsocketOnConnetionChange;
+            if (ConnetionAdress == "")
+                return;
+            try
+            {
+                this._credentialManager = credentialManager;
+                client.BaseAddress = new Uri(ConnetionAdress);
+                this._webSocket = webSocketWrapper;
+                _LoadToken();
+                this.ConnectionChangeHandler += UpdateWebsocketOnConnetionChange;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Coudlnt connect to server");
+                if (this.ConnectionChangeHandler != null)
+                {
+                    this.ConnectionChangeHandler.Invoke(false);
+                }
+            }
         }
 
         public ServerConnection(

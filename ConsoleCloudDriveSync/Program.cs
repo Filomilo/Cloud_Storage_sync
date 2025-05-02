@@ -184,7 +184,9 @@ namespace ConsoleCloudDriveSync
 
             if (Directory.Exists(path))
             {
-                CloudDriveSyncSystem.Instance.SetStorageLocation(path);
+                CloudDriveSyncSystem.Instance.Configuration.StorageLocation = (path);
+
+                CloudDriveSyncSystem.Instance.Configuration.SaveConfiguration();
             }
             else
             {

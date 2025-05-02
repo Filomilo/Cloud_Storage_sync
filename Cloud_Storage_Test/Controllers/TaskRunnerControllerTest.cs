@@ -46,6 +46,8 @@ namespace Cloud_Storage_Desktop_lib.Services
         public void LoadConfiguration() { }
 
         public void SaveConfiguration() { }
+
+        public event ConfigurationChange? OnConfigurationChange;
     }
 
     [TestFixture()]

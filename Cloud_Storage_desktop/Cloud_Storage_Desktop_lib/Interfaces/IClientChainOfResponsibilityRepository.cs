@@ -4,7 +4,8 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
 {
     interface IClientChainOfResponsibilityRepository
     {
-        IHandler InitlalSyncHandler { get; }
+        IHandler InitlalLocalySyncHandler { get; }
+        IHandler InitlalConnectedSyncHandler { get; }
         IHandler OnLocallyFileChangeHandler { get; }
         IHandler OnLocalyFileRenamedHandler { get; }
         IHandler OnLocalyFileDeletedHandler { get; }

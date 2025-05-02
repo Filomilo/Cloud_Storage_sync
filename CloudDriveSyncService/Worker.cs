@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Cloud_Storage_Common;
 using Cloud_Storage_Desktop_lib;
 
@@ -16,6 +17,10 @@ namespace CloudDriveSyncService
         {
             try
             {
+                if (!Debugger.IsAttached)
+                {
+                    Debugger.Launch();
+                }
                 CloudDriveSyncSystem.Instance.Configuration.LoadConfiguration();
                 while (!stoppingToken.IsCancellationRequested) { }
                 CloudDriveSyncSystem.Instance.FileSyncService.StopAllSync();

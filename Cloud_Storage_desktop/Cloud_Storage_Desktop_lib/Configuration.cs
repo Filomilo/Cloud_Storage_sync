@@ -38,6 +38,7 @@ namespace Cloud_Storage_Desktop_lib
             this.StorageLocation = config.StorageLocation;
             this.ApiUrl = config.ApiUrl;
             this.MaxStimulationsFileSync = config.MaxStimulationsFileSync;
+            ActivateOnConfigChange();
         }
 
         public static IConfiguration InitConfig()
@@ -46,11 +47,17 @@ namespace Cloud_Storage_Desktop_lib
             try
             {
                 config.LoadConfiguration();
+                if (config.ApiUrl == null)
+                {
+                    config.ApiUrl = "";
+                    config.SaveConfiguration();
+                }
             }
             catch (Exception ex)
             {
                 config.SaveConfiguration();
             }
+
             return config;
         }
 
@@ -65,7 +72,19 @@ namespace Cloud_Storage_Desktop_lib
             {
                 sw.Write(JsonOperations.jsonFromObject(this));
             }
+
+            ActivateOnConfigChange();
         }
+
+        private void ActivateOnConfigChange()
+        {
+            if (OnConfigurationChange != null)
+            {
+                OnConfigurationChange.Invoke();
+            }
+        }
+
+        public event ConfigurationChange? OnConfigurationChange;
 
         private static string GetConfigurationPath()
         {
