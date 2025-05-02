@@ -1,4 +1,6 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
+using Cloud_Storage_Common;
 using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Services;
@@ -17,6 +19,7 @@ public partial class MainWindow : Window
     private IConfiguration Config;
     private IServerConnection ServerConnection;
     private ICredentialManager CredentialManager;
+    private FileLogWatcher FileLogWatcher;
 
     public MainWindow()
     {
@@ -28,7 +31,39 @@ public partial class MainWindow : Window
         EditedConfig.LoadConfiguration();
         OnConfigChanged();
         OnConfigSaved();
+        InitLogs();
     }
+
+    #region Logs
+
+    private void InitLogs()
+    {
+        TextBoc_logs.Text = "";
+        FileLogWatcher = new FileLogWatcher(CloudDriveLogging.Instance.getLogFilePath());
+        FileLogWatcher.NewLinesAddedHandler += AddLogText;
+        FileLogWatcher.StartWatching();
+    }
+
+    private void AddLogText(string newConetnt)
+    {
+        Dispatcher.InvokeAsync(() =>
+        {
+            TextBoc_logs.Text += newConetnt;
+        });
+        ;
+    }
+
+    private void TextBoc_logs_OnTextChanged(object sender, TextChangedEventArgs e)
+    {
+        Dispatcher.InvokeAsync(() =>
+        {
+            ScrolViewr_logs.UpdateLayout();
+            ScrolViewr_logs.ScrollToEnd();
+            TextBoc_logs.ScrollToEnd();
+        });
+    }
+
+    #endregion
 
     #region Server Connction
 

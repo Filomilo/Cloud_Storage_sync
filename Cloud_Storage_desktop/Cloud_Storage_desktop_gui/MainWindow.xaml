@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Cloud_Storage_desktop"
         mc:Ignorable="d"
-        Title="MainWindow" Height="682" Width="581"   
+        Title="MainWindow" Height="808" Width="1114"   
         MinHeight=" 700" MinWidth="410"
         xmlns:ui="http://schemas.modernwpf.com/2019"
         ui:WindowHelper.UseModernWindowStyle="True">
@@ -79,9 +79,6 @@ HorizontalAlignment="Left" VerticalAlignment="Top"/>
 
             </Grid>
         </GroupBox>
-        <GroupBox BorderBrush="{DynamicResource DynamicTextBrush}" BorderThickness="1" Grid.Column="1" Grid.RowSpan="3" Margin="10,0,0,0" Header="Cloud">
-            <Border BorderBrush="{DynamicResource SystemControlForegroundBaseHighBrush}" BorderThickness="1"/>
-        </GroupBox>
         <GroupBox x:Name="GroupBox_coneciotn" BorderBrush="Black" BorderThickness="1" Grid.Row="1" Margin="0,10,0,0" Header="Connection">
             <Grid>
                 <Grid.RowDefinitions>
@@ -91,23 +88,36 @@ HorizontalAlignment="Left" VerticalAlignment="Top"/>
                 </Grid.RowDefinitions>
 
 
-              
+
 
                 <StackPanel Grid.ColumnSpan="2" HorizontalAlignment="Stretch">
 
                     <Label Content="User:" HorizontalAlignment="Left" VerticalAlignment="Top" />
-                    
+
                     <Label x:Name="Label_ConnectionStatus" Content="[[[Sataus]]]"
                         HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
                 </StackPanel>
-    <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Stretch"
-        >  <Button x:Name="Button_Login" Grid.Row="1" HorizontalAlignment="Stretch" Content="Login
+                <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Stretch"
+        >
+                    <Button x:Name="Button_Login" Grid.Row="1" HorizontalAlignment="Stretch" Content="Login
 " Margin="10,10,10,10" Click="Button_Login_Click" />
-                <Button x:Name="Button_Logout" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" Content="Logout" Margin="10,10,10,10" Click="Button_Logout_Click" />
-                <Button x:Name="Button_Register" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" Content="Register" Margin="10,0,10,0" Click="Button_Register_Click" />
-</StackPanel>
-              
+                    <Button x:Name="Button_Logout" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" Content="Logout" Margin="10,10,10,10" Click="Button_Logout_Click" />
+                    <Button x:Name="Button_Register" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" Content="Register" Margin="10,0,10,0" Click="Button_Register_Click" />
+                </StackPanel>
+
             </Grid>
         </GroupBox>
+        <TabControl Grid.Column="1" Grid.ColumnSpan="4" Grid.RowSpan="4">
+            <TabItem Header="Logs">
+                <Grid Background="#FFE5E5E5">
+                    <ScrollViewer x:Name="ScrolViewr_logs">
+                        <TextBox x:Name="TextBoc_logs" TextWrapping="Wrap" Text="TextBox" IsReadOnly="True" Height="734"  TextChanged="TextBoc_logs_OnTextChanged" />
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Cloud">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>
