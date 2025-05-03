@@ -37,8 +37,7 @@ namespace Cloud_Storage_Desktop_lib
         {
             get { return _Configuration; }
         }
-        private IConfiguration _Configuration =
-            Cloud_Storage_Desktop_lib.Configuration.InitConfig();
+        private IConfiguration _Configuration = ConfigurationFactory.GetConfiguration();
 
         public IFileRepositoryService _FileRepositoryService;
 
@@ -46,7 +45,8 @@ namespace Cloud_Storage_Desktop_lib
         {
             get { return _CredentialManager; }
         }
-        private ICredentialManager _CredentialManager = new CredentialManager();
+        private ICredentialManager _CredentialManager =
+            CredentialManageFactory.GetCredentialManager();
 
         public IFileSyncService FileSyncService;
         public IFIleSystemWatcher SystemWatcher;
@@ -56,17 +56,26 @@ namespace Cloud_Storage_Desktop_lib
         private void SetupSererConeciotn()
         {
             logger.LogTrace($"SetupSererConeciotn");
-            this._ServerConnection = new ServerConnection(
-                this._Configuration.ApiUrl,
-                this.CredentialManager,
-                new WebSocketWrapper()
-            );
+            if (this._ServerConnection == null)
+            {
+                this._ServerConnection = new ServerConnection(
+                    this._Configuration.ApiUrl,
+                    this.CredentialManager,
+                    new WebSocketWrapper()
+                );
+            }
+            else
+            {
+                this._ServerConnection.AdressChange(this._Configuration.ApiUrl);
+            }
         }
 
         private CloudDriveSyncSystem()
         {
             SetupSererConeciotn();
-            this._FileRepositoryService = new FileRepositoryService(new LocalSqlLiteDbGeneraor());
+            this._FileRepositoryService = new FileRepositoryService(
+                DbContextGeneratorFactory.GetContextGenerator()
+            );
             _init();
         }
 

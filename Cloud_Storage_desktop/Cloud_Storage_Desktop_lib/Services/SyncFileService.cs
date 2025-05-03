@@ -34,8 +34,7 @@ namespace Cloud_Storage_Desktop_lib.Services
             this._fileRepositoryService = fileRepositoryService;
 
             this._serverConnection.AuthChangeHandler += onConnnetionChange;
-            this._serverConnection.ServerWerbsocketHadnler +=
-                _serverConnection_ServerWerbsocketHadnler;
+
             this._serverConnection.AuthChangeHandler += onAuthChange;
 
             this._clientChainOfResponsibilityRepository = new ClientChainOfResponsibilityRepository(
@@ -104,6 +103,8 @@ namespace Cloud_Storage_Desktop_lib.Services
             logger.LogInformation($"Connection For sync file serviece change to {state}");
             if (state)
             {
+                this._serverConnection.ServerWerbsocketHadnler +=
+                    _serverConnection_ServerWerbsocketHadnler;
                 _clientChainOfResponsibilityRepository.InitlalConnectedSyncHandler.Handle(null);
             }
 

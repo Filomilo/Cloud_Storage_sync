@@ -5,7 +5,7 @@
     public interface IConfiguration
     {
         string ApiUrl { get; set; }
-        int MaxStimulationsFileSync { get; }
+        int MaxStimulationsFileSync { get; set; }
         string StorageLocation { get; set; }
         string ToString();
 

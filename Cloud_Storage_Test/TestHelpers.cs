@@ -60,6 +60,7 @@ public class TestConfig : IConfiguration
     public int MaxStimulationsFileSync
     {
         get { return 5; }
+        set { }
     }
 
     public string StorageLocation
@@ -432,6 +433,24 @@ namespace Cloud_Storage_Test
         internal static string getEmail()
         {
             return $"test{Guid.NewGuid().ToString().Split("-")[0]}@wp.pl";
+        }
+
+        public static string getEmail(int i)
+        {
+            return $"test{i}@wp.pl";
+        }
+
+        public static void ClearServerDb()
+        {
+            using (
+                Cloud_Storage_Server.Database.AbstractDataBaseContext ctx =
+                    new DatabaseContextSqLite()
+            )
+            {
+                ctx.Files.ExecuteDelete();
+                ctx.Users.ExecuteDelete();
+                ctx.Devices.ExecuteDelete();
+            }
         }
     }
 }

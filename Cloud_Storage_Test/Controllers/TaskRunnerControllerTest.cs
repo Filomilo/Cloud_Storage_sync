@@ -34,6 +34,7 @@ namespace Cloud_Storage_Desktop_lib.Services
         public int MaxStimulationsFileSync
         {
             get { return 5; }
+            set { }
         }
 
         public string DeviceUUID

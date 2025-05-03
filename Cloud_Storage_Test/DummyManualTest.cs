@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Cloud_Storage_Desktop_lib;
+using Cloud_Storage_Desktop_lib.Database;
 using Cloud_Storage_Desktop_lib.Interfaces;
+using Cloud_Storage_Desktop_lib.Services;
 using Cloud_Storage_Server.Database;
 using Microsoft.Win32;
 
@@ -14,14 +16,16 @@ namespace Cloud_Storage_Test
     {
         private static bool isRegistered = false;
 
-        private static string email = "mailwp@wp.pl";
-        private static string password = "password+12313ABC";
+        private static string email = "dummy1@wp.pl";
+        private static string password = "ASda98sdASd70-87A9s65(**&";
         private static object isRegisteredLock = new object();
 
         public static void login(bool register)
         {
             if (register)
             {
+                TestHelpers.ClearServerStorage();
+                TestHelpers.ClearServerDb();
                 isRegistered = true;
                 CloudDriveSyncSystem.Instance.ServerConnection.Register(email, password);
                 return;
@@ -44,13 +48,29 @@ namespace Cloud_Storage_Test
 
         static void setupConifg()
         {
-            IConfiguration config = Configuration.InitConfig();
+            IConfiguration config = ConfigurationFactory.GetConfiguration();
             config.ApiUrl = "http://localhost:5087/";
+            config.MaxStimulationsFileSync = 6;
             config.SaveConfiguration();
         }
 
         public static void startDummy(int i, List<string> startingFiles)
         {
+            DbContextGeneratorFactory.dbType = DBTYPE.INMEM;
+            CredentialManageFactory.type = CREDENTIALMANGGETYPE.INMEMORY_CREDENTIALS;
+            ConfigurationFactory.type = CONFIGURAITON_TYPE.INMEM_CONFIG;
+
+            DateTime now = DateTime.Now;
+            DateTime roundedToMinute = new DateTime(
+                now.Year,
+                now.Month,
+                now.Day,
+                now.Hour,
+                now.Minute,
+                0
+            );
+            email = TestHelpers.getEmail(now.Minute);
+
             setupConifg();
             if (i == 0)
             {

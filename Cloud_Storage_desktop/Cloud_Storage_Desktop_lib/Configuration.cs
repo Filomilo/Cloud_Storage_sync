@@ -72,10 +72,13 @@ namespace Cloud_Storage_Desktop_lib
             {
                 Directory.CreateDirectory(SharedData.GetAppDirectory());
             }
-            using (StreamWriter sw = new StreamWriter(GetConfigurationPath()))
+            Awaiters.AwaitNotThrows(() =>
             {
-                sw.Write(JsonOperations.jsonFromObject(this));
-            }
+                using (StreamWriter sw = new StreamWriter(GetConfigurationPath()))
+                {
+                    sw.Write(JsonOperations.jsonFromObject(this));
+                }
+            });
 
             ActivateOnConfigChange();
         }

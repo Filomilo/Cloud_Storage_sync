@@ -22,7 +22,7 @@ namespace Cloud_Storage_Test
     public class ServiceWrokingTests
     {
         private ServiceOperator serviceOperator;
-        private Configuration configuration;
+        private IConfiguration configuration;
         private string tmpSyncdirectory;
         private IDbContextGenerator localDataBasectxGenreator;
         private IDataBaseContextGenerator ServerContextGenerator;
@@ -40,7 +40,7 @@ namespace Cloud_Storage_Test
                 true
             );
 
-            configuration = new Configuration();
+            configuration = ConfigurationFactory.GetConfiguration();
             configuration.StorageLocation = tmpSyncdirectory;
             configuration.ApiUrl = ServerControlHelpers.Instance.GetIpConnection();
             configuration.MaxStimulationsFileSync = 5;
@@ -48,7 +48,7 @@ namespace Cloud_Storage_Test
 
             ServerConnection serverConnection = new ServerConnection(
                 ServerControlHelpers.Instance.GetIpConnection(),
-                new CredentialManager(),
+                CredentialManageFactory.GetCredentialManager(),
                 new NullWebSocket()
             );
             Assert.DoesNotThrow(
@@ -63,7 +63,7 @@ namespace Cloud_Storage_Test
             );
             serverConnection.Register(TestHelpers.getEmail(), TestHelpers.GetPassoword());
 
-            localDataBasectxGenreator = new LocalSqlLiteDbGeneraor();
+            localDataBasectxGenreator = DbContextGeneratorFactory.GetContextGenerator();
             using (var ctx = localDataBasectxGenreator.GetDbContext())
             {
                 ctx.Files.ExecuteDelete();
@@ -194,6 +194,12 @@ namespace Cloud_Storage_Test
                     );
                 },
                 $"New locaiotn does not have old file \n\n [[\n {LogFileController.GetLogFileContent()}\n]] "
+            );
+
+            Assert.That(
+                FileManager.GetAllFilesInLocation(newSyncPath)[0].GetFileNameANdExtenstion()
+                    == filename,
+                $"File in sync location: [[{FileManager.GetAllFilesInLocation(newSyncPath)[0]}] not [[{filename}]]"
             );
         }
     }

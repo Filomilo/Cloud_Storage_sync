@@ -6,7 +6,8 @@ namespace Cloud_Storage_Desktop_lib.Services.Tests
     [TestFixture()]
     public class CredentialManagerTests
     {
-        private ICredentialManager CredentialManager = new CredentialManager();
+        private ICredentialManager CredentialManager =
+            CredentialManageFactory.GetCredentialManager();
 
         [Test()]
         public void SaveTokenTest()

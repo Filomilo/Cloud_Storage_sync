@@ -76,7 +76,7 @@ namespace Cloud_Storage_Server.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest($"Unkown error happend");
+                return BadRequest($"Unkown error happend [[{ex.Message}]]");
             }
         }
     }

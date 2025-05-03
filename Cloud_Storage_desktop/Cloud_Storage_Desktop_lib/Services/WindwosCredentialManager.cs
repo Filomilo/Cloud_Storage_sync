@@ -18,7 +18,7 @@ namespace Cloud_Storage_Desktop_lib.Services
             {
                 cred.Password = token;
                 cred.Type = CredentialType.Generic;
-                cred.PersistanceType = PersistanceType.Enterprise;
+                cred.PersistanceType = PersistanceType.Session;
                 cred.Target = (target);
                 cred.Save();
             }
