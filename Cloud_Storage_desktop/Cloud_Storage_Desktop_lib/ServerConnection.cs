@@ -293,7 +293,9 @@ namespace Cloud_Storage_Desktop_lib
             if (!response.IsSuccessStatusCode)
             {
                 logger.LogError($"Couldn't login for auth {email}");
-                throw new UnauthorizedAccessException($"invalid login parameters");
+                throw new UnauthorizedAccessException(
+                    $"invalid login parameters::: {response.Content.ReadAsStringAsync().Result}"
+                );
             }
             else
             {
@@ -303,8 +305,13 @@ namespace Cloud_Storage_Desktop_lib
             _LoadToken();
         }
 
+        private bool _authState = false;
+
         private void InovkeAuthChange(bool state)
         {
+            if (_authState == state)
+                return;
+            _authState = state;
             logger.LogTrace($"Auth change: {state}");
             if (this.AuthChangeHandler != null)
             {
@@ -491,6 +498,14 @@ namespace Cloud_Storage_Desktop_lib
         internal void Dispose()
         {
             this.client.Dispose();
+        }
+
+        internal void AdressChange(string apiUrl)
+        {
+            if (this.client.BaseAddress != new Uri(apiUrl))
+            {
+                client.BaseAddress = new Uri(apiUrl);
+            }
         }
     }
 }

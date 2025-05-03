@@ -27,7 +27,7 @@ public partial class MainWindow : Window
         Operator = new ServiceOperator();
         OnSerivceUdpate();
         EditedConfig = (Configuration?)Configuration.InitConfig();
-        CredentialManager = new CredentialManager();
+        CredentialManager = CredentialManageFactory.GetCredentialManager();
         EditedConfig.LoadConfiguration();
         OnConfigChanged();
         OnConfigSaved();
