@@ -129,7 +129,7 @@ using (var scope = app.Services.CreateScope())
     using (var context = contextGeneratorTmp.GetDbContext())
     {
         //context.Database.EnsureDeleted();
-        //context.Database.EnsureCreated();
+        context.Database.EnsureCreated();
     }
 }
 

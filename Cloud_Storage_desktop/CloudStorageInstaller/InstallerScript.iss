@@ -22,12 +22,12 @@ Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
 
-[Code]
-function InitializeSetup: Boolean;
-begin
-  Dependency_AddDotNet80;
-  Result := True;
-end;
+; [Code]
+// function InitializeSetup: Boolean;
+// begin
+  // Dependency_AddDotNet80;
+  // Result := True;
+// end;
 
 
 [Languages]

@@ -74,6 +74,11 @@ namespace Cloud_Storage_Server.Controllers
             {
                 return BadRequest($"User with this email already exist");
             }
+            catch (AggregateException ex)
+            {
+                string allMessages = string.Join(" | ", ex.InnerExceptions.Select(e => e.Message));
+                return BadRequest($"Unkown error happend [[{allMessages}]]");
+            }
             catch (Exception ex)
             {
                 return BadRequest($"Unkown error happend [[{ex.Message}]]");
