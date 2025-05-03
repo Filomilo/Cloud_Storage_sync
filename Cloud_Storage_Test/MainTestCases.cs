@@ -155,6 +155,7 @@ namespace Cloud_Storage_Test
             this.webApplication.Dispose();
             Thread.Sleep(2000);
             TestHelpers.ResetDatabase();
+            TestHelpers.KillDotnetExe();
         }
 
         [Test]

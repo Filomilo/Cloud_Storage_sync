@@ -104,7 +104,7 @@ namespace Cloud_Storage_Desktop_lib
             CreateServerStatusWatcher();
             this.client = client;
             this._credentialManager = credentialManager;
-            this.ConnectionChangeHandler += UpdateWebsocketOnConnetionChange;
+            this.AuthChangeHandler += UpdateWebsocketOnConnetionChange;
             this.ConnectionChangeHandler += LoadTokenOnConnectionChnage;
 
             this._webSocket = webSocketWrapper;

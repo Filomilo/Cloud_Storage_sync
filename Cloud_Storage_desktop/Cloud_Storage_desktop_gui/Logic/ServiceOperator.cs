@@ -48,7 +48,7 @@ namespace Cloud_Storage_desktop.Logic
                 5000
             );
 
-            Awaiters.AwaitTrue(() => IsServiceRunning());
+            Awaiters.AwaitTrue(() => IsServiceRunning(), 5000);
         }
 
         private void runServiceOperation(string operations, bool includebinpath = true)

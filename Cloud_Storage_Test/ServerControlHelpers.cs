@@ -52,6 +52,7 @@ namespace Cloud_Storage_Test
             if (process != null)
             {
                 process.Kill();
+                process.WaitForExit();
             }
         }
 

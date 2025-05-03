@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Net.WebSockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Interfaces;
@@ -215,6 +216,7 @@ namespace Cloud_Storage_Test
 {
     class TestHelpers
     {
+        public static ILogger _Logger = CloudDriveLogging.Instance.GetLogger("TestHelpers");
         public static IServerConfig serverConfig = new ServerConfig();
 
         public static string ExampleDataDirectory =
@@ -450,6 +452,25 @@ namespace Cloud_Storage_Test
                 ctx.Files.ExecuteDelete();
                 ctx.Users.ExecuteDelete();
                 ctx.Devices.ExecuteDelete();
+            }
+        }
+
+        public static void KillDotnetExe()
+        {
+            try
+            {
+                foreach (Process proc in Process.GetProcessesByName("dotnet"))
+                {
+                    if (proc.Id != Process.GetCurrentProcess().Id)
+                    {
+                        proc.Kill();
+                        proc.WaitForExit();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _Logger.LogError($"Eror killign donet exe : [[{ex.Message}]]");
             }
         }
     }

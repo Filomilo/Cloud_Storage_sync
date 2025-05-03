@@ -108,6 +108,7 @@ namespace Cloud_Storage_Test
             LogFileController.ClearlogFile();
             logger.LogDebug("Remove tmp dir");
             TestHelpers.RemoveTmpDirectory();
+            TestHelpers.KillDotnetExe();
         }
 
         [Test]
