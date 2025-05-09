@@ -110,9 +110,9 @@ HorizontalAlignment="Left" VerticalAlignment="Top"/>
         <TabControl Grid.Column="1" Grid.ColumnSpan="4" Grid.RowSpan="4">
             <TabItem Header="Logs">
                 <Grid Background="#FFE5E5E5">
-                    <ScrollViewer x:Name="ScrolViewr_logs">
-                        <TextBox x:Name="TextBoc_logs" TextWrapping="Wrap" Text="TextBox" IsReadOnly="True" Height="734"  TextChanged="TextBoc_logs_OnTextChanged" />
-                    </ScrollViewer>
+                    <Grid x:Name="ScrolViewr_logs">
+                        <TextBox    VerticalScrollBarVisibility="Auto" x:Name="TextBoc_logs" TextWrapping="Wrap" Text="TextBox" IsReadOnly="True"  TextChanged="TextBoc_logs_OnTextChanged" Margin="0,0,0,-2" />
+                    </Grid>
                 </Grid>
             </TabItem>
             <TabItem Header="Cloud">

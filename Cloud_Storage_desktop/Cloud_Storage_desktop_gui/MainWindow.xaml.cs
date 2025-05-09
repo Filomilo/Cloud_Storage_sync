@@ -46,21 +46,20 @@ public partial class MainWindow : Window
 
     private void AddLogText(string newConetnt)
     {
-        Dispatcher.InvokeAsync(() =>
-        {
-            TextBoc_logs.Text += newConetnt;
-        });
+        Dispatcher
+            .InvokeAsync(() =>
+            {
+                TextBoc_logs.AppendText(newConetnt);
+                //TextBoc_logs.UpdateLayout();
+                TextBoc_logs.ScrollToEnd();
+            })
+            .Wait(new TimeSpan(0, 0, 0, 1));
         ;
     }
 
     private void TextBoc_logs_OnTextChanged(object sender, TextChangedEventArgs e)
     {
-        Dispatcher.InvokeAsync(() =>
-        {
-            ScrolViewr_logs.UpdateLayout();
-            ScrolViewr_logs.ScrollToEnd();
-            TextBoc_logs.ScrollToEnd();
-        });
+        Dispatcher.InvokeAsync(() => { });
     }
 
     #endregion
