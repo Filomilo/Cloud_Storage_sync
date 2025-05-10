@@ -26,5 +26,7 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
         WebSocketState WebSocketState { get; }
         void DeleteFile(string relativePath);
         void SetFileVersion(Guid id, ulong version);
+        void AdressChange(string apiUrl);
+        void Dispose();
     }
 }

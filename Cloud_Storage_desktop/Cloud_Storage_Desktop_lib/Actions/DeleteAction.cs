@@ -21,6 +21,15 @@ namespace Cloud_Storage_Desktop_lib.Actions
             get { return _deleteAction; }
         }
 
+        private void DelteDirecetoryIfEmpty(string pathToDeletedFile)
+        {
+            string direcotry = Path.GetDirectoryName(pathToDeletedFile);
+            if (!Directory.GetFiles(direcotry).Any())
+            {
+                Directory.Delete(direcotry);
+            }
+        }
+
         public DeleteAction(
             IServerConnection serverConnection,
             IConfiguration configuration,
@@ -35,6 +44,7 @@ namespace Cloud_Storage_Desktop_lib.Actions
                     try
                     {
                         FileManager.DeleteFile(file);
+                        DelteDirecetoryIfEmpty(file);
                         //fileRepositoryService.DeleteFileByPath(
                         //    syncFileData.Path,
                         //    syncFileData.Name,

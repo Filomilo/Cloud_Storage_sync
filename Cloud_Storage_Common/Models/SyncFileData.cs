@@ -27,10 +27,6 @@ namespace Cloud_Storage_Common.Models
         }
 
         [Required]
-        [RegularExpression(
-            $"{FileManager.RegexRelativePathValidation}",
-            ErrorMessage = "Path string doesn't match path syntax"
-        )]
         public virtual string Path { get; set; }
 
         [Required]
@@ -41,7 +37,7 @@ namespace Cloud_Storage_Common.Models
 
         public override string ToString()
         {
-            return $"{Path}{Name}{Extenstion}";
+            return $"{Path}{Extenstion}";
         }
 
         public int CompareTo(object? obj)
@@ -56,7 +52,7 @@ namespace Cloud_Storage_Common.Models
 
         public string GetRealativePath()
         {
-            return $"{this.Path}{this.Name}{this.Extenstion}";
+            return $"{System.IO.Path.Combine(this.Path, this.Name)}{this.Extenstion}";
         }
 
         public string GetFileNameANdExtenstion()
@@ -80,10 +76,6 @@ namespace Cloud_Storage_Common.Models
     public class UploudFileData : FileData
     {
         [Required]
-        [RegularExpression(
-            $"{FileManager.RegexRelativePathValidation}",
-            ErrorMessage = "Path string doesn't match path syntax"
-        )]
         public override string Path { get; set; }
 
         [Required]

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Cloud_Storage_Common;
 using NUnit.Framework.Constraints;
+using TimeoutException = System.TimeoutException;
 
 namespace Cloud_Storage_desktop.Logic
 {
@@ -38,20 +39,28 @@ namespace Cloud_Storage_desktop.Logic
             return ServiceStatus == ServiceControllerStatus.Running;
         }
 
-        public void StartService()
+        public async Task StartService()
         {
-            Awaiters.AwaitNotThrows(
-                () =>
-                {
-                    runServiceOperation("start", false);
-                },
-                5000
-            );
+            try
+            {
+                Awaiters.AwaitNotThrows(
+                    () =>
+                    {
+                        runServiceOperation("start", false);
+                    },
+                    5000
+                );
 
-            Awaiters.AwaitTrue(() => IsServiceRunning(), 5000);
+                Awaiters.AwaitTrue(() => IsServiceRunning(), 5000);
+            }
+            catch (TimeoutException ex)
+            {
+                this.StopService();
+                throw new Exception("Could not start service specifed amount of time");
+            }
         }
 
-        private void runServiceOperation(string operations, bool includebinpath = true)
+        private async Task runServiceOperation(string operations, bool includebinpath = true)
         {
             string program = "sc.exe";
             string args =
@@ -88,32 +97,55 @@ namespace Cloud_Storage_desktop.Logic
             }
         }
 
-        public void CreateService()
+        public async Task CreateService()
         {
             runServiceOperation("create");
-            Awaiters.AwaitTrue(() => Exist);
+            try
+            {
+                Awaiters.AwaitTrue(() => Exist);
+            }
+            catch (TimeoutException ex)
+            {
+                this.DeleteService();
+                throw new Exception("Couldn't start servce within sepcifed aomunt of time");
+            }
         }
 
-        public void UpdateService()
+        public async Task UpdateService()
         {
-            this.StopService();
-            this.DeleteService();
-            this.CreateService();
-            this.StartService();
+            await this.StopService();
+            await this.DeleteService();
+            await this.CreateService();
+            await this.StartService();
         }
 
-        public void StopService()
+        public async Task StopService()
         {
             runServiceOperation("stop", false);
-            Awaiters.AwaitTrue(() => !IsServiceRunning());
+            try
+            {
+                Awaiters.AwaitTrue(() => !IsServiceRunning());
+            }
+            catch (TimeoutException ex)
+            {
+                throw new Exception("Couldnt 'stop serivce within specifed amount of time");
+            }
         }
 
-        public void DeleteService()
+        public async Task DeleteService()
         {
-            if (IsServiceRunning())
-                StopService();
-            runServiceOperation("delete");
-            Awaiters.AwaitTrue(() => !Exist, 5000);
+            try
+            {
+                if (IsServiceRunning())
+                    StopService();
+                runServiceOperation("delete");
+                Awaiters.AwaitTrue(() => !Exist, 5000);
+            }
+            catch (TimeoutException ex)
+            {
+                throw new Exception("Couldn't delete service within sepcifed amount of time");
+                ;
+            }
         }
     }
 }

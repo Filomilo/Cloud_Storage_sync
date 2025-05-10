@@ -313,9 +313,14 @@ namespace Cloud_Storage_Test
             string fileName =
                 Path.GetFileName(Path.GetFileNameWithoutExtension(Path.GetTempFileName()))
                 + $"_{i}.tmp";
-            FileStream newlyCreatedFile = File.Create(dir + fileName);
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+            FileStream newlyCreatedFile = File.Create(Path.Combine(dir, fileName));
             newlyCreatedFile.Write(Encoding.ASCII.GetBytes(fileContent));
             newlyCreatedFile.Close();
+
             return fileName;
         }
 
@@ -325,7 +330,7 @@ namespace Cloud_Storage_Test
         {
             if (Debugger.IsAttached)
             {
-                timeout *= 100;
+                timeout *= 10;
             }
 
             bool state = false;

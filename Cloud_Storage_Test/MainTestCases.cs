@@ -1074,6 +1074,183 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
+        public void Create_And_Sync_Folder_structure_With_Empty_files()
+        {
+            #region Ensure connected and empty
+            ConnectBothDevices();
+
+            #endregion
+
+            #region Create New File
+            String createdFileName = this.AddTMpFiles(
+                    1,
+                    this._Client1Config,
+                    new string[] { "folder1", "folder2", "folder3" }
+                )
+                .FirstOrDefault();
+
+            #endregion
+
+            #region Ensure second device also has file
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        return _localFileRepositoryService1.GetAllFiles().Count() > 0;
+                    });
+                },
+                $"Locla repostir should have osme file"
+            );
+
+            string serverFclient1 = this
+                ._localFileRepositoryService1.GetAllFiles()
+                .FirstOrDefault()
+                .Hash;
+            string newDevieFileHAs = "";
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        string newDevieFileHAs = FileManager.GetHashOfFile(
+                            Path.Join(_Client2Config.StorageLocation, createdFileName)
+                        );
+                        return serverFclient1.Equals(newDevieFileHAs);
+                    });
+                },
+                $"new device file hash \n[[{newDevieFileHAs}]]\n IS not the same as file hash on server \n[[{serverFclient1}]]\n"
+            );
+
+            #endregion
+
+
+
+            #region reNmae New File
+
+            string newName = "newName";
+            File.Move(
+                $"{Path.Combine(_Client1Config.StorageLocation, createdFileName)}",
+                $"{Path.Combine(_Client1Config.StorageLocation, Path.Combine(Path.GetDirectoryName(createdFileName), newName))}.tmp"
+            );
+
+            #endregion
+
+            #region Ensure Correct finsihs state
+
+
+            #region File repository 1 should have new version of file in repository
+
+
+            Assert.That(
+                _localFileRepositoryService1.GetAllFiles().Count() == 1,
+                $"Local file repository should only one elements but has {_localFileRepositoryService1.GetAllFiles().Count()}"
+            );
+            LocalFileData localFileData = null;
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            localFileData = _localFileRepositoryService1
+                                .GetAllFiles()
+                                .FirstOrDefault();
+                            return localFileData != null && localFileData.Name == newName;
+                        },
+                        10000
+                    );
+                },
+                $"File name in database [[{_localFileRepositoryService1
+                    .GetAllFiles()
+                    .FirstOrDefault().Name}]] is not equal to file name in folder [[{newName}]]"
+            );
+
+            Assert.That(
+                localFileData.Extenstion == ".tmp",
+                $"File name in database{localFileData.Extenstion} is not equal to file name in folder {Path.GetExtension(createdFileName)}"
+            );
+            string pathToChangeNameFile =
+                _Client1Config.StorageLocation
+                + Path.Combine("folder1", "folder2", "folder3", "newName.tmp");
+            Assert.That(
+                localFileData.Hash == FileManager.GetHashOfFile(pathToChangeNameFile),
+                $"File hash in database {localFileData.Hash} is not equal to file hash on disk {FileManager.GetHashOfFile(pathToChangeNameFile)}"
+            );
+            Assert.That(
+                localFileData.Version == 1,
+                $"New file verion should be one but its [[{localFileData.Version}]]"
+            );
+
+            #endregion
+
+            #region Server shoudl 2 file version one with old name one with new name and all devices owners
+
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        return GetAllFilesOnServer().Count == 2;
+                    });
+                },
+                $"File entry on server database should be 2 but there are [[{GetAllFilesOnServer().Count}]]"
+            );
+
+            Assert.That(
+                GetAllFilesOnServer().Where(x => x.Name == "newName").Count() == 1,
+                $"File entry on server database should be 1 with new name but there are [[{GetAllFilesOnServer().Where(x => x.Name == "newName").Count()}]]"
+            );
+
+            SyncFileData fileWithNewNameSyncData = GetAllFilesOnServer()
+                .FirstOrDefault(x => x.Name == "newName");
+
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        fileWithNewNameSyncData = GetAllFilesOnServer()
+                            .FirstOrDefault(x => x.Name == "newName");
+                        return fileWithNewNameSyncData.Version == 1;
+                    });
+                },
+                $"new file should have a new version but has [[{fileWithNewNameSyncData.Version}]] == "
+            );
+
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        fileWithNewNameSyncData = GetAllFilesOnServer()
+                            .FirstOrDefault(x => x.Name == "newName");
+                        return fileWithNewNameSyncData.DeviceOwner.Count == 2;
+                    });
+                },
+                $"File should have 2 owners but has [[{fileWithNewNameSyncData.DeviceOwner.Count}]]"
+            );
+
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        return GetAllFilesOnServer().Where(x => x.DeviceOwner.Count == 0).Count()
+                            == 1;
+                    });
+                },
+                $"There should be one file enrtry without device owner but there :: \n [[\n{String.Join(", \n", GetAllFilesOnServer())} \n]]"
+            );
+
+            #endregion
+
+            BothDevicesShouldHAveTheSameData();
+
+            #endregion
+        }
+
+        [Test]
         public void Create_File_And_rename_it()
         {
             #region Ensure connected and empty
@@ -1483,7 +1660,11 @@ namespace Cloud_Storage_Test
             );
         }
 
-        private List<string> AddTMpFiles(int amountOfFiles, IConfiguration config)
+        private List<string> AddTMpFiles(
+            int amountOfFiles,
+            IConfiguration config,
+            string[] direcotryStructure = null
+        )
         {
             List<string> filesAdded;
             var getFileContent = (int num) =>
@@ -1492,12 +1673,35 @@ namespace Cloud_Storage_Test
             };
 
             filesAdded = new List<string>();
+
+            string direcotry = config.StorageLocation;
+            if (direcotryStructure != null)
+            {
+                foreach (string dir in direcotryStructure)
+                {
+                    direcotry = Path.Join(direcotry, dir);
+                }
+            }
+
             for (int i = 0; i < amountOfFiles; i++)
             {
-                filesAdded.Add(
-                    TestHelpers.CreateTmpFile(config.StorageLocation, getFileContent(i), i)
-                );
+                filesAdded.Add(TestHelpers.CreateTmpFile(direcotry, "", i));
             }
+            filesAdded = filesAdded
+                .Select(x =>
+                {
+                    string direcotry = "";
+                    if (direcotryStructure != null)
+                    {
+                        foreach (string dir in direcotryStructure)
+                        {
+                            direcotry = Path.Join(direcotry, dir);
+                        }
+                    }
+                    ;
+                    return Path.Combine(direcotry, x);
+                })
+                .ToList();
 
             return filesAdded;
         }

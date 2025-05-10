@@ -76,10 +76,13 @@ namespace Cloud_Storage_Test
             {
                 setupDb();
             }
-            TestHelpers.EnsureNotThrows(() =>
-            {
-                CloudDriveSyncSystem.Instance.ServerConnection.CheckIfHelathy();
-            });
+            TestHelpers.EnsureNotThrows(
+                () =>
+                {
+                    CloudDriveSyncSystem.Instance.ServerConnection.CheckIfHelathy();
+                },
+                5000
+            );
             string path = TestHelpers.getDummyLocation(i);
             if (Directory.Exists(path))
             {
@@ -89,7 +92,14 @@ namespace Cloud_Storage_Test
             foreach (string file in startingFiles)
             {
                 string filePath = Path.Combine(path, file);
-                using (var fileStream = File.OpenWrite(filePath))
+                string dirPth = Path.GetDirectoryName(filePath);
+                if (!Directory.Exists(dirPth))
+                {
+                    Directory.CreateDirectory(dirPth);
+                }
+                using (
+                    var fileStream = File.Open(filePath, FileMode.OpenOrCreate, FileAccess.Write)
+                )
                 {
                     fileStream.Write(new byte[100], 0, 100);
                 }
