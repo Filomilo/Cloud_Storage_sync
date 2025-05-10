@@ -18,10 +18,10 @@ namespace CloudDriveSyncService
             _logger.LogInformation("Start wokrker taks");
             try
             {
-                if (!Debugger.IsAttached)
-                {
-                    Debugger.Launch();
-                }
+                //if (!Debugger.IsAttached)
+                //{
+                //    Debugger.Launch();
+                //}
                 CloudDriveSyncSystem.Instance.Configuration.LoadConfiguration();
                 while (!stoppingToken.IsCancellationRequested) { }
 
