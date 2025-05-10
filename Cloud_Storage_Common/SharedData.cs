@@ -10,8 +10,10 @@ namespace Cloud_Storage_Common
     {
         public static string GetAppDirectory()
         {
-            return Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)
-                + "\\CloudDriveSync";
+            return Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                "CloudDriveSync"
+            );
         }
     }
 }

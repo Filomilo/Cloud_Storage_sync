@@ -52,7 +52,7 @@ namespace Cloud_Storage_Server.Services
 
         public void CreateDirectory(string path)
         {
-            Directory.CreateDirectory(_basePath + TrimFileName(path));
+            Directory.CreateDirectory(Path.Combine(_basePath, TrimFileName(path)));
         }
 
         private static string TrimFileName(string pathFile)

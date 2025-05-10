@@ -68,8 +68,10 @@ namespace Cloud_Storage_Common.Models
         public string getFullFilePathForBasePath(string basepath)
         {
             _logger.LogTrace($"getFullFilePathForBasePath");
-            return System.IO.Path.GetFullPath(this.Path, basepath)
-                + $"\\{this.Name}{this.Extenstion}";
+            return System.IO.Path.Combine(
+                System.IO.Path.GetFullPath(this.Path, basepath),
+                $"{this.Name}{this.Extenstion}"
+            );
         }
     }
 

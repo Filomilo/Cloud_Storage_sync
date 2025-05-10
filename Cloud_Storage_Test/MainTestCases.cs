@@ -390,16 +390,26 @@ namespace Cloud_Storage_Test
 
         private void AmountOfFilesOnServerStorage(int mount)
         {
-            Assert.DoesNotThrow(() =>
-            {
-                TestHelpers.EnsureTrue(() =>
+            int amountOfFiles = -1;
+            Assert.DoesNotThrow(
+                () =>
                 {
-                    List<FileData> files = FileManager.GetAllFilesInLocation(
-                        TestHelpers.GetSeverStoragePath()
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            List<FileData> files = FileManager.GetAllFilesInLocation(
+                                TestHelpers.GetSeverStoragePath()
+                            );
+                            amountOfFiles = files.Count;
+                            return amountOfFiles == mount;
+                        },
+                        5000
                     );
-                    return files.Count == mount;
-                });
-            });
+                },
+                $"Server shuld conatin [[{mount}]] but has [[{FileManager.GetAllFilesInLocation(
+                    TestHelpers.GetSeverStoragePath()
+                ).Count}]]"
+            );
         }
 
         private void EnsureServerDataBaseState(SyncFileData[]? excpectedFilesOnServer)
@@ -1875,13 +1885,18 @@ namespace Cloud_Storage_Test
             Assert.DoesNotThrow(
                 () =>
                 {
-                    TestHelpers.EnsureTrue(() =>
-                    {
-                        return this
-                            ._localFileRepositoryService1.GetAllFiles()
-                            .Order()
-                            .SequenceEqual(this._localFileRepositoryService2.GetAllFiles().Order());
-                    });
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            return this
+                                ._localFileRepositoryService1.GetAllFiles()
+                                .Order()
+                                .SequenceEqual(
+                                    this._localFileRepositoryService2.GetAllFiles().Order()
+                                );
+                        },
+                        50000
+                    );
                 },
                 $"Both local repositories should bew equal but are \n [[{String.Join(", \n", this._localFileRepositoryService1.GetAllFiles())}  \n]] \n != \n[[{String.Join(", \n", this._localFileRepositoryService2.GetAllFiles())} \n]]"
             );

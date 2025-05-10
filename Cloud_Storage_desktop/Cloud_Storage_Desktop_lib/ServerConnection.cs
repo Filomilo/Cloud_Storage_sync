@@ -18,7 +18,7 @@ namespace Cloud_Storage_Desktop_lib
         private static ILogger logger = CloudDriveLogging.Instance.GetLogger("ServerConnection");
         HttpClient client = new HttpClient();
         private IWebSocketWrapper _webSocket;
-        private Thread WsThread;
+        private Task WsThread;
         private CancellationTokenSource _cts = new CancellationTokenSource();
         private ICredentialManager _credentialManager;
         private Task serverWatcherTask;
@@ -27,6 +27,11 @@ namespace Cloud_Storage_Desktop_lib
 
         private void CreateServerStatusWatcher()
         {
+            if (serverWatcherTask != null)
+            {
+                DisposeConnectionStatusWatch();
+            }
+
             cancellationTokenSourceServerWatcher = new CancellationTokenSource();
             serverWatcherTask = Task.Run(ServerWarcher, cancellationTokenSourceServerWatcher.Token);
         }
@@ -154,7 +159,7 @@ namespace Cloud_Storage_Desktop_lib
             string token = this._credentialManager.GetToken();
             if (token != null && token.Length > 0)
             {
-                WsThread = new Thread(() => ConnectAndListen(uri, token));
+                WsThread = new Task(() => ConnectAndListen(uri, token));
                 WsThread.Start();
             }
         }
@@ -499,8 +504,17 @@ namespace Cloud_Storage_Desktop_lib
             return stream;
         }
 
+        private void DisposeConnectionStatusWatch()
+        {
+            this.cancellationTokenSourceServerWatcher.Cancel();
+            this.serverWatcherTask.Wait(5000);
+        }
+
         public void Dispose()
         {
+            DisposeConnectionStatusWatch();
+            this._webSocket.Close(WebSocketCloseStatus.Empty, "close", new CancellationToken());
+            this.WsThread.Wait(5000);
             this.client.Dispose();
         }
 

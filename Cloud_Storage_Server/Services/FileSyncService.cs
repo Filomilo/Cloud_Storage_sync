@@ -137,7 +137,7 @@ namespace Cloud_Storage_Server.Services
 
         private static string GetRealtivePathForFile(User user, SyncFileData data)
         {
-            return $"{user.id}\\{data.Id}";
+            return Path.Combine($"{user.id}", $"{data.Id}");
         }
 
         public Stream DownloadFile(User user, SyncFileData data)

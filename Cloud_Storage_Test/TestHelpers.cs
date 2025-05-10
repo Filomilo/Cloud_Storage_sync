@@ -422,7 +422,10 @@ namespace Cloud_Storage_Test
 
         public static string GetSeverStoragePath()
         {
-            return Directory.GetCurrentDirectory() + "\\dataStorage\\";
+            String path = Path.Combine(Directory.GetCurrentDirectory(), "dataStorage");
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+            return path;
         }
 
         public static void ClearServerStorage()
@@ -462,16 +465,22 @@ namespace Cloud_Storage_Test
 
         public static void KillDotnetExe()
         {
+            Process thisProcess = null;
             try
             {
                 foreach (Process proc in Process.GetProcessesByName("dotnet"))
                 {
                     if (proc.Id != Process.GetCurrentProcess().Id)
                     {
-                        proc.Kill();
+                        proc.Kill(true);
                         proc.WaitForExit();
                     }
+                    else
+                    {
+                        thisProcess = proc;
+                    }
                 }
+                //thisProcess.Kill();
             }
             catch (Exception ex)
             {
