@@ -19,6 +19,7 @@ namespace Cloud_Storage_Common
         public static FileStream WaitForFile(
             string filename,
             FileAccess acces,
+            FileShare fileshare = FileShare.Read,
             int retryCount = 100,
             int delayMilliseconds = 500
         )
@@ -32,7 +33,8 @@ namespace Cloud_Storage_Common
                         acces == FileAccess.Write || acces == FileAccess.ReadWrite
                             ? FileMode.OpenOrCreate
                             : FileMode.Open,
-                        acces
+                        acces,
+                        fileshare
                     );
                 }
                 catch (IOException)
@@ -147,7 +149,15 @@ namespace Cloud_Storage_Common
         {
             using (var sha256 = SHA256.Create())
             {
-                using (var stream = FileManager.WaitForFile(filename, FileAccess.Read))
+                using (
+                    var stream = FileManager.WaitForFile(
+                        filename,
+                        FileAccess.Read,
+                        FileShare.ReadWrite,
+                        100,
+                        5000
+                    )
+                )
                 {
                     Logger.LogTrace($"Gettign hash for file [[{filename}]]");
                     return Convert.ToBase64String(sha256.ComputeHash(stream));
@@ -183,7 +193,7 @@ namespace Cloud_Storage_Common
         public static FileStream GetStreamForFile(string fiePath, int ms = 500000)
         {
             Logger.LogTrace($"GetStreamForFile:: [[{fiePath}]]");
-            return WaitForFile(fiePath, FileAccess.ReadWrite, 100, ms / 100);
+            return WaitForFile(fiePath, FileAccess.ReadWrite, FileShare.ReadWrite, 100, ms / 100);
         }
 
         public static void DeleteFile(string v)
@@ -220,7 +230,7 @@ namespace Cloud_Storage_Common
             string relativePAth = GetRealtivePathToFile(path, configurationStorageLocation);
             string filename = Path.GetFileNameWithoutExtension(path);
             string ext = Path.GetExtension(path);
-            return $"{relativePAth}{filename}{ext}";
+            return Path.Combine(relativePAth, $"{filename}{ext}");
         }
 
         public static void MoveFileRealitve(

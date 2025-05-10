@@ -16,7 +16,7 @@ DefaultDirName={autopf}\ClouddriveSync
 DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-OutputDir=F:\projects\Cloud_Storage_sync\Cloud_Storage_desktop\CloudStorageInstaller\Output
+OutputDir=Output
 OutputBaseFilename=CloudDriveSetup
 Compression=lzma
 SolidCompression=yes
@@ -37,8 +37,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "F:\projects\Cloud_Storage_sync\Cloud_Storage_desktop\Cloud_Storage_desktop_gui\bin\Release\net8.0-windows\win-x64\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "F:\projects\Cloud_Storage_sync\Cloud_Storage_desktop\Cloud_Storage_desktop_gui\bin\Release\net8.0-windows\win-x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\..\Cloud_Storage_desktop\Cloud_Storage_desktop_gui\bin\Release\net8.0-windows\win-x64\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\Cloud_Storage_desktop\Cloud_Storage_desktop_gui\bin\Release\net8.0-windows\win-x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

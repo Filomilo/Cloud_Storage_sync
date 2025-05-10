@@ -37,6 +37,7 @@ namespace Cloud_Storage_Desktop_lib.Services
                 _Watcher.Deleted += _OnDeleted;
                 _Watcher.Renamed += _OnRenamed;
                 _Watcher.Error += _OnError;
+                _Watcher.Created += OnCreated;
                 _Watcher.IncludeSubdirectories = true;
                 _Watcher.EnableRaisingEvents = true;
 
@@ -46,8 +47,25 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         private static ulong onChangeCounterTmp = 0;
 
+        private void OnCreated(object sender, FileSystemEventArgs e)
+        {
+            if (!File.Exists(e.FullPath))
+                return;
+            if (this.OnChangedEventHandler != null)
+            {
+                if (e.ChangeType == WatcherChangeTypes.Created)
+                    this.OnChangedEventHandler.Invoke(e);
+            }
+        }
+
         private void _OnChanged(object sender, FileSystemEventArgs e)
         {
+            if (e.ChangeType == WatcherChangeTypes.Created)
+            {
+                return;
+            }
+            if (!File.Exists(e.FullPath))
+                return;
             onChangeCounterTmp++;
             _logger.LogDebug($"_OnChanged:: {e.FullPath} :::: {onChangeCounterTmp}");
             if (this.OnChangedEventHandler != null)
