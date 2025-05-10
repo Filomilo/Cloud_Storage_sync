@@ -21,11 +21,11 @@ try
         $"Service logging file: {CloudDriveLogging.Instance.getLogFilePath()}",
         EventLogEntryType.Information
     );
-    for (int i = 0; i < 100000; i++)
-    {
-        Thread.Sleep(100);
-        logger.LogInformation($"test : {i}\n");
-    }
+    //for (int i = 0; i < 100000; i++)
+    //{
+    //    Thread.Sleep(100);
+    //    logger.LogInformation($"test : {i}\n");
+    //}
     logger.LogInformation("Starting host...");
 
     await host.RunAsync();

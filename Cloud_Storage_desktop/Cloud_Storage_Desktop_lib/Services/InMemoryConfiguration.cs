@@ -9,7 +9,7 @@ namespace Cloud_Storage_Desktop_lib.Services
 {
     public class InMemoryConfiguration : IConfiguration
     {
-        public string ApiUrl { get; set; } = "http://localhost:5087/";
+        public string ApiUrl { get; set; } = "http://localhost:8080/";
         public int MaxStimulationsFileSync { get; set; } = 5;
         public string StorageLocation { get; set; }
 

@@ -33,7 +33,11 @@ namespace Cloud_Storage_Desktop_lib
 
         ~ServerConnection()
         {
-            cancellationTokenSourceServerWatcher.Cancel();
+            if (cancellationTokenSourceServerWatcher != null)
+            {
+                cancellationTokenSourceServerWatcher.Cancel();
+                cancellationTokenSourceServerWatcher.Dispose();
+            }
         }
 
         private void ServerWarcher()
@@ -495,12 +499,12 @@ namespace Cloud_Storage_Desktop_lib
             return stream;
         }
 
-        internal void Dispose()
+        public void Dispose()
         {
             this.client.Dispose();
         }
 
-        internal void AdressChange(string apiUrl)
+        public void AdressChange(string apiUrl)
         {
             if (this.client.BaseAddress != new Uri(apiUrl))
             {

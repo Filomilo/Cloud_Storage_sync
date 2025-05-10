@@ -77,6 +77,10 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         private void _OnDeleted(object sender, FileSystemEventArgs e)
         {
+            if (!Path.HasExtension(e.FullPath))
+            {
+                return;
+            }
             if (this.OnDeletedEventHandler != null)
             {
                 try

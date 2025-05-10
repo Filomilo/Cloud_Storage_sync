@@ -27,10 +27,6 @@ namespace Cloud_Storage_Common.Models
         }
 
         [Required]
-        [RegularExpression(
-            $"{FileManager.RegexRelativePathValidation}",
-            ErrorMessage = "Path string doesn't match path syntax"
-        )]
         public virtual string Path { get; set; }
 
         [Required]
@@ -80,10 +76,6 @@ namespace Cloud_Storage_Common.Models
     public class UploudFileData : FileData
     {
         [Required]
-        [RegularExpression(
-            $"{FileManager.RegexRelativePathValidation}",
-            ErrorMessage = "Path string doesn't match path syntax"
-        )]
         public override string Path { get; set; }
 
         [Required]

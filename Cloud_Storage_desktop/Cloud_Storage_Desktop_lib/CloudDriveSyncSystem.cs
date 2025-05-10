@@ -27,7 +27,7 @@ namespace Cloud_Storage_Desktop_lib
                 return _instance;
             }
         }
-        private ServerConnection _ServerConnection;
+        private IServerConnection _ServerConnection;
         public IServerConnection ServerConnection
         {
             get { return _ServerConnection; }

@@ -67,20 +67,27 @@ namespace Cloud_Storage_Desktop_lib
 
         public void SaveConfiguration()
         {
-            string path = GetConfigurationPath();
-            if (!Directory.Exists(SharedData.GetAppDirectory()))
+            try
             {
-                Directory.CreateDirectory(SharedData.GetAppDirectory());
-            }
-            Awaiters.AwaitNotThrows(() =>
-            {
-                using (StreamWriter sw = new StreamWriter(GetConfigurationPath()))
+                string path = GetConfigurationPath();
+                if (!Directory.Exists(SharedData.GetAppDirectory()))
                 {
-                    sw.Write(JsonOperations.jsonFromObject(this));
+                    Directory.CreateDirectory(SharedData.GetAppDirectory());
                 }
-            });
+                Awaiters.AwaitNotThrows(() =>
+                {
+                    using (StreamWriter sw = new StreamWriter(GetConfigurationPath()))
+                    {
+                        sw.Write(JsonOperations.jsonFromObject(this));
+                    }
+                });
 
-            ActivateOnConfigChange();
+                ActivateOnConfigChange();
+            }
+            catch (TimeoutException ex)
+            {
+                throw new Exception("Couldn't acces file to save configuration");
+            }
         }
 
         private void ActivateOnConfigChange()

@@ -48,3 +48,10 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
+[UninstallRun]
+RunOnceId: "Stop_CloudDriveService"; Filename: {sys}\sc.exe; Parameters: "stop CloudDriveService" ; Flags: runhidden
+RunOnceId: "Delete_CloudDriveService"; Filename: {sys}\sc.exe; Parameters: "delete CloudDriveService" ; Flags: runhidden
+
+[UninstallDelete]
+
+Type: filesandordirs; Name: "{commonappdata}\CloudDriveSync";  

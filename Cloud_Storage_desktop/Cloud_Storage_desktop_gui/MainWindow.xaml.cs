@@ -72,14 +72,21 @@ public partial class MainWindow : Window
         Config.LoadConfiguration();
         try
         {
-            ServerConnection = new ServerConnection(
-                Config.ApiUrl,
-                this.CredentialManager,
-                new NullWebSocket()
-            );
-            OnConnectionStateChange(true);
-            ServerConnection.ConnectionChangeHandler += OnConnectionStateChange;
-            ServerConnection.AuthChangeHandler += OnConnectionStateChange;
+            if (ServerConnection == null)
+            {
+                ServerConnection = new ServerConnection(
+                    Config.ApiUrl,
+                    this.CredentialManager,
+                    new NullWebSocket()
+                );
+                OnConnectionStateChange(true);
+                ServerConnection.ConnectionChangeHandler += OnConnectionStateChange;
+                ServerConnection.AuthChangeHandler += OnConnectionStateChange;
+            }
+            else
+            {
+                ServerConnection.AdressChange(Config.ApiUrl);
+            }
         }
         catch (Exception ex)
         {
