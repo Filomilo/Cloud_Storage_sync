@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.ServiceProcess;
 using System.Text;
@@ -15,8 +16,11 @@ namespace Cloud_Storage_desktop.Logic
     {
         private string ServiceName = "CloudDriveService";
 
-        private String ServicePath =
-            AppDomain.CurrentDomain.BaseDirectory + "Service\\CloudDriveSyncService.exe";
+        private String ServicePath = Path.Combine(
+            AppDomain.CurrentDomain.BaseDirectory,
+            "Service",
+            "CloudDriveSyncService.exe"
+        );
 
         private ServiceController getCloudDriveService()
         {

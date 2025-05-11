@@ -4,7 +4,7 @@ namespace Cloud_Storage_Server.Services
 {
     public class ServerConfig : IServerConfig
     {
-        public string StorageLocation { get; set; } = "dataStorage\\";
+        public string StorageLocation { get; set; } = $"dataStorage{Path.DirectorySeparatorChar}";
         public long BackupMaxSize { get; set; } = 1024 * 1024 * 100 * 5; //500Mb
     }
 }

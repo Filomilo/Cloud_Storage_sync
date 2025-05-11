@@ -12,9 +12,11 @@ namespace Cloud_Storage_Server.Controllers.Tests
     [TestFixture()]
     public class FilesControllerTests
     {
-        private string exampleDataImageDirector =
-            AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin"))
-            + "testData\\nyan.jpg";
+        private string exampleDataImageDirector = Path.Combine(
+            AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin")),
+            "testData",
+            "nyan.jpg"
+        );
 
         private HttpClient testServer;
 
@@ -58,7 +60,7 @@ namespace Cloud_Storage_Server.Controllers.Tests
                     Id = new Guid(),
                     Owner = null,
                     OwnerId = 2,
-                    Path = "folder\\23456",
+                    Path = Path.Combine("folder", "23456"),
                     //SyncDate = new DateTime(),
                 },
                 exmpaleData

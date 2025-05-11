@@ -102,7 +102,7 @@ namespace Cloud_Storage_Desktop_lib
 
         private static string GetConfigurationPath()
         {
-            return $"{SharedData.GetAppDirectory()}\\config.json";
+            return Path.Combine(SharedData.GetAppDirectory(), "config.json");
         }
 
         public override string ToString()

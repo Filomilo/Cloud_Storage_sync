@@ -33,8 +33,6 @@ namespace Cloud_Storage_Desktop_lib.Services
             this._serverConnection = serverConnection;
             this._fileRepositoryService = fileRepositoryService;
 
-            this._serverConnection.AuthChangeHandler += onConnnetionChange;
-
             this._serverConnection.AuthChangeHandler += onAuthChange;
 
             this._clientChainOfResponsibilityRepository = new ClientChainOfResponsibilityRepository(
@@ -83,8 +81,17 @@ namespace Cloud_Storage_Desktop_lib.Services
             }
         }
 
-        private void onConnnetionChange(bool state)
+        private void onAuthChange(bool state)
         {
+            logger.LogInformation($"Connection For sync file serviece change to {state}");
+            this._taskRunController.Active = state;
+            if (state)
+            {
+                this._serverConnection.ServerWerbsocketHadnler +=
+                    _serverConnection_ServerWerbsocketHadnler;
+                _clientChainOfResponsibilityRepository.InitlalConnectedSyncHandler.Handle(null);
+            }
+
             logger.LogInformation($"Connection For sync file serviece change to {state}");
             if (state)
             {
@@ -96,19 +103,6 @@ namespace Cloud_Storage_Desktop_lib.Services
                 this._state = SyncState.DISCONNECTED;
                 this.StopAllSync();
             }
-        }
-
-        private void onAuthChange(bool state)
-        {
-            logger.LogInformation($"Connection For sync file serviece change to {state}");
-            if (state)
-            {
-                this._serverConnection.ServerWerbsocketHadnler +=
-                    _serverConnection_ServerWerbsocketHadnler;
-                _clientChainOfResponsibilityRepository.InitlalConnectedSyncHandler.Handle(null);
-            }
-
-            this._taskRunController.Active = state;
         }
 
         public bool Active

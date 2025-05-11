@@ -22,7 +22,7 @@ namespace Cloud_Storage_Common
 
         public string getLogFilePath()
         {
-            return SharedData.GetAppDirectory() + "\\logs\\log.log";
+            return Path.Combine(SharedData.GetAppDirectory(), "logs", "log.log");
         }
 
         protected CloudDriveLogging()

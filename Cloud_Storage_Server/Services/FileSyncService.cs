@@ -71,6 +71,9 @@ namespace Cloud_Storage_Server.Services
 
         public void AddNewFile(User user, string deviceId, UploudFileData data, Stream file)
         {
+            logger.LogDebug(
+                $"AddNewFile for [[{user}]] with data [[{data}]] and stream [[{file.Length}]]"
+            );
             SyncFileData fileData = new SyncFileData(data);
             fileData.OwnerId = user.id;
             fileData.DeviceOwner = new List<string>();
@@ -90,7 +93,9 @@ namespace Cloud_Storage_Server.Services
             }
             catch (Exception ex)
             {
-                logger.LogError($"Error saving file to server: [[]{ex.Message}]");
+                logger.LogError(
+                    $"Error saving file to server: [[]{ex.Message}] \n {ex.StackTrace}"
+                );
                 throw ex;
             }
         }
@@ -137,7 +142,7 @@ namespace Cloud_Storage_Server.Services
 
         private static string GetRealtivePathForFile(User user, SyncFileData data)
         {
-            return $"{user.id}\\{data.Id}";
+            return Path.Combine($"{user.id}", $"{data.Id}");
         }
 
         public Stream DownloadFile(User user, SyncFileData data)

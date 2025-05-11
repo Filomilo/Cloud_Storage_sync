@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Cloud_Storage_Common;
 using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Database;
@@ -9,6 +10,9 @@ namespace Cloud_Storage_Server.Handlers
 {
     public class SaveAndUpdateNewVersionOfFile : AbstactHandler
     {
+        private ILogger _logger = CloudDriveLogging.Instance.GetLogger(
+            "SaveAndUpdateNewVersionOfFile"
+        );
         private IFileSystemService _fileSystemService;
         private IDataBaseContextGenerator _dataBaseContextGenerator;
 
@@ -23,6 +27,7 @@ namespace Cloud_Storage_Server.Handlers
 
         public override object Handle(object request)
         {
+            _logger.LogDebug($"SaveAndUpdateNewVersionOfFile: handle [[{request}]]");
             if (request.GetType() != typeof(FileUploadRequest))
             {
                 throw new ArgumentException(
