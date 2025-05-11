@@ -16,7 +16,8 @@ namespace Cloud_Storage_Desktop_lib
     public class ServerConnection : IServerConnection
     {
         private static ILogger logger = CloudDriveLogging.Instance.GetLogger("ServerConnection");
-        HttpClient client = new HttpClient();
+
+        //HttpClient client = new HttpClient();
         private IWebSocketWrapper _webSocket;
         private Task WsThread;
         private CancellationTokenSource _cts = new CancellationTokenSource();
@@ -24,6 +25,9 @@ namespace Cloud_Storage_Desktop_lib
         private Task serverWatcherTask;
         private CancellationTokenSource cancellationTokenSourceServerWatcher;
         private bool _ServerStatus = false;
+        private SelfSetHttpClientFactory _httpClientFactory = new SelfSetHttpClientFactory(
+            new HttpClient()
+        );
 
         private void CreateServerStatusWatcher()
         {
@@ -80,7 +84,9 @@ namespace Cloud_Storage_Desktop_lib
             {
                 CreateServerStatusWatcher();
                 this._credentialManager = credentialManager;
+                HttpClient client = new HttpClient();
                 client.BaseAddress = new Uri(ConnetionAdress);
+                _httpClientFactory.SetHttpClient(client);
                 this._webSocket = webSocketWrapper;
                 this.AuthChangeHandler += UpdateWebsocketOnConnetionChange;
                 this.ConnectionChangeHandler += LoadTokenOnConnectionChnage;
@@ -111,7 +117,8 @@ namespace Cloud_Storage_Desktop_lib
         )
         {
             CreateServerStatusWatcher();
-            this.client = client;
+            _httpClientFactory.SetHttpClient(client);
+
             this._credentialManager = credentialManager;
             this.AuthChangeHandler += UpdateWebsocketOnConnetionChange;
             this.ConnectionChangeHandler += LoadTokenOnConnectionChnage;
@@ -154,7 +161,10 @@ namespace Cloud_Storage_Desktop_lib
                 );
             }
             this._cts = new CancellationTokenSource();
-            string baseAdress = this.client.BaseAddress.ToString().Replace("http://", "");
+            string baseAdress = _httpClientFactory
+                .GetHttpClient()
+                .BaseAddress.ToString()
+                .Replace("http://", "");
             string uri = $"ws://{baseAdress}ws";
             string token = this._credentialManager.GetToken();
             if (token != null && token.Length > 0)
@@ -235,17 +245,22 @@ namespace Cloud_Storage_Desktop_lib
         {
             try
             {
-                HttpResponseMessage response = client.GetAsync("/api/Helath/health").Result;
+                HttpResponseMessage response = _httpClientFactory
+                    .GetHttpClient()
+                    .GetAsync("/api/Helath/health")
+                    .Result;
 
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
-                    logger.LogError($"Cannot connect to server on url {this.client.BaseAddress}");
+                    logger.LogTrace(
+                        $"Cannot connect to server on url {_httpClientFactory.GetHttpClient().BaseAddress}"
+                    );
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex.Message);
+                //logger.LogWarning(ex.Message);
                 return false;
             }
 
@@ -260,7 +275,10 @@ namespace Cloud_Storage_Desktop_lib
                 //logger.LogTrace(
                 //    $"trying to get authorized server connction:: Credential magenr: {this._credentialManager.GetToken()} ---- server config :: {client.DefaultRequestHeaders}"
                 //);
-                response = client.GetAsync("/api/Helath/healthSecured").Result;
+                response = _httpClientFactory
+                    .GetHttpClient()
+                    .GetAsync("/api/Helath/healthSecured")
+                    .Result;
             }
             catch (Exception ex)
             {
@@ -269,7 +287,7 @@ namespace Cloud_Storage_Desktop_lib
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 logger.LogError(
-                    $"Cannot connect to AUTHorized server on url {this.client.BaseAddress}"
+                    $"Cannot connect to AUTHorized server on url {_httpClientFactory.GetHttpClient().BaseAddress}"
                 );
                 return false;
             }
@@ -281,7 +299,10 @@ namespace Cloud_Storage_Desktop_lib
         {
             AuthRequest auth = new AuthRequest() { Email = email, Password = password };
 
-            HttpResponseMessage response = client.PostAsJsonAsync("/api/Auth/login", auth).Result;
+            HttpResponseMessage response = _httpClientFactory
+                .GetHttpClient()
+                .PostAsJsonAsync("/api/Auth/login", auth)
+                .Result;
             if (!response.IsSuccessStatusCode)
             {
                 logger.LogError($"Couldn't login for auth {email}");
@@ -296,7 +317,8 @@ namespace Cloud_Storage_Desktop_lib
             logger.LogInformation($"Registering with email {email}");
             AuthRequest auth = new AuthRequest() { Email = email, Password = password };
 
-            HttpResponseMessage response = client
+            HttpResponseMessage response = _httpClientFactory
+                .GetHttpClient()
                 .PostAsJsonAsync("/api/Auth/Register", auth)
                 .Result;
             if (!response.IsSuccessStatusCode)
@@ -337,10 +359,8 @@ namespace Cloud_Storage_Desktop_lib
             {
                 try
                 {
-                    this.client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
-                        "Bearer",
-                        token
-                    );
+                    _httpClientFactory.GetHttpClient().DefaultRequestHeaders.Authorization =
+                        new AuthenticationHeaderValue("Bearer", token);
                     if (!this.CheckIfAuthirized())
                     {
                         logger.LogWarning("Token authirzation failed");
@@ -366,7 +386,7 @@ namespace Cloud_Storage_Desktop_lib
 
         public void Logout()
         {
-            this.client.DefaultRequestHeaders.Authorization = null;
+            _httpClientFactory.GetHttpClient().DefaultRequestHeaders.Authorization = null;
             this._credentialManager.RemoveToken();
             InovkeAuthChange(false);
         }
@@ -377,7 +397,10 @@ namespace Cloud_Storage_Desktop_lib
                 $"Upldoing file  file from device {this._credentialManager.GetDeviceID()}"
             );
             var form = FileMangamentSerivce.GetFormDatForFile(fileData, stream);
-            var response = this.client.PostAsync("api/Files/upload", form).Result;
+            var response = _httpClientFactory
+                .GetHttpClient()
+                .PostAsync("api/Files/upload", form)
+                .Result;
 
             if (response.IsSuccessStatusCode)
             {
@@ -396,7 +419,10 @@ namespace Cloud_Storage_Desktop_lib
         public void UpdateFileData(UpdateFileDataRequest file)
         {
             logger.LogDebug($"Updating file on device {this._credentialManager.GetDeviceID()}");
-            var response = this.client.PostAsJsonAsync("api/Files/update", file).Result;
+            var response = _httpClientFactory
+                .GetHttpClient()
+                .PostAsJsonAsync("api/Files/update", file)
+                .Result;
 
             if (response.IsSuccessStatusCode)
             {
@@ -424,7 +450,8 @@ namespace Cloud_Storage_Desktop_lib
         public void DeleteFile(string relativePath)
         {
             var response = this
-                .client.DeleteAsync($"api/Files/delete?relativePath={relativePath}")
+                ._httpClientFactory.GetHttpClient()
+                .DeleteAsync($"api/Files/delete?relativePath={relativePath}")
                 .Result;
 
             if (response.IsSuccessStatusCode)
@@ -452,7 +479,8 @@ namespace Cloud_Storage_Desktop_lib
                 Version = version,
             };
             var response = this
-                .client.PostAsJsonAsync("api/Files/setVersion", setVersionRequest)
+                ._httpClientFactory.GetHttpClient()
+                .PostAsJsonAsync("api/Files/setVersion", setVersionRequest)
                 .Result;
 
             if (response.IsSuccessStatusCode)
@@ -469,7 +497,10 @@ namespace Cloud_Storage_Desktop_lib
 
         public List<SyncFileData> GetListOfFiles()
         {
-            var response = this.client.GetAsync("api/Files/list").Result;
+            var response = this
+                ._httpClientFactory.GetHttpClient()
+                .GetAsync("api/Files/list")
+                .Result;
             var raw = response.Content.ReadAsStringAsync().Result;
             List<SyncFileData> parsed = JsonConvert.DeserializeObject<List<SyncFileData>>(raw);
             //var parsed = JsonSerializer.Deserialize<List<SyncFileData>>(raw);
@@ -484,7 +515,10 @@ namespace Cloud_Storage_Desktop_lib
 
         public List<SyncFileData> GetAllCloudFilesInfo()
         {
-            var response = this.client.GetAsync("api/Files/list").Result;
+            var response = this
+                ._httpClientFactory.GetHttpClient()
+                .GetAsync("api/Files/list")
+                .Result;
             var raw = response.Content.ReadAsStringAsync().Result;
             List<SyncFileData> parsed = JsonConvert.DeserializeObject<List<SyncFileData>>(raw);
             //var parsed = JsonSerializer.Deserialize<List<SyncFileData>>(raw)
@@ -494,7 +528,8 @@ namespace Cloud_Storage_Desktop_lib
         public Stream DownloadFile(Guid guid)
         {
             var response = this
-                .client.GetAsync($"api/Files/download?guid={guid.ToString()}")
+                ._httpClientFactory.GetHttpClient()
+                .GetAsync($"api/Files/download?guid={guid.ToString()}")
                 .Result;
             if (!response.IsSuccessStatusCode)
                 throw new Exception(
@@ -515,14 +550,21 @@ namespace Cloud_Storage_Desktop_lib
             DisposeConnectionStatusWatch();
             this._webSocket.Close(WebSocketCloseStatus.Empty, "close", new CancellationToken());
             this.WsThread.Wait(5000);
-            this.client.Dispose();
+            this._httpClientFactory.GetHttpClient().Dispose();
         }
 
         public void AdressChange(string apiUrl)
         {
-            if (this.client.BaseAddress != new Uri(apiUrl))
+            if (_httpClientFactory.GetHttpClient().BaseAddress != new Uri(apiUrl))
             {
-                client.BaseAddress = new Uri(apiUrl);
+                HttpClient httpClient = new HttpClient();
+
+                httpClient.BaseAddress = new Uri(apiUrl);
+                _httpClientFactory.SetHttpClient(httpClient);
+                if (!CheckIfHelathy())
+                {
+                    logger.LogError($"Cannot connect to {apiUrl}");
+                }
             }
         }
     }

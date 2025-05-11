@@ -18,6 +18,7 @@ namespace Cloud_Storage_Common
 
         public static FileStream WaitForFile(
             string filename,
+            FileMode mode,
             FileAccess acces,
             FileShare fileshare = FileShare.Read,
             int retryCount = 100,
@@ -28,14 +29,7 @@ namespace Cloud_Storage_Common
             {
                 try
                 {
-                    return File.Open(
-                        filename,
-                        acces == FileAccess.Write || acces == FileAccess.ReadWrite
-                            ? FileMode.OpenOrCreate
-                            : FileMode.Open,
-                        acces,
-                        fileshare
-                    );
+                    return File.Open(filename, mode, acces, fileshare);
                 }
                 catch (IOException)
                 {
@@ -152,6 +146,7 @@ namespace Cloud_Storage_Common
                 using (
                     var stream = FileManager.WaitForFile(
                         filename,
+                        FileMode.Open,
                         FileAccess.Read,
                         FileShare.ReadWrite,
                         100,
@@ -168,7 +163,7 @@ namespace Cloud_Storage_Common
 
         public static long GetBytesSizeOfFile(string filename)
         {
-            using (var stream = FileManager.WaitForFile(filename, FileAccess.Read))
+            using (var stream = FileManager.WaitForFile(filename, FileMode.Open, FileAccess.Read))
             {
                 Logger.LogTrace($"Gettign Byttes size for file [[{filename}]]");
                 return (long)stream.Length;
@@ -193,7 +188,14 @@ namespace Cloud_Storage_Common
         public static FileStream GetStreamForFile(string fiePath, int ms = 500000)
         {
             Logger.LogTrace($"GetStreamForFile:: [[{fiePath}]]");
-            return WaitForFile(fiePath, FileAccess.ReadWrite, FileShare.ReadWrite, 100, ms / 100);
+            return WaitForFile(
+                fiePath,
+                FileMode.OpenOrCreate,
+                FileAccess.ReadWrite,
+                FileShare.ReadWrite,
+                100,
+                ms / 100
+            );
         }
 
         public static void DeleteFile(string v)

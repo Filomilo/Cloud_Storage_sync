@@ -5,6 +5,8 @@ using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Services;
 using Cloud_Storage_desktop.Logic;
+using log4net.Repository.Hierarchy;
+using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 
 namespace Cloud_Storage_desktop;
@@ -14,6 +16,7 @@ namespace Cloud_Storage_desktop;
 /// </summary>
 public partial class MainWindow : Window
 {
+    private ILogger _logger = CloudDriveLogging.Instance.GetLogger("MainWindow");
     private ServiceOperator Operator;
     private Configuration EditedConfig;
     private IConfiguration Config;
@@ -90,6 +93,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
+            _logger.LogWarning($"{ex.Message}");
             OnConnectionStateChange(false);
         }
     }

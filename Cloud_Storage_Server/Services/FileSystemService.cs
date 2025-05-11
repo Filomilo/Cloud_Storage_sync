@@ -15,7 +15,7 @@ namespace Cloud_Storage_Server.Services
 
     public class FileSystemService : IFileSystemService
     {
-        private static ILogger Logger = CloudDriveLogging.Instance.GetLogger("FileSystemService");
+        private static ILogger _logger = CloudDriveLogging.Instance.GetLogger("FileSystemService");
         private IServerConfig _config;
         private string _basePath
         {
@@ -41,6 +41,7 @@ namespace Cloud_Storage_Server.Services
 
         public void SaveFile(SyncFileData dataBytes, Stream fileStream)
         {
+            _logger.LogDebug($"SaveFile: [[{dataBytes}]] with stream [[{fileStream.Length}]]");
             String path = GetRealtivePathForFile(dataBytes.OwnerId, dataBytes);
             FileManager.SaveFile(GetFullPathToFile(path), fileStream);
         }

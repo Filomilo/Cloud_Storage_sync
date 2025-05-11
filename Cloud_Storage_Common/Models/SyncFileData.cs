@@ -37,7 +37,7 @@ namespace Cloud_Storage_Common.Models
 
         public override string ToString()
         {
-            return $"{Path}{Extenstion}";
+            return $" {System.IO.Path.Combine(Path, Name)}{Extenstion}";
         }
 
         public int CompareTo(object? obj)
