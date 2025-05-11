@@ -10,7 +10,12 @@
 	  <PublishTrimmed>false</PublishTrimmed>
 	  <RuntimeIdentifier>win-x64</RuntimeIdentifier>
 	  <SelfContained>true</SelfContained>
+	  <ApplicationIcon>Main Icon.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Main Icon.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CredentialManagement" Version="1.0.2" />
