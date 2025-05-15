@@ -207,25 +207,34 @@ namespace Cloud_Storage_Server.Controllers
         [HttpPost]
         public IActionResult setVersion([FromBody] SetVersionRequest setVersionRequest)
         {
-            _logger.LogInformation($"setVersion:: {setVersionRequest}");
-
-            String email = JwtHelpers.GetEmailFromToken(Request.Headers.Authorization);
-            User user = null;
-            string deviceId = JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization);
-            using (var context = _dataBaseContextGenerator.GetDbContext())
+            try
             {
-                user = UserRepository.getUserByMail(
-                    context,
-                    JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
-                );
-            }
-            _FileSyncService.SetFileVersion(
-                user.id,
-                setVersionRequest.FileId,
-                setVersionRequest.Version
-            );
+                _logger.LogInformation($"setVersion:: {setVersionRequest}");
 
-            return Ok("updated");
+                String email = JwtHelpers.GetEmailFromToken(Request.Headers.Authorization);
+                User user = null;
+                string deviceId = JwtHelpers.GetDeviceIDFromAuthString(
+                    Request.Headers.Authorization
+                );
+                using (var context = _dataBaseContextGenerator.GetDbContext())
+                {
+                    user = UserRepository.getUserByMail(
+                        context,
+                        JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
+                    );
+                }
+                _FileSyncService.SetFileVersion(
+                    user.id,
+                    setVersionRequest.FileId,
+                    setVersionRequest.Version
+                );
+
+                return Ok("updated");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }
