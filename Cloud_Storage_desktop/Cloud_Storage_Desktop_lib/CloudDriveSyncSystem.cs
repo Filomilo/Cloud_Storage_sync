@@ -50,6 +50,7 @@ namespace Cloud_Storage_Desktop_lib
 
         public IFileSyncService FileSyncService;
         public IFIleSystemWatcher SystemWatcher;
+        public IServerFilesStateWatcher _filesStateWatcher;
         private WebSocketWrapper _WebSocketWrapper = new WebSocketWrapper();
         #endregion
 
@@ -92,6 +93,11 @@ namespace Cloud_Storage_Desktop_lib
             this.SystemWatcher.OnChangedEventHandler += this.FileSyncService.OnLocallyChanged;
             this.SystemWatcher.OnRenamedEventHandler += this.FileSyncService.OnLocallyOnRenamed;
             this.Configuration.OnConfigurationChange += ReloadSyncSystem;
+            this._filesStateWatcher = new ServerFileStateWatcher(this.ServerConnection);
+            this.ServerConnection.ServerWerbsocketHadnler += message =>
+            {
+                this._filesStateWatcher.RefreshList();
+            };
         }
 
         #region Test only constuctors

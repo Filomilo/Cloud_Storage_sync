@@ -23,18 +23,37 @@ public partial class MainWindow : Window
     private IServerConnection ServerConnection;
     private ICredentialManager CredentialManager;
     private FileLogWatcher FileLogWatcher;
+    private IServerFilesStateWatcher filesStateWatcher;
 
     public MainWindow()
     {
         InitializeComponent();
+    }
+
+    private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+    {
         Operator = new ServiceOperator();
         OnSerivceUdpate();
         EditedConfig = (Configuration?)Configuration.InitConfig();
         CredentialManager = CredentialManageFactory.GetCredentialManager();
+
         EditedConfig.LoadConfiguration();
         OnConfigChanged();
         OnConfigSaved();
         InitLogs();
+        filesStateWatcher = new CyclicFileServerStateWatcher(this.ServerConnection);
+        this.ServerConnection.AuthChangeHandler += connected =>
+        {
+            if (connected)
+            {
+                filesStateWatcher.RefreshList();
+            }
+        };
+        this.ServerConnection.ServerWerbsocketHadnler += message =>
+        {
+            filesStateWatcher.RefreshList();
+        };
+        _cloudFileList.Setup(filesStateWatcher, this.ServerConnection);
     }
 
     #region Logs
@@ -80,7 +99,7 @@ public partial class MainWindow : Window
                 ServerConnection = new ServerConnection(
                     Config.ApiUrl,
                     this.CredentialManager,
-                    new NullWebSocket()
+                    new WebSocketWrapper()
                 );
                 OnConnectionStateChange(true);
                 ServerConnection.ConnectionChangeHandler += OnConnectionStateChange;
