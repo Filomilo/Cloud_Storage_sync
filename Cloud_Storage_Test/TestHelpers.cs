@@ -305,7 +305,7 @@ namespace Cloud_Storage_Test
                 }
 
                 return true;
-            });
+            },1000000);
         }
 
         public static string CreateTmpFile(string dir, string fileContent, int i)
@@ -319,6 +319,22 @@ namespace Cloud_Storage_Test
             }
             FileStream newlyCreatedFile = File.Create(Path.Combine(dir, fileName));
             newlyCreatedFile.Write(Encoding.ASCII.GetBytes(fileContent));
+            newlyCreatedFile.Close();
+
+            return fileName;
+        }
+
+        public static string CreateTmpFileOfSize(string dir, long sizeInBytes)
+        {
+            string fileName =
+                Path.GetFileName(Path.GetFileNameWithoutExtension(Path.GetTempFileName()))
+                + $".tmp";
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+            FileStream newlyCreatedFile = File.Create(Path.Combine(dir, fileName));
+            newlyCreatedFile.SetLength(sizeInBytes);
             newlyCreatedFile.Close();
 
             return fileName;

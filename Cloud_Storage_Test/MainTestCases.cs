@@ -153,6 +153,7 @@ namespace Cloud_Storage_Test
             this._cloudDriveSyncSystemClient1.Dispose();
             this._cloudDriveSyncSystemClient2.Dispose();
             this.webApplication.Dispose();
+            TestHelpers.ClearServerStorage();
             Thread.Sleep(2000);
             TestHelpers.ResetDatabase();
             TestHelpers.KillDotnetExe();
@@ -1636,6 +1637,88 @@ namespace Cloud_Storage_Test
             EnsureAmountOfFilesOnServer(filesOnserver);
         }
 
+
+
+
+
+        [Test]
+        [TestCase(1)]
+        [TestCase(10)]
+        [TestCase(100)]
+        [TestCase(500)]
+        [TestCase(1024)]
+        [TestCase(2000)]
+        //[TestCase(4096)]
+        //[TestCase(8192)]
+
+        public void Test_Sync_File_Of_Size(long sizeInMb)
+        {
+            #region Ensure connected and empty
+            ConnectBothDevices();
+
+            #endregion
+
+            #region Create New File
+
+            String createdFileName = this.AddTMpFileOfSize(
+                sizeInMb*1024*1024,
+                this._Client1Config
+            );
+
+            #endregion
+
+            #region Ensure second device also has file
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        return _localFileRepositoryService1.GetAllFiles().Count() == 1;
+                    }, 10000+100 * sizeInMb);
+                },
+                $"Locla repostir should have osme file"
+            );
+
+            string serverFclient1 = this
+                ._localFileRepositoryService1.GetAllFiles()
+                .FirstOrDefault()
+                .Hash;
+            string newDevieFileHAs = "";
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        string newDevieFileHAs = FileManager.GetHashOfFile(
+                            Path.Join(_Client2Config.StorageLocation, createdFileName)
+                        );
+                        return serverFclient1.Equals(newDevieFileHAs);
+                    },10000+100* sizeInMb);
+                },
+                $"new device file hash \n[[{newDevieFileHAs}]]\n IS not the same as file hash on server \n[[{serverFclient1}]]\n"
+            );
+
+            #endregion
+
+
+
+            #region Ensure Correct finsihs state
+
+
+            BothDevicesShouldHAveTheSameData();
+
+            #endregion
+        }
+
+
+
+
+
+
+
+
+
+
         private void EnsureTheSameFileOnBothDevices(
             string createdFileName,
             IConfiguration orignalLocation,
@@ -1715,6 +1798,24 @@ namespace Cloud_Storage_Test
 
             return filesAdded;
         }
+
+        private string AddTMpFileOfSize(
+    long sizeOfFileInBytes,
+    IConfiguration config
+)
+        {
+           
+
+            string direcotry = config.StorageLocation;
+      
+
+           
+               String fileName= TestHelpers.CreateTmpFileOfSize(direcotry, sizeOfFileInBytes);
+               
+            return fileName;
+        }
+
+
 
         private void CheckIfTheSameContentOnClinets(
             List<CloudDriveSyncSystem> cloudDriveSyncSystems

@@ -19,7 +19,7 @@ namespace Cloud_Storage_Server.Services
 
         public object DeviceId
         {
-            get { return _device.Id; }
+            get { return _device?.Id; }
         }
 
         public object UserId

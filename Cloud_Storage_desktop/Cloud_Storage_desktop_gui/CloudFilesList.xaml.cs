@@ -97,7 +97,7 @@ namespace Cloud_Storage_desktop
                 foreach (SyncFileData removedElement in removedfiles)
                 {
                     _bservableCollection.Remove(
-                        _bservableCollection.First(x =>
+                        _bservableCollection.FirstOrDefault(x =>
                             x.Path == removedElement.GetRealativePath()
                             && x.Version == removedElement.Version
                         )
