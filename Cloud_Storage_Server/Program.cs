@@ -6,6 +6,7 @@ using Cloud_Storage_Server.Database.Repositories;
 using Cloud_Storage_Server.Interfaces;
 using Cloud_Storage_Server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -49,7 +50,12 @@ WebsocketConnectedController WebsocketConnectedController = new WebsocketConnect
 builder.Services.AddSingleton<IWebsocketConnectedController, WebsocketConnectedController>(
     provider => WebsocketConnectedController
 );
-
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = int.MaxValue;
+    options.BufferBodyLengthLimit = int.MaxValue;
+    options.ValueCountLimit = int.MaxValue;
+});
 IServerConfig serverConfig = new ServerConfig();
 builder.Services.AddSingleton<IServerConfig>(provider => serverConfig);
 FileSystemService fileSystemService = new FileSystemService(serverConfig);
@@ -103,6 +109,10 @@ builder.Services.AddAuthorization();
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.Limits.MaxRequestBodySize = 1024*1000*1024*2; 
+});
 
 var app = builder.Build();
 

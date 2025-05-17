@@ -197,7 +197,18 @@ namespace Cloud_Storage_Common
                 ms / 100
             );
         }
-
+        public static FileStream GetStreamForFileAsync(string fiePath, int ms = 500000)
+        {
+            Logger.LogTrace($"GetStreamForFile:: [[{fiePath}]]");
+            return WaitForFile(
+                fiePath,
+                FileMode.OpenOrCreate,
+                FileAccess.ReadWrite,
+                FileShare.ReadWrite,
+                100,
+                ms / 100
+            );
+        }
         public static void DeleteFile(string v)
         {
             File.Delete(v);

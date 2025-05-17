@@ -85,6 +85,7 @@ namespace Cloud_Storage_Desktop_lib
                 CreateServerStatusWatcher();
                 this._credentialManager = credentialManager;
                 HttpClient client = new HttpClient();
+                //client.MaxResponseContentBufferSize=(10L * 1024L * 1024L * 1024);
                 client.BaseAddress = new Uri(ConnetionAdress);
                 _httpClientFactory.SetHttpClient(client);
                 this._webSocket = webSocketWrapper;
@@ -308,7 +309,9 @@ namespace Cloud_Storage_Desktop_lib
                 logger.LogError($"Couldn't login for auth {email}");
                 throw new UnauthorizedAccessException($"invalid login parameters");
             }
-            this._credentialManager.SaveToken(response.Content.ReadAsStringAsync().Result);
+            String token = response.Content.ReadAsStringAsync().Result;
+            this._credentialManager.SaveToken(token);
+          
             _LoadToken();
         }
 
@@ -393,6 +396,7 @@ namespace Cloud_Storage_Desktop_lib
 
         public void UploudFile(UploudFileData fileData, Stream stream)
         {
+            
             logger.LogDebug(
                 $"Upldoing file  file from device {this._credentialManager.GetDeviceID()}"
             );

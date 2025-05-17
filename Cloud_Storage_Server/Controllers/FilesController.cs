@@ -44,7 +44,7 @@ namespace Cloud_Storage_Server.Controllers
         [HttpGet]
         public IActionResult listOfFiles()
         {
-            _logger.LogInformation("listOfFiles");
+            //_logger.LogInformation("listOfFiles");
             using (var context = _dataBaseContextGenerator.GetDbContext())
             {
                 User user = UserRepository.getUserByMail(
