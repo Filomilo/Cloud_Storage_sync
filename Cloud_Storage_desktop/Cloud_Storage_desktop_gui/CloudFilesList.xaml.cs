@@ -72,8 +72,10 @@ namespace Cloud_Storage_desktop
             _serverFilesStateWatcher.SyncFileChangedEvent +=
                 ServerFilesStateWatcherOnSyncFileChangedEvent;
             _serverConnection = serverConnection;
-
-            _serverFilesStateWatcher.RefreshList();
+            Dispatcher.BeginInvoke(() =>
+            {
+                _serverFilesStateWatcher.RefreshList();
+            });
         }
 
         public CloudFilesList()

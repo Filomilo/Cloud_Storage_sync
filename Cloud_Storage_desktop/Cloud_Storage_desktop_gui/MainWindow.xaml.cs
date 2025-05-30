@@ -119,7 +119,7 @@ public partial class MainWindow : Window
 
     private void OnConnectionStateChange(bool isConnected)
     {
-        Dispatcher.Invoke(() =>
+        Dispatcher.BeginInvoke(() =>
         {
             if (!isConnected)
             {

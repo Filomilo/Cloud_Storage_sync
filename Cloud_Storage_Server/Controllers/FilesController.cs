@@ -19,6 +19,11 @@ namespace Cloud_Storage_Server.Controllers
 
         [Required]
         public IFormFile file { get; set; }
+
+        public override string ToString()
+        {
+            return fileData.ToString() + " and data legth:: " + file.Length;
+        }
     }
 
     [Route("api/[controller]")]

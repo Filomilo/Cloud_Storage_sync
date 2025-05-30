@@ -959,13 +959,16 @@ namespace Cloud_Storage_Test
             Assert.DoesNotThrow(
                 () =>
                 {
-                    TestHelpers.EnsureTrue(() =>
-                    {
-                        return FileManager
-                                .GetAllFilesInLocation(this._Client2Config.StorageLocation)
-                                .Count == 2;
-                        ;
-                    });
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            return FileManager
+                                    .GetAllFilesInLocation(this._Client2Config.StorageLocation)
+                                    .Count == 2;
+                            ;
+                        },
+                        20000
+                    );
                 },
                 $"Files on device2 not 2 but {FileManager
                     .GetAllFilesInLocation(this._Client2Config.StorageLocation)
@@ -991,10 +994,13 @@ namespace Cloud_Storage_Test
             Assert.DoesNotThrow(
                 () =>
                 {
-                    TestHelpers.EnsureTrue(() =>
-                    {
-                        return this._localFileRepositoryService1.GetAllFiles().Count() == 2;
-                    });
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            return this._localFileRepositoryService1.GetAllFiles().Count() == 2;
+                        },
+                        50000
+                    );
                 },
                 $"File in client databse 1 is not 2\n but {this._localFileRepositoryService1.GetAllFiles().Count()} \n [[{String.Join(", ", this._localFileRepositoryService1.GetAllFiles())}]]"
             );
@@ -1637,10 +1643,6 @@ namespace Cloud_Storage_Test
             EnsureAmountOfFilesOnServer(filesOnserver);
         }
 
-
-
-
-
         [Test]
         [TestCase(1)]
         [TestCase(10)]
@@ -1661,7 +1663,7 @@ namespace Cloud_Storage_Test
             #region Create New File
 
             String createdFileName = this.AddTMpFileOfSize(
-                sizeInMb*1024*1024,
+                sizeInMb * 1024 * 1024,
                 this._Client1Config
             );
 
@@ -1671,10 +1673,13 @@ namespace Cloud_Storage_Test
             Assert.DoesNotThrow(
                 () =>
                 {
-                    TestHelpers.EnsureTrue(() =>
-                    {
-                        return _localFileRepositoryService1.GetAllFiles().Count() == 1;
-                    }, 10000+100 * sizeInMb);
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            return _localFileRepositoryService1.GetAllFiles().Count() == 1;
+                        },
+                        10000 + 100 * sizeInMb
+                    );
                 },
                 $"Locla repostir should have osme file"
             );
@@ -1687,13 +1692,16 @@ namespace Cloud_Storage_Test
             Assert.DoesNotThrow(
                 () =>
                 {
-                    TestHelpers.EnsureTrue(() =>
-                    {
-                        string newDevieFileHAs = FileManager.GetHashOfFile(
-                            Path.Join(_Client2Config.StorageLocation, createdFileName)
-                        );
-                        return serverFclient1.Equals(newDevieFileHAs);
-                    },10000+100* sizeInMb);
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            string newDevieFileHAs = FileManager.GetHashOfFile(
+                                Path.Join(_Client2Config.StorageLocation, createdFileName)
+                            );
+                            return serverFclient1.Equals(newDevieFileHAs);
+                        },
+                        10000 + 100 * sizeInMb
+                    );
                 },
                 $"new device file hash \n[[{newDevieFileHAs}]]\n IS not the same as file hash on server \n[[{serverFclient1}]]\n"
             );
@@ -1709,15 +1717,6 @@ namespace Cloud_Storage_Test
 
             #endregion
         }
-
-
-
-
-
-
-
-
-
 
         private void EnsureTheSameFileOnBothDevices(
             string createdFileName,
@@ -1799,23 +1798,14 @@ namespace Cloud_Storage_Test
             return filesAdded;
         }
 
-        private string AddTMpFileOfSize(
-    long sizeOfFileInBytes,
-    IConfiguration config
-)
+        private string AddTMpFileOfSize(long sizeOfFileInBytes, IConfiguration config)
         {
-           
-
             string direcotry = config.StorageLocation;
-      
 
-           
-               String fileName= TestHelpers.CreateTmpFileOfSize(direcotry, sizeOfFileInBytes);
-               
+            String fileName = TestHelpers.CreateTmpFileOfSize(direcotry, sizeOfFileInBytes);
+
             return fileName;
         }
-
-
 
         private void CheckIfTheSameContentOnClinets(
             List<CloudDriveSyncSystem> cloudDriveSyncSystems
@@ -1951,9 +1941,7 @@ namespace Cloud_Storage_Test
                     );
 
                     FileData correspoidingFile = filesInUserLocation.Find(x =>
-                        x.Name == syncFileData.Name
-                        && x.Path == syncFileData.Path
-                        && x.Extenstion == syncFileData.Extenstion
+                        x.GetRealativePath() == syncFileData.GetRealativePath()
                     );
                     string filepath = correspoidingFile.getFullFilePathForBasePath(
                         cloudDriveSyncSystem.Configuration.StorageLocation

@@ -1,4 +1,5 @@
-﻿using Cloud_Storage_Common.Interfaces;
+﻿using Cloud_Storage_Common;
+using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Database;
 using Cloud_Storage_Server.Interfaces;
@@ -16,6 +17,9 @@ namespace Cloud_Storage_Server.Handlers
     public class RemoveFileDeviceOwnership : AbstactHandler
     {
         private IDataBaseContextGenerator _dataBaseContextGenerator;
+        private static ILogger _logger = CloudDriveLogging.Instance.GetLogger(
+            "RemoveFileDeviceOwnership"
+        );
 
         public RemoveFileDeviceOwnership(IDataBaseContextGenerator dataBaseContextGenerator)
         {
@@ -137,11 +141,19 @@ namespace Cloud_Storage_Server.Handlers
             RemoveFileDeviceOwnershipRequest? removeFileDeviceOwnership
         )
         {
+            _logger.LogTrace(
+                $"Searhing in db for ilfe with path: {removeFileDeviceOwnership.fileData.GetRealativePathWindowsStyle()} and owner id: {removeFileDeviceOwnership.userID} , deviceo wner :{removeFileDeviceOwnership.deviceId}"
+            );
+            _logger.LogTrace(
+                $"Searhing in db with content: \n\n [[\n {String.Join(",\n", context
+                    .Files.ToList().Select(x=> $"GetRealativePathWindowsStyle: [[[{x.GetRealativePathWindowsStyle()};; OwnerId: {x.OwnerId};;DeviceOwner: [{String.Join(", ",x.DeviceOwner )}]  ]]]"))}\n]]\n"
+            );
+
             SyncFileData existingFile = context
                 .Files.ToList()
                 .Where(x =>
-                    x.GetRealativePath()
-                        .Equals(removeFileDeviceOwnership.fileData.GetRealativePath())
+                    x.GetRealativePathWindowsStyle()
+                        .Equals(removeFileDeviceOwnership.fileData.GetRealativePathWindowsStyle())
                     && x.OwnerId.Equals(removeFileDeviceOwnership.userID)
                     && x.DeviceOwner.Contains(removeFileDeviceOwnership.deviceId)
                 )
@@ -149,7 +161,7 @@ namespace Cloud_Storage_Server.Handlers
             if (existingFile == null)
             {
                 throw new KeyNotFoundException(
-                    $"File with path {removeFileDeviceOwnership.fileData.GetRealativePath()} not found"
+                    $"File with path {removeFileDeviceOwnership.fileData.GetRealativePathWindowsStyle()} not found"
                 );
             }
 
