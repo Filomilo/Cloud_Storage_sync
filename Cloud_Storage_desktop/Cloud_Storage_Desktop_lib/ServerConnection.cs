@@ -279,6 +279,7 @@ namespace Cloud_Storage_Desktop_lib
                 response = _httpClientFactory
                     .GetHttpClient()
                     .GetAsync("/api/Helath/healthSecured")
+                    .WaitAsync(new TimeSpan(1000l))
                     .Result;
             }
             catch (Exception ex)
@@ -311,7 +312,7 @@ namespace Cloud_Storage_Desktop_lib
             }
             String token = response.Content.ReadAsStringAsync().Result;
             this._credentialManager.SaveToken(token);
-          
+
             _LoadToken();
         }
 
@@ -396,7 +397,6 @@ namespace Cloud_Storage_Desktop_lib
 
         public void UploudFile(UploudFileData fileData, Stream stream)
         {
-            
             logger.LogDebug(
                 $"Upldoing file  file from device {this._credentialManager.GetDeviceID()}"
             );
