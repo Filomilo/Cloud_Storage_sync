@@ -132,10 +132,15 @@ namespace Cloud_Storage_desktop
             //GuiDataElement guiDataElement = new GuiDataElement(syncFileData);
             //GuiDataElement guiDataElementnewer = new GuiDataElement(syncFileDataNewest);
 
+            //SyncFileData syncFileDataNewer = syncFileDataNewest.Clone();
+            //syncFileDataNewer.Version = syncFileData.Version + 2;
+            //GuiDataElement guiDataElementnewst = new GuiDataElement(syncFileDataNewer);
+
             //_bservableCollection.Add(guiDataElement);
             //_bservableCollection.Add(guiDataElement);
             //_bservableCollection.Add(guiDataElementnewer);
             //_bservableCollection.Add(guiDataElement);
+            //_bservableCollection.Add(guiDataElementnewst);
             //_bservableCollection
         }
 
@@ -143,7 +148,7 @@ namespace Cloud_Storage_desktop
         {
             GuiDataElement guiDataElement = _bservableCollection
                 .Where(x => x.Path == realitvePath)
-                .OrderBy(x => x.Version)
+                .OrderByDescending(x => x.Version)
                 .FirstOrDefault();
             return guiDataElement == null ? 0 : guiDataElement.Version;
         }
@@ -164,7 +169,7 @@ namespace Cloud_Storage_desktop
                     selected = guiDataElement;
                     String path = guiDataElement.Path;
                     ulong newestVersion = GetNewestVersionOfFileWIhtRealitvePath(path);
-                    if (guiDataElement.Version == newestVersion)
+                    if (guiDataElement.Version < newestVersion)
                     {
                         canRestore = true;
                     }
