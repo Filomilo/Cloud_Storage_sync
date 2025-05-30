@@ -1637,10 +1637,6 @@ namespace Cloud_Storage_Test
             EnsureAmountOfFilesOnServer(filesOnserver);
         }
 
-
-
-
-
         [Test]
         [TestCase(1)]
         [TestCase(10)]
@@ -1648,9 +1644,8 @@ namespace Cloud_Storage_Test
         [TestCase(500)]
         [TestCase(1024)]
         [TestCase(2000)]
-        //[TestCase(4096)]
-        //[TestCase(8192)]
-
+        [TestCase(4096)]
+        [TestCase(8192)]
         public void Test_Sync_File_Of_Size(long sizeInMb)
         {
             #region Ensure connected and empty
@@ -1661,7 +1656,7 @@ namespace Cloud_Storage_Test
             #region Create New File
 
             String createdFileName = this.AddTMpFileOfSize(
-                sizeInMb*1024*1024,
+                sizeInMb * 1024 * 1024,
                 this._Client1Config
             );
 
@@ -1671,10 +1666,13 @@ namespace Cloud_Storage_Test
             Assert.DoesNotThrow(
                 () =>
                 {
-                    TestHelpers.EnsureTrue(() =>
-                    {
-                        return _localFileRepositoryService1.GetAllFiles().Count() == 1;
-                    }, 10000+100 * sizeInMb);
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            return _localFileRepositoryService1.GetAllFiles().Count() == 1;
+                        },
+                        10000 + 100 * sizeInMb
+                    );
                 },
                 $"Locla repostir should have osme file"
             );
@@ -1687,13 +1685,16 @@ namespace Cloud_Storage_Test
             Assert.DoesNotThrow(
                 () =>
                 {
-                    TestHelpers.EnsureTrue(() =>
-                    {
-                        string newDevieFileHAs = FileManager.GetHashOfFile(
-                            Path.Join(_Client2Config.StorageLocation, createdFileName)
-                        );
-                        return serverFclient1.Equals(newDevieFileHAs);
-                    },10000+100* sizeInMb);
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            string newDevieFileHAs = FileManager.GetHashOfFile(
+                                Path.Join(_Client2Config.StorageLocation, createdFileName)
+                            );
+                            return serverFclient1.Equals(newDevieFileHAs);
+                        },
+                        10000 + 1000 * sizeInMb
+                    );
                 },
                 $"new device file hash \n[[{newDevieFileHAs}]]\n IS not the same as file hash on server \n[[{serverFclient1}]]\n"
             );
@@ -1709,15 +1710,6 @@ namespace Cloud_Storage_Test
 
             #endregion
         }
-
-
-
-
-
-
-
-
-
 
         private void EnsureTheSameFileOnBothDevices(
             string createdFileName,
@@ -1799,23 +1791,14 @@ namespace Cloud_Storage_Test
             return filesAdded;
         }
 
-        private string AddTMpFileOfSize(
-    long sizeOfFileInBytes,
-    IConfiguration config
-)
+        private string AddTMpFileOfSize(long sizeOfFileInBytes, IConfiguration config)
         {
-           
-
             string direcotry = config.StorageLocation;
-      
 
-           
-               String fileName= TestHelpers.CreateTmpFileOfSize(direcotry, sizeOfFileInBytes);
-               
+            String fileName = TestHelpers.CreateTmpFileOfSize(direcotry, sizeOfFileInBytes);
+
             return fileName;
         }
-
-
 
         private void CheckIfTheSameContentOnClinets(
             List<CloudDriveSyncSystem> cloudDriveSyncSystems
