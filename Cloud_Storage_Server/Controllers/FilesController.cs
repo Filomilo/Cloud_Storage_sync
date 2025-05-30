@@ -73,6 +73,7 @@ namespace Cloud_Storage_Server.Controllers
         }
 
         [Route("upload")]
+        [DisableRequestSizeLimit]
         [HttpPost]
         public async Task<IActionResult> UploadFile([FromForm] FileUploudRequest filerequest)
         {

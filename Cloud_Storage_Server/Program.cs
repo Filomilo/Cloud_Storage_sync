@@ -7,6 +7,7 @@ using Cloud_Storage_Server.Interfaces;
 using Cloud_Storage_Server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -109,9 +110,14 @@ builder.Services.AddAuthorization();
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
-builder.WebHost.ConfigureKestrel(serverOptions =>
+builder.WebHost.UseKestrel(serverOptions =>
 {
-    serverOptions.Limits.MaxRequestBodySize = 1024*1000*1024*2; 
+    serverOptions.Limits.MaxRequestBodySize = long.MaxValue;
+});
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = long.MaxValue;
 });
 
 var app = builder.Build();

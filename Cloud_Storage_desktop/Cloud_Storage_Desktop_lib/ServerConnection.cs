@@ -279,7 +279,7 @@ namespace Cloud_Storage_Desktop_lib
                 response = _httpClientFactory
                     .GetHttpClient()
                     .GetAsync("/api/Helath/healthSecured")
-                    .WaitAsync(new TimeSpan(1000l))
+                    .WaitAsync(new TimeSpan(0, 0, 0, 100))
                     .Result;
             }
             catch (Exception ex)
@@ -533,7 +533,10 @@ namespace Cloud_Storage_Desktop_lib
         {
             var response = this
                 ._httpClientFactory.GetHttpClient()
-                .GetAsync($"api/Files/download?guid={guid.ToString()}")
+                .GetAsync(
+                    $"api/Files/download?guid={guid.ToString()}",
+                    HttpCompletionOption.ResponseHeadersRead
+                )
                 .Result;
             if (!response.IsSuccessStatusCode)
                 throw new Exception(
