@@ -82,7 +82,7 @@ namespace Cloud_Storage_Common
         {
             string relativePath = Path.GetRelativePath(
                 realativeTo,
-                Path.GetDirectoryName(filePath)
+                Path.GetDirectoryName(filePath) + "\\"
             );
             relativePath = relativePath == "." ? ".\\" : relativePath;
             return relativePath;
@@ -151,7 +151,7 @@ namespace Cloud_Storage_Common
                         FileAccess.Read,
                         FileShare.ReadWrite,
                         100,
-                        5000
+                        50000
                     )
                 )
                 {

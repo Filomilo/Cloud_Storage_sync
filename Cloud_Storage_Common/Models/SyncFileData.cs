@@ -37,6 +37,8 @@ namespace Cloud_Storage_Common.Models
 
         public override string ToString()
         {
+            if (Path == null || Name == null || Extenstion == null)
+                return "null";
             return $" {System.IO.Path.Combine(Path, Name)}{Extenstion}";
         }
 
@@ -219,7 +221,7 @@ namespace Cloud_Storage_Common.Models
         //public DateTime SyncDate { get; set; }
 
         [ForeignKey("Devices")]
-        public List<string> DeviceOwner { get; set; }
+        public List<string> DeviceOwner { get; set; } = new List<string>();
         public virtual List<Device> OwnersDevices { get; set; }
 
         public override bool Equals(object? o)

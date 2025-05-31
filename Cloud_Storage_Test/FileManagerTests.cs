@@ -47,7 +47,7 @@ namespace Cloud_Storage_Common.Tests
         [Test]
         public void GetFilePathParamsFormRelativePathTest()
         {
-            string path = "test/test.txt";
+            string path = "test\\test.txt";
             FileManager.GetFilePathParamsFormRelativePath(
                 path,
                 out string directory,
@@ -55,7 +55,7 @@ namespace Cloud_Storage_Common.Tests
                 out string extesnion
             );
             Assert.That(
-                directory == "test",
+                directory == "test\\",
                 $"Expeccted directory to be [[test]] but instead is [[{directory}]]"
             );
             Assert.That(

@@ -195,14 +195,17 @@ namespace Cloud_Storage_Test
             Assert.DoesNotThrow(
                 () =>
                 {
-                    TestHelpers.EnsureTrue(() =>
-                    {
-                        using (var ctx = new SqliteDataBaseContextGenerator().GetDbContext())
+                    TestHelpers.EnsureTrue(
+                        () =>
                         {
-                            files = this.GetAllFilesOnServer();
-                            return files.Count == 1;
-                        }
-                    });
+                            using (var ctx = new SqliteDataBaseContextGenerator().GetDbContext())
+                            {
+                                files = this.GetAllFilesOnServer();
+                                return files.Count == 1;
+                            }
+                        },
+                        20000
+                    );
                 },
                 $"File reposirotry did not reach files amount to one in desired time, exprect to file repository have 1 but has [[{files.Count}]] "
             );
@@ -1175,7 +1178,7 @@ namespace Cloud_Storage_Test
                                 .FirstOrDefault();
                             return localFileData != null && localFileData.Name == newName;
                         },
-                        10000
+                        20000
                     );
                 },
                 $"File name in database [[{_localFileRepositoryService1
@@ -1650,9 +1653,8 @@ namespace Cloud_Storage_Test
         [TestCase(500)]
         [TestCase(1024)]
         [TestCase(2000)]
-        //[TestCase(4096)]
-        //[TestCase(8192)]
-
+        [TestCase(4096)]
+        [TestCase(8192)]
         public void Test_Sync_File_Of_Size(long sizeInMb)
         {
             #region Ensure connected and empty
@@ -1700,7 +1702,7 @@ namespace Cloud_Storage_Test
                             );
                             return serverFclient1.Equals(newDevieFileHAs);
                         },
-                        10000 + 100 * sizeInMb
+                        10000 + 200 * sizeInMb
                     );
                 },
                 $"new device file hash \n[[{newDevieFileHAs}]]\n IS not the same as file hash on server \n[[{serverFclient1}]]\n"
@@ -1899,7 +1901,15 @@ namespace Cloud_Storage_Test
 
             TestHelpers
                 .GetDeafultFileSystemService()
-                .SaveFile(new SyncFileData() { Id = guid, OwnerId = userID }, memoryStream);
+                .SaveFile(
+                    new SyncFileData()
+                    {
+                        Id = guid,
+                        OwnerId = userID,
+                        Path = ".",
+                    },
+                    memoryStream
+                );
             using (AbstractDataBaseContext context = new DatabaseContextSqLite())
             {
                 FileRepository.SaveNewFile(

@@ -11,6 +11,12 @@ namespace Cloud_Storage_Test
     [TestFixture]
     public class TestTestServer
     {
+        [TearDown]
+        public void tearDown()
+        {
+            ServerControlHelpers.Instance.StopServer();
+        }
+
         [Test]
         public void TestStartAndConnectionToserverITestEnverment()
         {

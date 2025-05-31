@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_desktop.Logic;
+using Cloud_Storage_Server.Database;
 using Lombok.NET;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -19,10 +20,17 @@ namespace Cloud_Storage_Test
     {
         private Process process;
 
+        private void ensureAccesToDb()
+        {
+            DatabaseContextSqLite db = new DatabaseContextSqLite();
+            db.Database.EnsureDeleted();
+        }
+
         public void StartServer()
         {
+            ensureAccesToDb();
             string serverExePath =
-                "..\\..\\..\\..\\Cloud_Storage_Server\\bin\\Release\\net8.0\\Cloud_Storage_Server.exe";
+                "..\\..\\..\\..\\Cloud_Storage_Server\\bin\\Release\\net8.0\\win-x64\\Cloud_Storage_Server.exe";
 
             process = Process.Start(
                 new ProcessStartInfo
@@ -41,10 +49,13 @@ namespace Cloud_Storage_Test
                 new TestCredentialMangager(),
                 new NullWebSocket()
             );
-            TestHelpers.EnsureTrue(() =>
-            {
-                return serverConnection.CheckIfHelathy();
-            });
+            TestHelpers.EnsureTrue(
+                () =>
+                {
+                    return serverConnection.CheckIfHelathy();
+                },
+                10000
+            );
         }
 
         public void StopServer()

@@ -109,6 +109,7 @@ namespace Cloud_Storage_Test
             logger.LogDebug("Remove tmp dir");
             TestHelpers.RemoveTmpDirectory();
             TestHelpers.KillDotnetExe();
+            TestHelpers.ResetDatabase();
         }
 
         [Test]
@@ -166,7 +167,7 @@ namespace Cloud_Storage_Test
                                 return amountOFFile == 1;
                             }
                         },
-                        10000
+                        5000
                     );
                 },
                 $"Server doesnt  contain onr file in db but [[{amountOFFile}]]:: \n  [[\n {LogFileController.GetLogFileContent()}\n]]"
