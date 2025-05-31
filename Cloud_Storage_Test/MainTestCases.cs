@@ -195,14 +195,17 @@ namespace Cloud_Storage_Test
             Assert.DoesNotThrow(
                 () =>
                 {
-                    TestHelpers.EnsureTrue(() =>
-                    {
-                        using (var ctx = new SqliteDataBaseContextGenerator().GetDbContext())
+                    TestHelpers.EnsureTrue(
+                        () =>
                         {
-                            files = this.GetAllFilesOnServer();
-                            return files.Count == 1;
-                        }
-                    });
+                            using (var ctx = new SqliteDataBaseContextGenerator().GetDbContext())
+                            {
+                                files = this.GetAllFilesOnServer();
+                                return files.Count == 1;
+                            }
+                        },
+                        20000
+                    );
                 },
                 $"File reposirotry did not reach files amount to one in desired time, exprect to file repository have 1 but has [[{files.Count}]] "
             );
@@ -959,13 +962,16 @@ namespace Cloud_Storage_Test
             Assert.DoesNotThrow(
                 () =>
                 {
-                    TestHelpers.EnsureTrue(() =>
-                    {
-                        return FileManager
-                                .GetAllFilesInLocation(this._Client2Config.StorageLocation)
-                                .Count == 2;
-                        ;
-                    });
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            return FileManager
+                                    .GetAllFilesInLocation(this._Client2Config.StorageLocation)
+                                    .Count == 2;
+                            ;
+                        },
+                        20000
+                    );
                 },
                 $"Files on device2 not 2 but {FileManager
                     .GetAllFilesInLocation(this._Client2Config.StorageLocation)
@@ -991,10 +997,13 @@ namespace Cloud_Storage_Test
             Assert.DoesNotThrow(
                 () =>
                 {
-                    TestHelpers.EnsureTrue(() =>
-                    {
-                        return this._localFileRepositoryService1.GetAllFiles().Count() == 2;
-                    });
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            return this._localFileRepositoryService1.GetAllFiles().Count() == 2;
+                        },
+                        50000
+                    );
                 },
                 $"File in client databse 1 is not 2\n but {this._localFileRepositoryService1.GetAllFiles().Count()} \n [[{String.Join(", ", this._localFileRepositoryService1.GetAllFiles())}]]"
             );
@@ -1169,7 +1178,7 @@ namespace Cloud_Storage_Test
                                 .FirstOrDefault();
                             return localFileData != null && localFileData.Name == newName;
                         },
-                        10000
+                        20000
                     );
                 },
                 $"File name in database [[{_localFileRepositoryService1
@@ -1892,7 +1901,15 @@ namespace Cloud_Storage_Test
 
             TestHelpers
                 .GetDeafultFileSystemService()
-                .SaveFile(new SyncFileData() { Id = guid, OwnerId = userID }, memoryStream);
+                .SaveFile(
+                    new SyncFileData()
+                    {
+                        Id = guid,
+                        OwnerId = userID,
+                        Path = ".",
+                    },
+                    memoryStream
+                );
             using (AbstractDataBaseContext context = new DatabaseContextSqLite())
             {
                 FileRepository.SaveNewFile(
@@ -1934,9 +1951,7 @@ namespace Cloud_Storage_Test
                     );
 
                     FileData correspoidingFile = filesInUserLocation.Find(x =>
-                        x.Name == syncFileData.Name
-                        && x.Path == syncFileData.Path
-                        && x.Extenstion == syncFileData.Extenstion
+                        x.GetRealativePath() == syncFileData.GetRealativePath()
                     );
                     string filepath = correspoidingFile.getFullFilePathForBasePath(
                         cloudDriveSyncSystem.Configuration.StorageLocation

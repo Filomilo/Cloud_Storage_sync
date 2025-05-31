@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.IO;
+using System.Security.Cryptography;
 using Cloud_Storage_Common.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -81,9 +82,9 @@ namespace Cloud_Storage_Common
         {
             string relativePath = Path.GetRelativePath(
                 realativeTo,
-                Path.GetDirectoryName(filePath)
+                Path.GetDirectoryName(filePath) + "\\"
             );
-            relativePath = relativePath.Length == 0 ? "." : relativePath;
+            relativePath = relativePath == "." ? ".\\" : relativePath;
             return relativePath;
         }
 
@@ -150,7 +151,7 @@ namespace Cloud_Storage_Common
                         FileAccess.Read,
                         FileShare.ReadWrite,
                         100,
-                        5000
+                        50000
                     )
                 )
                 {
@@ -197,6 +198,7 @@ namespace Cloud_Storage_Common
                 ms / 100
             );
         }
+
         public static FileStream GetStreamForFileAsync(string fiePath, int ms = 500000)
         {
             Logger.LogTrace($"GetStreamForFile:: [[{fiePath}]]");
@@ -209,6 +211,7 @@ namespace Cloud_Storage_Common
                 ms / 100
             );
         }
+
         public static void DeleteFile(string v)
         {
             File.Delete(v);
@@ -221,8 +224,12 @@ namespace Cloud_Storage_Common
             out string extesnion
         )
         {
+            if (OperatingSystem.IsLinux())
+            {
+                relativePath = relativePath.Replace("\\", "/");
+            }
             name = Path.GetFileNameWithoutExtension(relativePath);
-            realitveDirectory = Path.GetDirectoryName(relativePath);
+            realitveDirectory = Path.GetDirectoryName(relativePath) + "\\";
             extesnion = Path.GetExtension(relativePath);
             if (realitveDirectory == "")
             {

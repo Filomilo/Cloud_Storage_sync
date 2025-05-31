@@ -53,8 +53,8 @@ builder.Services.AddSingleton<IWebsocketConnectedController, WebsocketConnectedC
 );
 builder.Services.Configure<FormOptions>(options =>
 {
-    options.MultipartBodyLengthLimit = int.MaxValue;
-    options.BufferBodyLengthLimit = int.MaxValue;
+    options.MultipartBodyLengthLimit = long.MaxValue;
+    options.BufferBodyLengthLimit = long.MaxValue;
     options.ValueCountLimit = int.MaxValue;
 });
 IServerConfig serverConfig = new ServerConfig();

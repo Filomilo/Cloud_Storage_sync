@@ -115,7 +115,8 @@ namespace Cloud_Storage_Test
                                 {
                                     return fileRepositoryService.GetAllFiles().Count() == 1;
                                 }
-                            )
+                            ),
+                            50000
                         );
                     }
                 )

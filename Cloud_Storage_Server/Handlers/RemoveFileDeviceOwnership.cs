@@ -1,4 +1,5 @@
-﻿using Cloud_Storage_Common.Interfaces;
+﻿using Cloud_Storage_Common;
+using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Database;
 using Cloud_Storage_Server.Interfaces;
@@ -16,6 +17,9 @@ namespace Cloud_Storage_Server.Handlers
     public class RemoveFileDeviceOwnership : AbstactHandler
     {
         private IDataBaseContextGenerator _dataBaseContextGenerator;
+        private static ILogger _logger = CloudDriveLogging.Instance.GetLogger(
+            "RemoveFileDeviceOwnership"
+        );
 
         public RemoveFileDeviceOwnership(IDataBaseContextGenerator dataBaseContextGenerator)
         {
@@ -137,6 +141,21 @@ namespace Cloud_Storage_Server.Handlers
             RemoveFileDeviceOwnershipRequest? removeFileDeviceOwnership
         )
         {
+            _logger.LogTrace(
+                $"Searhing in db for ilfe with path: {removeFileDeviceOwnership.fileData.GetRealativePath()} and owner id: {removeFileDeviceOwnership.userID} , deviceo wner :{removeFileDeviceOwnership.deviceId}"
+            );
+            _logger.LogTrace(
+                $"Searhing in db for ilfe with path: {removeFileDeviceOwnership.fileData.Path} and owner id: {removeFileDeviceOwnership.userID} , deviceo wner :{removeFileDeviceOwnership.deviceId}"
+            );
+            _logger.LogTrace(
+                $"Searhing in db with content: \n\n [[\n {String.Join(",\n", context
+                    .Files.ToList().Select(x=> $"GetRealativePathWindowsStyle: [[[{x.GetRealativePath()};; OwnerId: {x.OwnerId};;DeviceOwner: [{String.Join(", ",x.DeviceOwner )}]  ]]]"))}\n]]\n"
+            );
+            _logger.LogTrace(
+                $"Searhing in db with content: \n\n [[\n {String.Join(",\n", context
+                  .Files.ToList().Select(x => $"path: [[[{x.Path};; OwnerId: {x.OwnerId};;DeviceOwner: [{String.Join(", ", x.DeviceOwner)}]  ]]]"))}\n]]\n"
+            );
+
             SyncFileData existingFile = context
                 .Files.ToList()
                 .Where(x =>

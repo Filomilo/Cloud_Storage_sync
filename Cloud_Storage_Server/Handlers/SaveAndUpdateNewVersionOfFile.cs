@@ -69,7 +69,9 @@ namespace Cloud_Storage_Server.Handlers
                     }
 
                     saved = context.Files.Add(file).Entity;
-
+                    _logger.LogTrace(
+                        $"Saved file: with path [[{saved.Path}]] name: [[{saved.Name}]] extesnion: [[{saved.Name}]]"
+                    );
                     this._fileSystemService.SaveFile(saved, fileUploadRequest.fileStream);
 
                     transaction.Commit();

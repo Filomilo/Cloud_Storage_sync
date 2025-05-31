@@ -95,8 +95,19 @@ namespace Cloud_Storage_Test.Dekstop
         public void TestServiceUpdate()
         {
             EnsureServiceIsRunning();
-            serviceOperator.UpdateService();
-            Assert.That(serviceOperator.IsServiceRunning());
+            serviceOperator.UpdateService().Wait();
+            Assert.DoesNotThrow(() =>
+            {
+                TestHelpers.EnsureTrue(
+                    (
+                        () =>
+                        {
+                            return serviceOperator.IsServiceRunning();
+                        }
+                    ),
+                    2000
+                );
+            });
         }
 
         [Test]

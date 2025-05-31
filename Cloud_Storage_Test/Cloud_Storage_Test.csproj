@@ -39,7 +39,7 @@
   </ItemGroup>
 
 	<Target Name="CopyFromAnotherProject" AfterTargets="Build">
-		<Exec Command='dotnet publish "..\CloudDriveSyncService\CloudDriveSyncService.csproj" -c Release -r win-x64 --self-contained true' ConsoleToMSBuild="true" />
+		<Exec Command="dotnet publish &quot;..\CloudDriveSyncService\CloudDriveSyncService.csproj&quot; -c Release -r win-x64 --self-contained true" ConsoleToMSBuild="true" />
 		<ItemGroup>
 			<FilesToCopy Include="..\CloudDriveSyncService\bin\Release\net8.0\win-x64\publish\**\*.*" />
 		</ItemGroup>

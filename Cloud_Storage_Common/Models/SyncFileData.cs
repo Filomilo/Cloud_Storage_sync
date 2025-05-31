@@ -9,7 +9,7 @@ namespace Cloud_Storage_Common.Models
 {
     public class FileData : IComparable
     {
-        private ILogger _logger = CloudDriveLogging.Instance.GetLogger("FileData");
+        private static ILogger _logger = CloudDriveLogging.Instance.GetLogger("FileData");
 
         public FileData() { }
 
@@ -37,6 +37,8 @@ namespace Cloud_Storage_Common.Models
 
         public override string ToString()
         {
+            if (Path == null || Name == null || Extenstion == null)
+                return "null";
             return $" {System.IO.Path.Combine(Path, Name)}{Extenstion}";
         }
 
@@ -53,6 +55,13 @@ namespace Cloud_Storage_Common.Models
         public string GetRealativePath()
         {
             return $"{System.IO.Path.Combine(this.Path, this.Name)}{this.Extenstion}";
+        }
+
+        public string GetRealativePathWindowsStyle()
+        {
+            String path = $"{this.Path}{this.Name}{this.Extenstion}";
+            _logger.LogTrace($"File Path as windows path [[{path}]]");
+            return path;
         }
 
         public string GetFileNameANdExtenstion()
@@ -212,7 +221,7 @@ namespace Cloud_Storage_Common.Models
         //public DateTime SyncDate { get; set; }
 
         [ForeignKey("Devices")]
-        public List<string> DeviceOwner { get; set; }
+        public List<string> DeviceOwner { get; set; } = new List<string>();
         public virtual List<Device> OwnersDevices { get; set; }
 
         public override bool Equals(object? o)

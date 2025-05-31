@@ -249,6 +249,7 @@ namespace Cloud_Storage_Desktop_lib
                 HttpResponseMessage response = _httpClientFactory
                     .GetHttpClient()
                     .GetAsync("/api/Helath/health")
+                    .WaitAsync(new TimeSpan(0, 0, 0, 5))
                     .Result;
 
                 if (response.StatusCode != HttpStatusCode.OK)
