@@ -280,7 +280,7 @@ namespace Cloud_Storage_Desktop_lib
                 response = _httpClientFactory
                     .GetHttpClient()
                     .GetAsync("/api/Helath/healthSecured")
-                    .WaitAsync(new TimeSpan(0, 0, 0, 10))
+                    .WaitAsync(new TimeSpan(0, 0, 0, 100))
                     .Result;
             }
             catch (Exception ex)

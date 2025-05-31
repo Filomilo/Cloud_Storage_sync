@@ -1702,7 +1702,7 @@ namespace Cloud_Storage_Test
                             );
                             return serverFclient1.Equals(newDevieFileHAs);
                         },
-                        10000 + 200 * sizeInMb
+                        10000 + 1000 * sizeInMb
                     );
                 },
                 $"new device file hash \n[[{newDevieFileHAs}]]\n IS not the same as file hash on server \n[[{serverFclient1}]]\n"

@@ -1,9 +1,15 @@
 ﻿using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
+using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Services;
+using Cloud_Storage_Desktop_lib.Tests;
 using Cloud_Storage_Test;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 
@@ -11,10 +17,34 @@ namespace Cloud_Storage_Desktop_lib.Tests
 {
     class MyWebApplication : WebApplicationFactory<Program>
     {
-        protected override IHost CreateHost(IHostBuilder builder)
-        {
-            return base.CreateHost(builder);
-        }
+        //protected override IHost CreateHost(IHostBuilder builder)
+        //{
+        //    builder.ConfigureServices(services =>
+        //    {
+        //        // Increase multipart form limit
+        //        services.Configure<FormOptions>(options =>
+        //        {
+        //            options.MultipartBodyLengthLimit = long.MaxValue; // Unlimited
+        //        });
+        //    });
+
+        //    return base.CreateHost(builder);
+        //}
+
+        //protected override void ConfigureWebHost(IWebHostBuilder builder)
+        //{
+        //    builder.UseTestServer();
+
+        //    builder.ConfigureTestServices(services =>
+        //    {
+        //        // Configure additional test-specific services here
+        //    });
+        //}
+
+        //protected override void ConfigureClient(HttpClient client)
+        //{
+        //    client.DefaultRequestHeaders.ExpectContinue = false;
+        //}
     }
 
     [TestFixture()]
