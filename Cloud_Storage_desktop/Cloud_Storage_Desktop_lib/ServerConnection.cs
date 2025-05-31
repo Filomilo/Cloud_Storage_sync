@@ -534,7 +534,10 @@ namespace Cloud_Storage_Desktop_lib
         {
             var response = this
                 ._httpClientFactory.GetHttpClient()
-                .GetAsync($"api/Files/download?guid={guid.ToString()}")
+                .GetAsync(
+                    $"api/Files/download?guid={guid.ToString()}",
+                    HttpCompletionOption.ResponseHeadersRead
+                )
                 .Result;
             if (!response.IsSuccessStatusCode)
                 throw new Exception(

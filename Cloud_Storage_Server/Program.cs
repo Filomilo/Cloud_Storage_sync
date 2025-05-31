@@ -52,8 +52,8 @@ builder.Services.AddSingleton<IWebsocketConnectedController, WebsocketConnectedC
 );
 builder.Services.Configure<FormOptions>(options =>
 {
-    options.MultipartBodyLengthLimit = int.MaxValue;
-    options.BufferBodyLengthLimit = int.MaxValue;
+    options.MultipartBodyLengthLimit = long.MaxValue;
+    options.BufferBodyLengthLimit = long.MaxValue;
     options.ValueCountLimit = int.MaxValue;
 });
 IServerConfig serverConfig = new ServerConfig();
@@ -111,7 +111,7 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    serverOptions.Limits.MaxRequestBodySize = 1024*1000*1024*2; 
+    serverOptions.Limits.MaxRequestBodySize = 1024 * 1000 * 1024 * 2;
 });
 
 var app = builder.Build();
