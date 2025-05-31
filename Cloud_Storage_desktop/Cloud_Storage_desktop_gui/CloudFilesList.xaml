@@ -46,6 +46,7 @@
                     Header="Path" />
                 <DataGridTextColumn Binding="{Binding Version}" Header="Version" />
                 <DataGridTextColumn Binding="{Binding BytesSize}" Header="Size (Bytes)" />
+                <DataGridTextColumn Binding="{Binding deleted}" Header="is delted" />
             </DataGrid.Columns>
         </DataGrid>
         <Button
@@ -54,7 +55,8 @@
             Margin="0,0,10,10"
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom"
-            Content="Restore" Click="Button_Restore_Click" />
+            Click="Button_Restore_Click"
+            Content="Restore" />
 
 
     </Grid>

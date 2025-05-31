@@ -142,18 +142,25 @@ namespace Cloud_Storage_Server.Handlers
         )
         {
             _logger.LogTrace(
-                $"Searhing in db for ilfe with path: {removeFileDeviceOwnership.fileData.GetRealativePathWindowsStyle()} and owner id: {removeFileDeviceOwnership.userID} , deviceo wner :{removeFileDeviceOwnership.deviceId}"
+                $"Searhing in db for ilfe with path: {removeFileDeviceOwnership.fileData.GetRealativePath()} and owner id: {removeFileDeviceOwnership.userID} , deviceo wner :{removeFileDeviceOwnership.deviceId}"
+            );
+            _logger.LogTrace(
+                $"Searhing in db for ilfe with path: {removeFileDeviceOwnership.fileData.Path} and owner id: {removeFileDeviceOwnership.userID} , deviceo wner :{removeFileDeviceOwnership.deviceId}"
             );
             _logger.LogTrace(
                 $"Searhing in db with content: \n\n [[\n {String.Join(",\n", context
-                    .Files.ToList().Select(x=> $"GetRealativePathWindowsStyle: [[[{x.GetRealativePathWindowsStyle()};; OwnerId: {x.OwnerId};;DeviceOwner: [{String.Join(", ",x.DeviceOwner )}]  ]]]"))}\n]]\n"
+                    .Files.ToList().Select(x=> $"GetRealativePathWindowsStyle: [[[{x.GetRealativePath()};; OwnerId: {x.OwnerId};;DeviceOwner: [{String.Join(", ",x.DeviceOwner )}]  ]]]"))}\n]]\n"
+            );
+            _logger.LogTrace(
+                $"Searhing in db with content: \n\n [[\n {String.Join(",\n", context
+                  .Files.ToList().Select(x => $"path: [[[{x.Path};; OwnerId: {x.OwnerId};;DeviceOwner: [{String.Join(", ", x.DeviceOwner)}]  ]]]"))}\n]]\n"
             );
 
             SyncFileData existingFile = context
                 .Files.ToList()
                 .Where(x =>
-                    x.GetRealativePathWindowsStyle()
-                        .Equals(removeFileDeviceOwnership.fileData.GetRealativePathWindowsStyle())
+                    x.GetRealativePath()
+                        .Equals(removeFileDeviceOwnership.fileData.GetRealativePath())
                     && x.OwnerId.Equals(removeFileDeviceOwnership.userID)
                     && x.DeviceOwner.Contains(removeFileDeviceOwnership.deviceId)
                 )
@@ -161,7 +168,7 @@ namespace Cloud_Storage_Server.Handlers
             if (existingFile == null)
             {
                 throw new KeyNotFoundException(
-                    $"File with path {removeFileDeviceOwnership.fileData.GetRealativePathWindowsStyle()} not found"
+                    $"File with path {removeFileDeviceOwnership.fileData.GetRealativePath()} not found"
                 );
             }
 

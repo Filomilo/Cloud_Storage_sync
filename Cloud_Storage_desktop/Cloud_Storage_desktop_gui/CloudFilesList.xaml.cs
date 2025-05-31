@@ -38,6 +38,11 @@ namespace Cloud_Storage_desktop
             {
                 get { return this._syncFileData.GetRealativePath(); }
             }
+
+            public bool deleted
+            {
+                get { return this._syncFileData.Hash.Length == 0; }
+            }
             public ulong Version
             {
                 get { return this._syncFileData.Version; }
@@ -93,18 +98,23 @@ namespace Cloud_Storage_desktop
             {
                 foreach (SyncFileData addedFile in addfiles)
                 {
-                    _bservableCollection.Add(new GuiDataElement(addedFile));
+                    if (
+                        _bservableCollection.FirstOrDefault(x =>
+                            x.guid.Equals(addedFile.Id) && x.Version.Equals(addedFile.Version)
+                        ) == null
+                    )
+                        _bservableCollection.Add(new GuiDataElement(addedFile));
                 }
 
-                foreach (SyncFileData removedElement in removedfiles)
-                {
-                    _bservableCollection.Remove(
-                        _bservableCollection.FirstOrDefault(x =>
-                            x.Path == removedElement.GetRealativePath()
-                            && x.Version == removedElement.Version
-                        )
-                    );
-                }
+                //foreach (SyncFileData removedElement in removedfiles)
+                //{
+                //    _bservableCollection.Remove(
+                //        _bservableCollection.FirstOrDefault(x =>
+                //            x.Path == removedElement.GetRealativePath()
+                //            && x.Version == removedElement.Version
+                //        )
+                //    );
+                //}
             });
         }
 

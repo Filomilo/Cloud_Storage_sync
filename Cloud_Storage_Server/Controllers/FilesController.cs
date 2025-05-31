@@ -139,8 +139,10 @@ namespace Cloud_Storage_Server.Controllers
 
             string deviceId = JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization);
             FileData fileData = new FileData(relativePath);
-
-            this._FileSyncService.RemoveFile(new FileData(relativePath), user.id, deviceId);
+            _logger.LogTrace(
+                $"Deleting file wiht path: [[{fileData.Path}]] name [[{fileData.Name}]] and ext [[{fileData.Extenstion}]]"
+            );
+            this._FileSyncService.RemoveFile(fileData, user.id, deviceId);
 
             return Ok();
         }

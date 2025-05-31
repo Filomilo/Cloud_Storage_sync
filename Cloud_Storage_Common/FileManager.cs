@@ -224,6 +224,10 @@ namespace Cloud_Storage_Common
             out string extesnion
         )
         {
+            if (OperatingSystem.IsLinux())
+            {
+                relativePath = relativePath.Replace("\\", "/");
+            }
             name = Path.GetFileNameWithoutExtension(relativePath);
             realitveDirectory = Path.GetDirectoryName(relativePath) + "\\";
             extesnion = Path.GetExtension(relativePath);
