@@ -22,7 +22,7 @@ namespace Cloud_Storage_Common
             FileMode mode,
             FileAccess acces,
             FileShare fileshare = FileShare.Read,
-            int retryCount = 100,
+            int retryCount = 5000,
             int delayMilliseconds = 500
         )
         {
@@ -150,8 +150,8 @@ namespace Cloud_Storage_Common
                         FileMode.Open,
                         FileAccess.Read,
                         FileShare.ReadWrite,
-                        100,
-                        50000
+                        10000,
+                        500
                     )
                 )
                 {

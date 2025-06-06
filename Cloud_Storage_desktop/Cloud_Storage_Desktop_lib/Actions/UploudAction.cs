@@ -1,4 +1,5 @@
-﻿using Cloud_Storage_Common;
+﻿using System.Diagnostics;
+using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -48,6 +49,13 @@ namespace Cloud_Storage_Desktop_lib.Actions
 
                             serverConnection.UploudFile(fileData, stream);
                             logger.LogTrace($"Finished UploadAction ::: {fileData}");
+                        }
+                    }
+                    catch (AggregateException err)
+                    {
+                        foreach (var errInner in err.InnerExceptions)
+                        {
+                            logger.LogError(errInner.Message + "\n" + errInner.StackTrace);
                         }
                     }
                     catch (Exception EX)
