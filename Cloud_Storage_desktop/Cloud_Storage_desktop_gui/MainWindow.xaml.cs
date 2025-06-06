@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.IO;
+using System.Windows;
 using System.Windows.Controls;
 using Cloud_Storage_Common;
 using Cloud_Storage_Desktop_lib;
@@ -82,6 +83,25 @@ public partial class MainWindow : Window
     private void TextBoc_logs_OnTextChanged(object sender, TextChangedEventArgs e)
     {
         Dispatcher.InvokeAsync(() => { });
+    }
+
+    private void ClearLogs(object sender, RoutedEventArgs e)
+    {
+        Dispatcher.Invoke(() =>
+        {
+            FileManager.WaitForFile(
+                CloudDriveLogging.Instance.getLogFilePath(),
+                FileMode.Truncate,
+                FileAccess.Write,
+                FileShare.ReadWrite,
+                100,
+                100
+            );
+            TextBoc_logs.Clear();
+            FileLogWatcher.ResetWatch();
+            ;
+            ;
+        });
     }
 
     #endregion

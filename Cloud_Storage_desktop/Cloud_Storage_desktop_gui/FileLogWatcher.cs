@@ -123,5 +123,10 @@ namespace Cloud_Storage_desktop
 
             return content;
         }
+
+        public void ResetWatch()
+        {
+            _lastFileLength = 0;
+        }
     }
 }
