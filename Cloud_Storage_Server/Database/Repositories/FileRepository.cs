@@ -99,9 +99,14 @@ namespace Cloud_Storage_Server.Database.Repositories
                 throw new KeyNotFoundException("No file iwth this guuid");
             context.Remove(file);
             fileUpdateData.Id = file.Id;
-            context.SaveChangesAsync().Wait();
-            context.Files.Add(fileUpdateData);
-            context.SaveChangesAsync().Wait();
+
+            Awaiters.AwaitNotThrows(() =>
+            {
+                context.SaveChangesAsync().Wait();
+                context.Files.Add(fileUpdateData);
+
+                context.SaveChangesAsync().Wait();
+            });
         }
 
         internal static SyncFileData getNewestFileByPathNameExtensionAndUser(

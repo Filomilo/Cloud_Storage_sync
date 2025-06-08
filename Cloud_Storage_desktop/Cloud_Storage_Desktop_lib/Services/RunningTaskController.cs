@@ -144,7 +144,7 @@ namespace Cloud_Storage_Desktop_lib.Services
         public void addTaskToQueeu(ITaskToRun TaskToRun)
         {
             if (
-                this._QueuedTasks.First(x =>
+                this._QueuedTasks.FirstOrDefault(x =>
                     x.Id.Equals(TaskToRun.Id) && x.Name.Equals(TaskToRun.Name)
                 ) == null
             )
