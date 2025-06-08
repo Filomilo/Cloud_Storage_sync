@@ -15,6 +15,7 @@ using Cloud_Storage_Server.Interfaces;
 using Cloud_Storage_Server.Services;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using NUnit.Framework;
@@ -185,6 +186,7 @@ public class DataBAseContext1 : AbstractDataBaseContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseInMemoryDatabase("Files1");
+        optionsBuilder.ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
     }
 }
 
@@ -193,6 +195,7 @@ public class DataBAseContext2 : AbstractDataBaseContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseInMemoryDatabase("Files2");
+        optionsBuilder.ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning));
     }
 }
 
@@ -311,7 +314,7 @@ namespace Cloud_Storage_Test
             );
         }
 
-        private static String getRandomName()
+        public static String getRandomName()
         {
             var faker = new Bogus.Faker();
             string phrase =

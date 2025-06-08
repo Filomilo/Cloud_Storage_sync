@@ -1,10 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Runtime.CompilerServices;
+using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
 
 namespace Cloud_Storage_Server.Database.Repositories
 {
     public static class FileRepository
     {
+        private static ILogger _logger = CloudDriveLogging.Instance.GetLogger("FileRepository");
+
         public static SyncFileData SaveNewFile(AbstractDataBaseContext context, SyncFileData file)
         {
             SyncFileData savedFile = null;
@@ -21,9 +25,23 @@ namespace Cloud_Storage_Server.Database.Repositories
 
         public static SyncFileData GetFileOfID(AbstractDataBaseContext context, Guid id)
         {
-            SyncFileData file = context.Files.Where(x => x.Id.Equals(id)).FirstOrDefault();
-            if (file == null)
-                throw new KeyNotFoundException("No file iwth this guuid");
+            SyncFileData file = null;
+            try
+            {
+                Awaiters.AwaitTrue(() =>
+                {
+                    file = context.Files.Where(x => x.Id.Equals(id)).FirstOrDefault();
+                    return file != null;
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Cloud find guid {id} in {string.Join(", \n", context.Files)}");
+                throw new KeyNotFoundException(
+                    $"No file iwth this guuid {id} in [[\n {string.Join(", \n", context.Files)} \n]]"
+                );
+            }
+
             return file;
         }
 
@@ -96,7 +114,7 @@ namespace Cloud_Storage_Server.Database.Repositories
         {
             SyncFileData file = context
                 .Files.Where(x =>
-                    x.Path == path
+                    (x.Path == path || (path == ".\\" && x.Path == "."))
                     && x.Name == name
                     && x.Extenstion == extenstion
                     && x.OwnerId == ownerId

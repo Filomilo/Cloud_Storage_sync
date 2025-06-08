@@ -126,7 +126,7 @@ namespace Cloud_Storage_Desktop_lib.Services
                 : null;
             if (taskWIthTheSameId != null)
             {
-                this._QueuedTasks.Enqueue(task);
+                addTaskToQueeu(task);
             }
             else
             {
@@ -139,6 +139,18 @@ namespace Cloud_Storage_Desktop_lib.Services
         private bool isTaksWithTheSameIDAlreadyRunning(ITaskToRun task)
         {
             return this._RunningTask.ContainsKey(task.Id);
+        }
+
+        public void addTaskToQueeu(ITaskToRun TaskToRun)
+        {
+            if (
+                this._QueuedTasks.First(x =>
+                    x.Id.Equals(TaskToRun.Id) && x.Name.Equals(TaskToRun.Name)
+                ) == null
+            )
+            {
+                this._QueuedTasks.Enqueue(TaskToRun);
+            }
         }
 
         public void AddTask(ITaskToRun TaskToRun)
@@ -156,7 +168,7 @@ namespace Cloud_Storage_Desktop_lib.Services
                 }
                 else
                 {
-                    this._QueuedTasks.Enqueue(TaskToRun);
+                    addTaskToQueeu(TaskToRun);
                 }
 
                 logTaks();

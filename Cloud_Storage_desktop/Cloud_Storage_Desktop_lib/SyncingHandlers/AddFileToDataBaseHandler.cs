@@ -53,11 +53,14 @@ namespace Cloud_Storage_Server.Handlers
                     )
                 )
                 {
-                    _logger.LogDebug(
-                        $"File {fileUpload.Name} already exists in the database. Updating version. from {local.Version}"
-                    );
-                    local.Version = exisitngFile.Version + 1;
-                    this._fileRepositoryService.UpdateFile(exisitngFile, local);
+                    if (!exisitngFile.Hash.Equals(fileUpload.Hash))
+                    {
+                        _logger.LogDebug(
+                            $"File {fileUpload.Name} already exists in the database. Updating version. from {local.Version} to {local.Version + 1} from request {request}\n "
+                        );
+                        local.Version = exisitngFile.Version + 1;
+                        this._fileRepositoryService.UpdateFile(exisitngFile, local);
+                    }
                 }
                 else
                 {

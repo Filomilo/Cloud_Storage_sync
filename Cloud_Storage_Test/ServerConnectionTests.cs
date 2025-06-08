@@ -17,34 +17,34 @@ namespace Cloud_Storage_Desktop_lib.Tests
 {
     class MyWebApplication : WebApplicationFactory<Program>
     {
-        //protected override IHost CreateHost(IHostBuilder builder)
-        //{
-        //    builder.ConfigureServices(services =>
-        //    {
-        //        // Increase multipart form limit
-        //        services.Configure<FormOptions>(options =>
-        //        {
-        //            options.MultipartBodyLengthLimit = long.MaxValue; // Unlimited
-        //        });
-        //    });
+        protected override IHost CreateHost(IHostBuilder builder)
+        {
+            builder.ConfigureServices(services =>
+            {
+                // Increase multipart form limit
+                services.Configure<FormOptions>(options =>
+                {
+                    options.MultipartBodyLengthLimit = long.MaxValue; // Unlimited
+                });
+            });
 
-        //    return base.CreateHost(builder);
-        //}
+            return base.CreateHost(builder);
+        }
 
-        //protected override void ConfigureWebHost(IWebHostBuilder builder)
-        //{
-        //    builder.UseTestServer();
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
+            builder.UseTestServer();
 
-        //    builder.ConfigureTestServices(services =>
-        //    {
-        //        // Configure additional test-specific services here
-        //    });
-        //}
+            builder.ConfigureTestServices(services =>
+            {
+                // Configure additional test-specific services here
+            });
+        }
 
-        //protected override void ConfigureClient(HttpClient client)
-        //{
-        //    client.DefaultRequestHeaders.ExpectContinue = false;
-        //}
+        protected override void ConfigureClient(HttpClient client)
+        {
+            client.DefaultRequestHeaders.ExpectContinue = false;
+        }
     }
 
     [TestFixture()]
@@ -170,8 +170,8 @@ namespace Cloud_Storage_Desktop_lib.Tests
                 Assert.That(uploudFileData.Name == filesOnServer[i].Name);
                 Assert.That(uploudFileData.Path == filesOnServer[i].Path);
                 Assert.That(uploudFileData.Extenstion == filesOnServer[i].Extenstion);
-                Stream stream = this.server.DownloadFile(filesOnServer[i].Id);
-                byte[] bytes = new byte[stream.Length];
+                Stream stream = this.server.DownloadFile(filesOnServer[i].GetRealativePath());
+                byte[] bytes = new byte[bytArrays[i].Length];
                 stream.Read(bytes);
                 Assert.That(Enumerable.SequenceEqual(bytes, bytArrays[i]));
 

@@ -42,12 +42,19 @@ namespace Cloud_Storage_Desktop_lib.Actions
                         string newPath = update.newFileData.getFullFilePathForBasePath(
                             configuration.StorageLocation
                         );
+                        Awaiters.AwaitTrue(
+                            () =>
+                            {
+                                return File.Exists(prevPath);
+                            },
+                            50000
+                        );
 
                         FileManager.ChangeFilePath(prevPath, newPath);
-                        fileRepositoryService.UpdateFile(
-                            (LocalFileData)update.oldFileData,
-                            (LocalFileData)update.newFileData
-                        );
+                        //fileRepositoryService.UpdateFile(
+                        //    (LocalFileData)update.oldFileData,
+                        //    (LocalFileData)update.newFileData
+                        //);
 
                         serverConnection.UpdateFileData(update);
                     }

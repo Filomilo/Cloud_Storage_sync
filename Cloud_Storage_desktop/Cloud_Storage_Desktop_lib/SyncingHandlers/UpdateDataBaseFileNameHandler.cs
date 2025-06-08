@@ -53,33 +53,49 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
                 LocalFileData oldFileDataCopy = null;
                 using (var ctx = this._fileRepositoryService.GetDbContext())
                 {
-                    LocalFileData oldFileData = ctx
-                        .Files.Where(x =>
-                            x.Path.Equals(oldDir)
-                            && x.Name.Equals(oldName)
-                            && x.Extenstion.Equals(oldExtesnion)
-                        )
-                        .FirstOrDefault();
-
-                    oldFileDataCopy = oldFileData == null ? null : oldFileData.Clone();
-
-                    if (oldFileData != null)
+                    using (var transaction = ctx.Database.BeginTransaction())
                     {
-                        if (!oldFileData.ComparePath(newDir, newName, newExtesnion))
+                        try
                         {
-                            ctx.Files.Remove(oldFileData);
-                            ctx.SaveChanges();
+                            LocalFileData oldFileData = ctx
+                                .Files.Where(x =>
+                                    x.Path.Equals(oldDir)
+                                    && x.Name.Equals(oldName)
+                                    && x.Extenstion.Equals(oldExtesnion)
+                                )
+                                .FirstOrDefault();
 
-                            oldFileData.Name = newName;
-                            oldFileData.Extenstion = newExtesnion;
-                            oldFileData.Path = newDir;
-                            oldFileData.Version++;
-                            ctx.Files.Add(oldFileData);
-                            newFileData = oldFileData;
+                            oldFileDataCopy = oldFileData == null ? null : oldFileData.Clone();
+
+                            if (oldFileData != null)
+                            {
+                                if (!oldFileData.ComparePath(newDir, newName, newExtesnion))
+                                {
+                                    ctx.Files.Remove(oldFileData);
+                                    LocalFileData cloned = oldFileData.Clone();
+                                    ctx.SaveChanges();
+
+                                    cloned.Name = newName;
+                                    cloned.Extenstion = newExtesnion;
+                                    cloned.Path = newDir;
+                                    cloned.Version++;
+                                    ctx.Files.Add(cloned);
+                                    newFileData = cloned;
+                                }
+                            }
+
+                            ctx.SaveChanges();
+                            transaction.Commit();
+                        }
+                        catch (Exception ex)
+                        {
+                            transaction.Rollback();
+                            logger.LogError(
+                                $"Error while starting transaction in UpdateDataBaseFileNameHandler: {ex.Message}::\n {ex.StackTrace}"
+                            );
+                            throw ex;
                         }
                     }
-
-                    ctx.SaveChanges();
                 }
 
                 UpdateFileDataRequest updateFileDataRequest = new UpdateFileDataRequest()

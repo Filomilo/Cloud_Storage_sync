@@ -1,4 +1,5 @@
-﻿using Cloud_Storage_Common;
+﻿using System.Timers;
+using Cloud_Storage_Common;
 using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Interfaces;
@@ -10,6 +11,7 @@ namespace Cloud_Storage_Desktop_lib.Services
     class SyncFileService : IFileSyncService
     {
         private ILogger logger = CloudDriveLogging.Instance.GetLogger("SyncFileService");
+        private static System.Timers.Timer _timer;
 
         private IServerConnection _serverConnection;
         private IConfiguration _configuration;
@@ -42,6 +44,17 @@ namespace Cloud_Storage_Desktop_lib.Services
                 _configuration,
                 this
             );
+
+            _timer = new System.Timers.Timer(10000);
+            _timer.AutoReset = true;
+            _timer.Interval = 10000;
+            _timer.Elapsed += runCyclicCallback;
+            //_timer.Start();
+        }
+
+        private void runCyclicCallback(object? state, ElapsedEventArgs args)
+        {
+            _clientChainOfResponsibilityRepository.InitlalLocalySyncHandler.Handle(null);
         }
 
         private void _serverConnection_ServerWerbsocketHadnler(WebSocketMessage message)
