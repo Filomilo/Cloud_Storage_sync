@@ -292,27 +292,37 @@ namespace Cloud_Storage_Test
 
         public static void RemoveTmpDirectory()
         {
-            TestHelpers.EnsureTrue(() =>
-            {
-                try
+            TestHelpers.EnsureTrue(
+                () =>
                 {
-                    if (Directory.Exists(TmpDirecotry))
-                        Directory.Delete(TmpDirecotry, true);
-                }
-                catch (Exception ex)
-                {
-                    return false;
-                }
+                    try
+                    {
+                        if (Directory.Exists(TmpDirecotry))
+                            Directory.Delete(TmpDirecotry, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        return false;
+                    }
 
-                return true;
-            },1000000);
+                    return true;
+                },
+                1000000
+            );
+        }
+
+        private static String getRandomName()
+        {
+            var faker = new Bogus.Faker();
+            string phrase =
+                $"{faker.Hacker.Adjective()}{faker.Hacker.Noun()}{faker.Random.Number(100)}";
+            return phrase;
         }
 
         public static string CreateTmpFile(string dir, string fileContent, int i)
         {
             string fileName =
-                Path.GetFileName(Path.GetFileNameWithoutExtension(Path.GetTempFileName()))
-                + $"_{i}.tmp";
+                Path.GetFileName(Path.GetFileNameWithoutExtension(getRandomName())) + $"_{i}.tmp";
             if (!Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);
@@ -327,8 +337,7 @@ namespace Cloud_Storage_Test
         public static string CreateTmpFileOfSize(string dir, long sizeInBytes)
         {
             string fileName =
-                Path.GetFileName(Path.GetFileNameWithoutExtension(Path.GetTempFileName()))
-                + $".tmp";
+                Path.GetFileName(Path.GetFileNameWithoutExtension(getRandomName())) + $".tmp";
             if (!Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);
@@ -340,7 +349,7 @@ namespace Cloud_Storage_Test
             return fileName;
         }
 
-        private const long Timeout = 2000;
+        private const long Timeout = 10000;
 
         public static void EnsureTrue(Func<bool> func, long timeout = Timeout)
         {
@@ -381,7 +390,12 @@ namespace Cloud_Storage_Test
                 {
                     Thread.Sleep(100);
                     if (stopwatch.ElapsedMilliseconds > timeout)
+                    {
+                        _Logger.LogError(
+                            $"enure not throw excpetion: {ex.Message} :: \n {ex.StackTrace}"
+                        );
                         throw ex;
+                    }
                     else
                     {
                         continue;

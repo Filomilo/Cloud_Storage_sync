@@ -54,7 +54,9 @@ namespace Cloud_Storage_Desktop_lib.Actions
                     catch (Exception EX)
                     {
                         //TODO: ADD ERROR HADNLER
-                        logger.LogError($"Exception while Renaming file file:: [{this.file}]");
+                        logger.LogError(
+                            $"Exception while Renaming file file:: [{this.file}] :: \n {EX.Message} \n {EX.StackTrace}"
+                        );
                     }
                 }
             );

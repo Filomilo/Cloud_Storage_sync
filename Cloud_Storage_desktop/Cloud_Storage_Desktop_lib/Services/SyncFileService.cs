@@ -153,6 +153,11 @@ namespace Cloud_Storage_Desktop_lib.Services
             this._fileRepositoryService.Reset();
         }
 
+        public ITaskRunController runningTaskController
+        {
+            get { return this._taskRunController; }
+        }
+
         public void OnLocallyOnRenamed(RenamedEventArgs args)
         {
             _clientChainOfResponsibilityRepository.OnLocalyFileRenamedHandler.Handle(args);

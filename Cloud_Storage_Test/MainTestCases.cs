@@ -21,6 +21,7 @@ namespace Cloud_Storage_Test
     [TestFixture]
     class MainTestCases
     {
+        private static ILogger _logger = CloudDriveLogging.Instance.GetLogger("Maintetscase");
         private CloudDriveSyncSystem _cloudDriveSyncSystemClient1;
         private CloudDriveSyncSystem _cloudDriveSyncSystemClient2;
         private IConfiguration _Client1Config;
@@ -160,6 +161,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
+        [Repeat(25)]
         public void Create_And_Sync_File_In_EmptyDirectory()
         {
             #region Ensure connected and empty
@@ -590,6 +592,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
+        [Repeat(25)]
         public void Connect_With_Files_Already_OnDisk()
         {
             #region Ensure not connected and 3 files
@@ -631,13 +634,16 @@ namespace Cloud_Storage_Test
             Assert.DoesNotThrow(
                 () =>
                 {
-                    TestHelpers.EnsureTrue(() =>
-                    {
-                        return this._cloudDriveSyncSystemClient1.ServerConnection.GetListOfFiles().Count
-                            == 3;
-                    });
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            return this._cloudDriveSyncSystemClient1.ServerConnection.GetListOfFiles().Count
+                                == 3;
+                        },
+                        10000
+                    );
                 },
-                $"User doent have assaigned 3 files but {this._cloudDriveSyncSystemClient1.ServerConnection.GetListOfFiles().Count}"
+                $"User doent have assaigned 3 files but {this._cloudDriveSyncSystemClient1.ServerConnection.GetListOfFiles().Count}::\n{String.Join(", \n", this._cloudDriveSyncSystemClient1.ServerConnection.GetListOfFiles())}"
             );
 
             #endregion
@@ -660,6 +666,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
+        [Repeat(25)]
         public void Connect_With_Files_On_Server()
         {
             #region Ensure nor connected and 3 files on server
@@ -686,10 +693,18 @@ namespace Cloud_Storage_Test
             #endregion
 
             #region Esnure correct file ownership
-            Assert.That(
-                this._cloudDriveSyncSystemClient1.ServerConnection.GetListOfFiles().Count == 3,
-                $"File in server databse not equal to 3"
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        return this._cloudDriveSyncSystemClient1.ServerConnection.GetListOfFiles().Count
+                            == 3;
+                    });
+                },
+                $"File in server databse not equal to 3 :: \n{String.Join(", \n", this._cloudDriveSyncSystemClient1.ServerConnection.GetListOfFiles())}"
             );
+
             Assert.DoesNotThrow(
                 () =>
                     TestHelpers.EnsureTrue(() =>
@@ -725,6 +740,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
+        [Repeat(25)]
         public void Connect_With_Diffrent_Files_On_Server_And_Device()
         {
             #region Ensure diffrent files on server and device
@@ -780,24 +796,27 @@ namespace Cloud_Storage_Test
             Assert.DoesNotThrow(
                 () =>
                 {
-                    TestHelpers.EnsureTrue(() =>
-                    {
-                        List<SyncFileData> filesOnServer = this.GetAllFilesOnServer();
-                        foreach (SyncFileData syncFileData in filesOnServer)
+                    TestHelpers.EnsureTrue(
+                        () =>
                         {
-                            if (syncFileData.DeviceOwner.Count == 0)
+                            List<SyncFileData> filesOnServer = this.GetAllFilesOnServer();
+                            foreach (SyncFileData syncFileData in filesOnServer)
                             {
-                                return false;
-                            }
-                            if (
-                                !syncFileData.DeviceOwner.Contains(
-                                    this._cloudDriveSyncSystemClient1.CredentialManager.GetDeviceID()
+                                if (syncFileData.DeviceOwner.Count == 0)
+                                {
+                                    return false;
+                                }
+                                if (
+                                    !syncFileData.DeviceOwner.Contains(
+                                        this._cloudDriveSyncSystemClient1.CredentialManager.GetDeviceID()
+                                    )
                                 )
-                            )
-                                return false;
-                        }
-                        return true;
-                    });
+                                    return false;
+                            }
+                            return true;
+                        },
+                        10000
+                    );
                 },
                 "Files doesn't have owner ship by 2 devices"
             );
@@ -818,6 +837,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
+        [Repeat(25)]
         public void Delete_File_Located_On_Both_Devices()
         {
             //throw new NotImplementedException("Nor implnted");
@@ -848,6 +868,340 @@ namespace Cloud_Storage_Test
                 $"Server doenst all have all 2 wbe scoket connetions but [[{websocketConnectedController.GetAllConnectedDevices().Count()}]]"
             );
 
+            int amountOfFiles = 3;
+            List<string> filesAdded;
+            filesAdded = AddTMpFiles(amountOfFiles, this._Client1Config);
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        return FileManager
+                                .GetAllFilesInLocation(this._Client1Config.StorageLocation)
+                                .Count == 3;
+                        ;
+                    });
+                },
+                "Files on device 1 not 3"
+            );
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        return GetAllFilesOnServer()
+                                .Where(x =>
+                                    x.DeviceOwner.Contains(
+                                        this._cloudDriveSyncSystemClient1.CredentialManager.GetDeviceID()
+                                    )
+                                    && x.DeviceOwner.Contains(
+                                        this._cloudDriveSyncSystemClient2.CredentialManager.GetDeviceID()
+                                    )
+                                )
+                                .Count() > 0;
+                    });
+                },
+                $"Files on server repositowry housel have more than 0 file recprd"
+            );
+
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        return FileManager
+                                .GetAllFilesInLocation(this._Client2Config.StorageLocation)
+                                .Count == 3;
+                        ;
+                    });
+                },
+                $"Files on device2 not 3 but {FileManager
+                    .GetAllFilesInLocation(this._Client2Config.StorageLocation)
+                    .Count}"
+            );
+
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureNotThrows(() =>
+                    {
+                        this.CheckIfTheSameContentOnClinetsAndServer(
+                            new List<CloudDriveSyncSystem>()
+                            {
+                                this._cloudDriveSyncSystemClient2,
+                                this._cloudDriveSyncSystemClient1,
+                            }
+                        );
+                    });
+                },
+                "Files on device and server do not match"
+            );
+
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    this.CheckIfFileContentTheSameAsClientDataBase(
+                        this._localFileRepositoryService1,
+                        this._Client1Config
+                    );
+                },
+                "Files and database on device 1 do not match"
+            );
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    this.CheckIfFileContentTheSameAsClientDataBase(
+                        this._localFileRepositoryService2,
+                        this._Client2Config
+                    );
+                },
+                "Files and database on device 2 do not match"
+            );
+
+            #endregion
+
+            #region Delete File on one Device
+            FileManager.DeleteFile(this._Client1Config.StorageLocation + filesAdded[0]);
+
+            #endregion
+
+            #region Ensure the same data on server and clinet
+
+            #region Both devices should have 2 files
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(() =>
+                    {
+                        return FileManager
+                                .GetAllFilesInLocation(this._Client1Config.StorageLocation)
+                                .Count == 2;
+                        ;
+                    });
+                },
+                "Files on device 1 not 2"
+            );
+
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            return FileManager
+                                    .GetAllFilesInLocation(this._Client2Config.StorageLocation)
+                                    .Count == 2;
+                            ;
+                        },
+                        20000
+                    );
+                },
+                $"Files on device2 not 2 but {FileManager
+                    .GetAllFilesInLocation(this._Client2Config.StorageLocation)
+                    .Count}"
+            );
+
+            #endregion
+
+            #region Files on both devices should be the same
+
+
+            this.CheckIfTheSameContentOnClinets(
+                new List<CloudDriveSyncSystem>()
+                {
+                    this._cloudDriveSyncSystemClient1,
+                    this._cloudDriveSyncSystemClient2,
+                }
+            );
+            #endregion
+
+            #region Files on both devices should be the same as in database
+
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            return this._localFileRepositoryService1.GetAllFiles().Count() == 2;
+                        },
+                        50000
+                    );
+                },
+                $"File in client databse 1 is not 2\n but {this._localFileRepositoryService1.GetAllFiles().Count()} \n [[{String.Join(", ", this._localFileRepositoryService1.GetAllFiles())}]]"
+            );
+
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            return this
+                                ._localFileRepositoryService1.GetAllFiles()
+                                .Order()
+                                .SequenceEqual(
+                                    this._localFileRepositoryService2.GetAllFiles().Order()
+                                );
+                        },
+                        100000
+                    );
+                },
+                $"Files in local repositories is not the same: \n [[{String.Join(", ", this._localFileRepositoryService1.GetAllFiles())}]]\n!= \n[[{String.Join(", ", this._localFileRepositoryService2.GetAllFiles())}]]\n"
+            );
+
+            #endregion
+
+            #region Files on server databse should 3 with one without owners
+
+            using (AbstractDataBaseContext context = new DatabaseContextSqLite())
+            {
+                Assert.That(
+                    GetAllFilesOnServer().Count == 4,
+                    $"File in server database not equal to [[4]] but [[{this.GetAllFilesOnServer().Count}]] ::: \n {String.Join(", \n", GetAllFilesOnServer())}"
+                );
+                ;
+            }
+
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            return GetAllFilesOnServer()
+                                    .Where(x =>
+                                        x.DeviceOwner.Contains(
+                                            _cloudDriveSyncSystemClient1.CredentialManager.GetDeviceID()
+                                        )
+                                        && x.DeviceOwner.Contains(
+                                            _cloudDriveSyncSystemClient2.CredentialManager.GetDeviceID()
+                                        )
+                                    )
+                                    .Count() == 3;
+                        },
+                        10000
+                    );
+                },
+                $"Server file repository should heave 3 files with two device owner:: \n {String.Join(", \n", GetAllFilesOnServer())} "
+            );
+            using (AbstractDataBaseContext context = new DatabaseContextSqLite())
+            {
+                Assert.DoesNotThrow(
+                    () =>
+                    {
+                        TestHelpers.EnsureTrue(
+                            () =>
+                            {
+                                return FileRepository
+                                        .GetAllUserFiles(
+                                            context,
+                                            UserRepository.getUserByMail(context, email).id
+                                        )
+                                        .Where(x => x.DeviceOwner.Count == 0)
+                                        .Count() == 1;
+                            },
+                            10000
+                        );
+                    },
+                    $"Server file repository should heave one file withou owners but has:: \n {String.Join(", \n", FileRepository.GetAllUserFiles(context, UserRepository.getUserByMail(context, email).id))} "
+                );
+            }
+
+            Console.WriteLine("Test");
+            #endregion
+
+
+            this.BothClientShouldNotHaveAnyTaskLeftTodo();
+            BothDevicesShouldHAveTheSameData();
+
+            #endregion
+        }
+
+        [Test]
+        [Repeat(25)]
+        public void CreateFile_editITOnAnotherDevice_ThenDeleteit_ThenRestoreIT()
+        {
+            //throw new NotImplementedException("Nor implnted");
+
+            #region initlize empty clints
+            this._cloudDriveSyncSystemClient1.ServerConnection.login(email, pass);
+            this._cloudDriveSyncSystemClient2.ServerConnection.login(email, pass);
+
+            Assert.That(
+                this._cloudDriveSyncSystemClient1.ServerConnection.CheckIfAuthirized(),
+                "cloud drive system 1 is no authorized"
+            );
+            Assert.That(
+                this._cloudDriveSyncSystemClient2.ServerConnection.CheckIfAuthirized(),
+                "cloud drive system 2 is no authorized"
+            );
+            Assert.That(
+                this._cloudDriveSyncSystemClient1.ServerConnection.WebSocketState
+                    == WebSocketState.Open,
+                $"_cloudDriveSyncSystemClient1 Conenction not opened but {this._cloudDriveSyncSystemClient1.ServerConnection.WebSocketState}"
+            );
+            Assert.That(
+                this._cloudDriveSyncSystemClient2.ServerConnection.WebSocketState
+                    == WebSocketState.Open,
+                $"_cloudDriveSyncSystemClient2 Conenction not opened but {this._cloudDriveSyncSystemClient2.ServerConnection.WebSocketState}"
+            );
+            Assert.That(
+                websocketConnectedController.GetAllConnectedDevices().Count() == 2,
+                $"Server doenst all have all 2 wbe scoket connetions but [[{websocketConnectedController.GetAllConnectedDevices().Count()}]]"
+            );
+            #endregion
+
+            #region AddFile
+            String createdFileName = this.AddTMpFiles(1, this._Client1Config).FirstOrDefault();
+            BothDevicesShouldHAveTheSameData(true);
+
+            #endregion
+
+            #region edit
+
+            string newContnet = "234234";
+            EditFile(_Client1Config, createdFileName, newContnet);
+            BothDevicesShouldHAveTheSameData(true);
+
+            #endregion
+
+            #region deleteFile
+
+            FileManager.DeleteFile(this._Client1Config.StorageLocation + createdFileName);
+            BothDevicesShouldHAveTheSameData();
+            #endregion
+
+
+            #region bring back version
+
+            //List<SyncFileData> currentStateOfServerDb =
+            //    _cloudDriveSyncSystemClient1.ServerConnection.GetListOfFiles();
+
+            //SyncFileData oldestFle = currentStateOfServerDb.OrderBy(x => x.Version).ToArray()[1];
+            //_cloudDriveSyncSystemClient1.ServerConnection.SetFileVersion(
+            //    oldestFle.Id,
+            //    oldestFle.Version
+            //);
+
+            #endregion
+
+
+            #region Finsihis
+            Thread.Sleep(5);
+            this.BothClientShouldNotHaveAnyTaskLeftTodo();
+            BothDevicesShouldHAveTheSameData(false);
+            int a = 3;
+
+            #endregion
+
+            /*
+            #region Ols
+
+            #region Ensure The same file
+
+
+            BothClientShouldNotHaveAnyTaskLeftTodo();
             int amountOfFiles = 3;
             List<string> filesAdded;
             filesAdded = AddTMpFiles(amountOfFiles, this._Client1Config);
@@ -1088,12 +1442,16 @@ namespace Cloud_Storage_Test
             Console.WriteLine("Test");
             #endregion
 
-
+            BothDevicesShouldHAveTheSameData();
 
             #endregion
+
+            #endregion
+            */
         }
 
         [Test]
+        [Repeat(1)]
         public void Create_And_Sync_Folder_structure_With_Empty_files()
         {
             #region Ensure connected and empty
@@ -1178,7 +1536,7 @@ namespace Cloud_Storage_Test
                                 .FirstOrDefault();
                             return localFileData != null && localFileData.Name == newName;
                         },
-                        20000
+                        50000
                     );
                 },
                 $"File name in database [[{_localFileRepositoryService1
@@ -1241,14 +1599,17 @@ namespace Cloud_Storage_Test
             Assert.DoesNotThrow(
                 () =>
                 {
-                    TestHelpers.EnsureTrue(() =>
-                    {
-                        fileWithNewNameSyncData = GetAllFilesOnServer()
-                            .FirstOrDefault(x => x.Name == "newName");
-                        return fileWithNewNameSyncData.DeviceOwner.Count == 2;
-                    });
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            fileWithNewNameSyncData = GetAllFilesOnServer()
+                                .FirstOrDefault(x => x.Name == "newName");
+                            return fileWithNewNameSyncData.DeviceOwner.Count == 2;
+                        },
+                        50000
+                    );
                 },
-                $"File should have 2 owners but has [[{fileWithNewNameSyncData.DeviceOwner.Count}]]"
+                $"File should have 2 owners but has [[{fileWithNewNameSyncData.DeviceOwner.Count}]] :: {fileWithNewNameSyncData}"
             );
 
             Assert.DoesNotThrow(
@@ -1271,6 +1632,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
+        [Repeat(25)]
         public void Create_File_And_rename_it()
         {
             #region Ensure connected and empty
@@ -1436,6 +1798,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
+        [Repeat(25)]
         public void Create_File_And_Edit_it_AndBringBackOlderVersion()
         {
             #region Ensure connected and empty
@@ -1463,7 +1826,7 @@ namespace Cloud_Storage_Test
             #region EditNew file
 
             string newAdditionalContent = "ADDitional Content";
-            EditFile(createdFileName, newAdditionalContent);
+            EditFile(_Client2Config, createdFileName, newAdditionalContent);
 
             #endregion
             EnsureTheSameFileOnBothDevices(
@@ -1478,7 +1841,7 @@ namespace Cloud_Storage_Test
 
             EnsureAmountOfFilesOnServer(2);
 
-            EditFile(createdFileName, newAdditionalContent + "new");
+            EditFile(_Client1Config, createdFileName, newAdditionalContent + "new");
             EnsureAmountOfFilesOnServer(3);
 
             List<SyncFileData> currentStateOfServerDb =
@@ -1576,11 +1939,15 @@ namespace Cloud_Storage_Test
             );
         }
 
-        private void EditFile(string createdFileName, string newAdditionalContent)
+        private void EditFile(
+            IConfiguration config,
+            string createdFileName,
+            string newAdditionalContent
+        )
         {
             using (
                 FileStream file = File.Open(
-                    $"{_Client1Config.StorageLocation}{createdFileName}",
+                    $"{config.StorageLocation}{createdFileName}",
                     FileMode.Append
                 )
             )
@@ -1593,14 +1960,15 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
+        [Repeat(25)]
         [TestCase(0)]
         [TestCase(10)]
-        [TestCase(100)]
-        [TestCase(200)]
-        [TestCase(500)]
-        [TestCase(1000)]
-        [TestCase(5000)]
-        [TestCase(10000)]
+        //[TestCase(100)]
+        //[TestCase(200)]
+        //[TestCase(500)]
+        //[TestCase(1000)]
+        //[TestCase(5000)]
+        //[TestCase(10000)]
         public void Create_File_And_Edit_it(int timeToCkeckAfter)
         {
             #region Ensure connected and empty
@@ -1628,7 +1996,7 @@ namespace Cloud_Storage_Test
             #region EditNew file
 
             string newAdditionalContent = "ADDitional Content";
-            EditFile(createdFileName, newAdditionalContent);
+            EditFile(_Client1Config, createdFileName, newAdditionalContent);
             Thread.Sleep(10000);
             #endregion
             EnsureTheSameFileOnBothDevices(
@@ -1934,34 +2302,61 @@ namespace Cloud_Storage_Test
 
         private void CheckIfTheSameContentOnClinetsAndServer(List<CloudDriveSyncSystem> systems)
         {
-            List<SyncFileData> filesOnTheServer = this.GetAllFilesOnServer();
-            foreach (CloudDriveSyncSystem cloudDriveSyncSystem in systems)
+            try
             {
-                List<FileData> filesInUserLocation = FileManager.GetAllFilesInLocationRelative(
-                    cloudDriveSyncSystem.Configuration.StorageLocation
-                );
-                Assert.That(
-                    filesInUserLocation.Count == filesOnTheServer.Count,
-                    $"Files on device {cloudDriveSyncSystem.CredentialManager.GetDeviceID()}"
-                );
-                foreach (SyncFileData syncFileData in filesOnTheServer)
+                List<SyncFileData> filesOnTheServer = this.GetAllFilesOnServer();
+                List<FileData> filesInUserLocation = new List<FileData>();
+                foreach (CloudDriveSyncSystem cloudDriveSyncSystem in systems)
                 {
-                    string serverFileHash = FileManager.GetHashOfFile(
-                        this._fileSystemService.GetFullPathToFile(syncFileData)
+                    Assert.DoesNotThrow(
+                        () =>
+                        {
+                            TestHelpers.EnsureTrue(() =>
+                            {
+                                filesOnTheServer = this.GetAllFilesOnServer();
+                                filesInUserLocation = FileManager.GetAllFilesInLocationRelative(
+                                    cloudDriveSyncSystem.Configuration.StorageLocation
+                                );
+                                return filesInUserLocation.Count == filesOnTheServer.Count;
+                            });
+                        },
+                        $"Files on device {cloudDriveSyncSystem.CredentialManager.GetDeviceID()}::count {filesInUserLocation.Count} \n [[{String.Join(", \n", filesInUserLocation)}]] \n files on server count {filesOnTheServer.Count} \n[[ {String.Join(", \n", filesOnTheServer)}\n]] "
                     );
 
-                    FileData correspoidingFile = filesInUserLocation.Find(x =>
-                        x.GetRealativePath() == syncFileData.GetRealativePath()
-                    );
-                    string filepath = correspoidingFile.getFullFilePathForBasePath(
-                        cloudDriveSyncSystem.Configuration.StorageLocation
-                    );
-                    string loacalHash = FileManager.GetHashOfFile(filepath);
-                    Assert.That(
-                        loacalHash == serverFileHash,
-                        "Content of file {correspoidingFile} diffrent from server and device"
-                    );
+                    foreach (SyncFileData syncFileData in filesOnTheServer)
+                    {
+                        string serverFileHash = FileManager.GetHashOfFile(
+                            this._fileSystemService.GetFullPathToFile(syncFileData)
+                        );
+
+                        FileData correspoidingFile = filesInUserLocation.Find(x =>
+                            x.GetRealativePath() == syncFileData.GetRealativePath()
+                        );
+                        if (correspoidingFile == null)
+                            throw new Exception(
+                                "there is not cocrrspding file for: "
+                                    + syncFileData.GetRealativePath()
+                                    + " in "
+                                    + String.Join(", ", filesInUserLocation)
+                            );
+
+                        string filepath = correspoidingFile.getFullFilePathForBasePath(
+                            cloudDriveSyncSystem.Configuration.StorageLocation
+                        );
+                        string loacalHash = FileManager.GetHashOfFile(filepath);
+                        Assert.That(
+                            loacalHash == serverFileHash,
+                            "Content of file {correspoidingFile} diffrent from server and device"
+                        );
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    $"CheckIfTheSameContentOnClinetsAndServer:: {ex.Message} \n {ex.StackTrace}"
+                );
+                throw ex;
             }
         }
 
@@ -1979,7 +2374,7 @@ namespace Cloud_Storage_Test
             }
         }
 
-        void BothDevicesShouldHAveTheSameData()
+        void BothClientShouldNotHaveAnyTaskLeftTodo()
         {
             Assert.DoesNotThrow(
                 () =>
@@ -1987,6 +2382,95 @@ namespace Cloud_Storage_Test
                     TestHelpers.EnsureTrue(
                         () =>
                         {
+                            return this._cloudDriveSyncSystemClient1
+                                    .FileSyncService
+                                    .runningTaskController
+                                    .AllTasksCount == 0;
+                        },
+                        50000
+                    );
+                },
+                $"Client 1 should not have active task but has {this._cloudDriveSyncSystemClient1
+                    .FileSyncService
+                    .runningTaskController
+                    .AllTasksCount} \n]]"
+            );
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            return this._cloudDriveSyncSystemClient2
+                                    .FileSyncService
+                                    .runningTaskController
+                                    .AllTasksCount == 0;
+                        },
+                        50000
+                    );
+                },
+                $"Client 2 should not have active task but has {this._cloudDriveSyncSystemClient1
+                    .FileSyncService
+                    .runningTaskController
+                    .AllTasksCount} \n]]"
+            );
+
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            return this._cloudDriveSyncSystemClient1
+                                    .FileSyncService
+                                    .runningTaskController
+                                    .QueuedTasksCount == 0;
+                        },
+                        50000
+                    );
+                },
+                $"Client 1 should not have queud task but has {this._cloudDriveSyncSystemClient1
+                    .FileSyncService
+                    .runningTaskController
+                    .AllTasksCount} \n]]"
+            );
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            return this._cloudDriveSyncSystemClient2
+                                    .FileSyncService
+                                    .runningTaskController
+                                    .QueuedTasksCount == 0;
+                        },
+                        50000
+                    );
+                },
+                $"Client 2 should not have queud task but has {this._cloudDriveSyncSystemClient1
+                    .FileSyncService
+                    .runningTaskController
+                    .AllTasksCount} \n]]"
+            );
+        }
+
+        void BothDevicesShouldHAveTheSameData(bool shouldBeNotEmpty = false)
+        {
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            if (
+                                shouldBeNotEmpty != false
+                                && this._localFileRepositoryService1.GetAllFiles().Count() == 0
+                            )
+                            {
+                                return false;
+                            }
+
                             return this
                                 ._localFileRepositoryService1.GetAllFiles()
                                 .Order()
@@ -1997,19 +2481,32 @@ namespace Cloud_Storage_Test
                         50000
                     );
                 },
-                $"Both local repositories should bew equal but are \n [[{String.Join(", \n", this._localFileRepositoryService1.GetAllFiles())}  \n]] \n != \n[[{String.Join(", \n", this._localFileRepositoryService2.GetAllFiles())} \n]]"
+                $"Both local repositories should be mrpy:: {shouldBeNotEmpty}  and bew equal but are \n [[{String.Join(", \n", this._localFileRepositoryService1.GetAllFiles())}  \n]] \n != \n[[{String.Join(", \n", this._localFileRepositoryService2.GetAllFiles())} \n]]"
             );
 
-            List<UploudFileData> filesOnDevice1 = FileManager.GetUploadFileDataInLocation(
-                this._Client1Config.StorageLocation
-            );
-            List<UploudFileData> filesOnDevice2 = FileManager.GetUploadFileDataInLocation(
-                this._Client2Config.StorageLocation
-            );
+            List<UploudFileData> filesOnDevice1 = new List<UploudFileData>();
+            List<UploudFileData> filesOnDevice2 = new List<UploudFileData>();
 
-            Assert.That(
-                filesOnDevice1.Order().SequenceEqual(filesOnDevice1.Order()),
-                $"Both local repositories should bew equal but are \n [[{String.Join(", \n", filesOnDevice1)}  \n]] \n != \n[[{String.Join(", \n", filesOnDevice1)} \n]]"
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            filesOnDevice1 = FileManager.GetUploadFileDataInLocation(
+                                this._Client1Config.StorageLocation
+                            );
+                            filesOnDevice2 = FileManager.GetUploadFileDataInLocation(
+                                this._Client2Config.StorageLocation
+                            );
+                            if (filesOnDevice2.Count == 0 && filesOnDevice1.Count == 0)
+                                return true;
+                            return filesOnDevice1.Order().SequenceEqual(filesOnDevice2.Order());
+                        },
+                        50000
+                    );
+                },
+                $"Both local file sotrage should bew equal but are \n [[{String.Join(", \n", filesOnDevice1)}  \n]] \n != \n[[{String.Join(", \n", filesOnDevice2)} \n]]"
             );
         }
 

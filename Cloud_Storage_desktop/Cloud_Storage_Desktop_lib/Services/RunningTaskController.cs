@@ -1,4 +1,6 @@
-﻿using Cloud_Storage_Common;
+﻿using System.Diagnostics;
+using System.Reflection;
+using Cloud_Storage_Common;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -9,6 +11,11 @@ namespace Cloud_Storage_Desktop_lib.Services
         public CancellationTokenSource token = new CancellationTokenSource();
         public ITaskToRun taksTaskToRun;
         public Task task;
+
+        public override string ToString()
+        {
+            return $"[[taksTaskToRun: Task Id: {taksTaskToRun.Id}, Action: {taksTaskToRun.Name}]]";
+        }
     }
 
     public class RunningTaskController : ITaskRunController
@@ -93,6 +100,8 @@ namespace Cloud_Storage_Desktop_lib.Services
                     }
                 }
             }
+
+            logTaks();
         }
 
         private void ActivateNewestTaks()
@@ -134,6 +143,7 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         public void AddTask(ITaskToRun TaskToRun)
         {
+            logger.LogTrace($"Adding task: {TaskToRun.Name} :: \n {new StackTrace().ToString()}");
             lock (Locker)
             {
                 if (
@@ -148,7 +158,16 @@ namespace Cloud_Storage_Desktop_lib.Services
                 {
                     this._QueuedTasks.Enqueue(TaskToRun);
                 }
+
+                logTaks();
             }
+        }
+
+        private void logTaks()
+        {
+            this.logger.LogTrace(
+                $"[[[\nActive taks {String.Join(", \n", this._RunningTask.Values)} \n\n queued taks: \n {String.Join(", \n", this._QueuedTasks)}\n]]] "
+            );
         }
 
         public void CancelAllTasks()

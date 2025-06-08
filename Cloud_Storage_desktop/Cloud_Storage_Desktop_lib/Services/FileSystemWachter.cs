@@ -85,6 +85,7 @@ namespace Cloud_Storage_Desktop_lib.Services
             {
                 try
                 {
+                    _logger.LogTrace($"Delete ssytem event on file: {e.FullPath}");
                     this.OnDeletedEventHandler.Invoke(e);
                 }
                 catch (Exception ex)
@@ -98,7 +99,14 @@ namespace Cloud_Storage_Desktop_lib.Services
         {
             if (this.OnRenamedEventHandler != null)
             {
-                this.OnRenamedEventHandler.Invoke(e);
+                try
+                {
+                    this.OnRenamedEventHandler.Invoke(e);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning($"failed to handle file renmae: {ex.Message}");
+                }
             }
         }
 

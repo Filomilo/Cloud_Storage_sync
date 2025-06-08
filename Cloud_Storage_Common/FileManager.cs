@@ -1,8 +1,11 @@
 ﻿using System.IO;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using Cloud_Storage_Common.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Serilog;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Cloud_Storage_Common
 {
@@ -142,23 +145,31 @@ namespace Cloud_Storage_Common
 
         public static string GetHashOfFile(string filename)
         {
-            using (var sha256 = SHA256.Create())
+            try
             {
-                using (
-                    var stream = FileManager.WaitForFile(
-                        filename,
-                        FileMode.Open,
-                        FileAccess.Read,
-                        FileShare.ReadWrite,
-                        10000,
-                        500
-                    )
-                )
+                using (var sha256 = SHA256.Create())
                 {
-                    Logger.LogTrace($"Gettign hash for file [[{filename}]]");
-                    return Convert.ToBase64String(sha256.ComputeHash(stream));
-                    ;
+                    using (
+                        var stream = FileManager.WaitForFile(
+                            filename,
+                            FileMode.Open,
+                            FileAccess.Read,
+                            FileShare.ReadWrite,
+                            10000,
+                            500
+                        )
+                    )
+                    {
+                        Logger.LogTrace($"Gettign hash for file [[{filename}]]");
+                        return Convert.ToBase64String(sha256.ComputeHash(stream));
+                        ;
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"GetHashOfFile: {ex.Message} :: \n {ex.StackTrace}");
+                throw ex;
             }
         }
 
@@ -214,6 +225,7 @@ namespace Cloud_Storage_Common
 
         public static void DeleteFile(string v)
         {
+            Logger.LogTrace($"Deleting file:: {v}");
             File.Delete(v);
         }
 
@@ -264,7 +276,15 @@ namespace Cloud_Storage_Common
 
         public static void ChangeFilePath(string prevPath, string newPath)
         {
-            File.Move(prevPath, newPath);
+            try
+            {
+                File.Move(prevPath, newPath);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Error renaming {ex.Message}");
+                throw (ex);
+            }
         }
     }
 }
