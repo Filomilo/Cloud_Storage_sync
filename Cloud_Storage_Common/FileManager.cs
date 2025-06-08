@@ -278,7 +278,13 @@ namespace Cloud_Storage_Common
         {
             try
             {
-                File.Move(prevPath, newPath);
+                Awaiters.AwaitNotThrows(
+                    () =>
+                    {
+                        File.Move(prevPath, newPath);
+                    },
+                    10000
+                );
             }
             catch (Exception ex)
             {

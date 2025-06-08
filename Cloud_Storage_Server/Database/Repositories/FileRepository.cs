@@ -100,13 +100,16 @@ namespace Cloud_Storage_Server.Database.Repositories
             context.Remove(file);
             fileUpdateData.Id = file.Id;
 
-            Awaiters.AwaitNotThrows(() =>
-            {
-                context.SaveChangesAsync().Wait();
-                context.Files.Add(fileUpdateData);
+            Awaiters.AwaitNotThrows(
+                () =>
+                {
+                    context.SaveChangesAsync().Wait();
+                    context.Files.Add(fileUpdateData);
 
-                context.SaveChangesAsync().Wait();
-            });
+                    context.SaveChangesAsync().Wait();
+                },
+                20000
+            );
         }
 
         internal static SyncFileData getNewestFileByPathNameExtensionAndUser(

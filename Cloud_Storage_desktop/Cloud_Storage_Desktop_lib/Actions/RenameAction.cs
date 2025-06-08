@@ -42,6 +42,8 @@ namespace Cloud_Storage_Desktop_lib.Actions
                         string newPath = update.newFileData.getFullFilePathForBasePath(
                             configuration.StorageLocation
                         );
+                        if (File.Exists(newPath))
+                            return;
                         Awaiters.AwaitTrue(
                             () =>
                             {

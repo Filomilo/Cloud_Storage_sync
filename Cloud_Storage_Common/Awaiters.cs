@@ -14,7 +14,7 @@ namespace Cloud_Storage_Common
         {
             if (Debugger.IsAttached)
             {
-                timeout *= 100;
+                timeout *= 1;
             }
 
             bool state = false;
@@ -34,7 +34,7 @@ namespace Cloud_Storage_Common
         {
             if (Debugger.IsAttached)
             {
-                timeout *= 100;
+                timeout *= 1;
             }
 
             bool state = false;

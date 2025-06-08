@@ -19,7 +19,15 @@ namespace Cloud_Storage_Server.Database.Repositories
 
         internal static User getUserByMail(AbstractDataBaseContext context, string mail)
         {
-            User user = context.Users.FirstOrDefault(x => x.mail == mail);
+            User user = null;
+            try
+            {
+                user = context.Users.FirstOrDefault(x => x.mail == mail);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
             if (user == null)
                 throw new KeyNotFoundException("not user with that email in database");
             return user;

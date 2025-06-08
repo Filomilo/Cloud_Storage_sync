@@ -358,7 +358,7 @@ namespace Cloud_Storage_Test
         {
             if (Debugger.IsAttached)
             {
-                timeout *= 10;
+                timeout *= 100;
             }
 
             bool state = false;
@@ -450,6 +450,14 @@ namespace Cloud_Storage_Test
                 );
 
                 context.Database.EnsureCreated();
+                context.Database.Migrate();
+                Assert.DoesNotThrow(() =>
+                {
+                    TestHelpers.EnsureNotThrows(() =>
+                    {
+                        int cn = context.Users.ToArray().Length;
+                    });
+                });
             }
         }
 

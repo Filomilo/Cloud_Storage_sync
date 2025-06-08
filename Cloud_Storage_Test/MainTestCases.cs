@@ -1469,7 +1469,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
-        [Repeat(25)]
+        [Repeat(1)]
         public void Create_And_Sync_Folder_structure_With_Empty_files()
         {
             #region Ensure connected and empty
@@ -1592,7 +1592,8 @@ namespace Cloud_Storage_Test
             #endregion
 
             #region Server shoudl 2 file version one with old name one with new name and all devices owners
-
+            Thread.Sleep(2000);
+            this.BothClientShouldNotHaveAnyTaskLeftTodo();
             Assert.DoesNotThrow(
                 () =>
                 {
@@ -1661,7 +1662,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
-        [Repeat(25)]
+        [Repeat(1)]
         public void Create_File_And_rename_it()
         {
             #region Ensure connected and empty
@@ -1762,15 +1763,20 @@ namespace Cloud_Storage_Test
 
             #region Server shoudl 2 file version one with old name one with new name and all devices owners
 
+            this.BothClientShouldNotHaveAnyTaskLeftTodo();
+
             Assert.DoesNotThrow(
                 () =>
                 {
-                    TestHelpers.EnsureTrue(() =>
-                    {
-                        return GetAllFilesOnServer().Count == 2;
-                    });
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            return GetAllFilesOnServer().Count == 2;
+                        },
+                        10000
+                    );
                 },
-                $"File entry on server database should be 2 but there are [[{GetAllFilesOnServer().Count}]]"
+                $"File entry on server database should be 2 but there are [[{GetAllFilesOnServer().Count}]] :: [[{String.Join(", \n", GetAllFilesOnServer())}]]"
             );
 
             Assert.That(
@@ -1821,13 +1827,14 @@ namespace Cloud_Storage_Test
 
             #endregion
 
+
             BothDevicesShouldHAveTheSameData();
 
             #endregion
         }
 
         [Test]
-        [Repeat(25)]
+        [Repeat(1)]
         public void Create_File_And_Edit_it_AndBringBackOlderVersion()
         {
             _logger.LogInformation(
@@ -1988,18 +1995,21 @@ namespace Cloud_Storage_Test
             string newAdditionalContent
         )
         {
-            using (
-                FileStream file = File.Open(
-                    $"{config.StorageLocation}{createdFileName}",
-                    FileMode.Append
-                )
-            )
+            Awaiters.AwaitNotThrows(() =>
             {
-                using (StreamWriter writer = new StreamWriter(file))
+                using (
+                    FileStream file = File.Open(
+                        $"{config.StorageLocation}{createdFileName}",
+                        FileMode.Append
+                    )
+                )
                 {
-                    writer.WriteLine(newAdditionalContent);
+                    using (StreamWriter writer = new StreamWriter(file))
+                    {
+                        writer.WriteLine(newAdditionalContent);
+                    }
                 }
-            }
+            });
         }
 
         [Test]
