@@ -1,5 +1,8 @@
-﻿using Cloud_Storage_Common.Interfaces;
+﻿using Cloud_Storage_Common;
+using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
+using Cloud_Storage_Server.Database;
+using Cloud_Storage_Server.Database.Repositories;
 using Cloud_Storage_Server.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -40,53 +43,36 @@ namespace Cloud_Storage_Server.Handlers
             SyncFileData newFileVersion;
             using (var ctx = _dataBaseContextGenerator.GetDbContext())
             {
-                SyncFileData dbFileData = ctx
-                    .Files.ToList()
-                    .FirstOrDefault(x =>
-                        x.GetRealativePath().Equals(update.oldFileData.GetRealativePath())
-                        && x.DeviceOwner.Contains(update.DeviceReuqested)
-                        && x.Version == update.oldFileData.Version
-                    );
-                newFileVersion = ctx
-                    .Files.ToList()
-                    .FirstOrDefault(x =>
-                        x.GetRealativePath().Equals(update.newFileData.GetRealativePath())
-                        && !x.DeviceOwner.Contains(update.DeviceReuqested)
-                        && x.Version > update.oldFileData.Version
-                    );
-                if (dbFileData != null)
+                using (var transaction = ctx.Database.BeginTransaction())
                 {
-                    dbFileData.DeviceOwner.Remove(update.DeviceReuqested);
-                    ctx.Update(dbFileData);
-                    ctx.SaveChangesAsync().Wait();
-                    ctx.Entry(dbFileData).State = EntityState.Detached;
-                }
-
-                if (newFileVersion == null)
-                {
-                    newFileVersion = new SyncFileData()
+                    try
                     {
-                        Id = dbFileData == null ? Guid.NewGuid() : dbFileData.Id,
-                        Path = update.newFileData.Path,
-                        Name = update.newFileData.Name,
-                        Extenstion = update.newFileData.Extenstion,
-                        Hash = update.newFileData.Hash,
-                        Version = update.newFileData.Version,
-                        OwnerId = update.UserID,
-                        DeviceOwner = new List<string>() { update.DeviceReuqested },
-                        //SyncDate = DateTime.Now,
-                        BytesSize = update.newFileData.BytesSize,
-                    };
+                        SyncFileData dbFileData = GetOldFileEnntryIDataBase(ctx, update);
+                        newFileVersion = GetNewFileDataEntryInDataBase(ctx, update);
+                        if (dbFileData != null)
+                        {
+                            RemoveOwnerFromDatabaseEntry(dbFileData, update, ctx);
+                        }
 
-                    ctx.Files.Add(newFileVersion);
-
-                    ctx.SaveChangesAsync().Wait();
-                }
-                else
-                {
-                    newFileVersion.DeviceOwner.Add(update.DeviceReuqested);
-                    ctx.Files.Update(newFileVersion);
-                    ctx.SaveChangesAsync().Wait();
+                        if (newFileVersion == null)
+                        {
+                            newFileVersion = CreateNewDataEntryNewFileVersion(
+                                dbFileData,
+                                update,
+                                ctx
+                            );
+                        }
+                        else
+                        {
+                            AddDeviceToNewDBEntry(ctx, newFileVersion, update);
+                        }
+                        transaction.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        throw ex;
+                    }
                 }
             }
 
@@ -95,6 +81,115 @@ namespace Cloud_Storage_Server.Handlers
             if (_nextHandler != null)
                 return this._nextHandler.Handle(update);
             return update;
+        }
+
+        private static SyncFileData? GetNewFileDataEntryInDataBase(
+            AbstractDataBaseContext ctx,
+            UpdateFileDataRequest update
+        )
+        {
+            SyncFileData syncFile = null;
+            try
+            {
+                Awaiters.AwaitTrue(() =>
+                {
+                    syncFile = ctx
+                        .Files.ToList()
+                        .FirstOrDefault(x =>
+                            x.GetRealativePath().Equals(update.newFileData.GetRealativePath())
+                            && !x.DeviceOwner.Contains(update.DeviceReuqested)
+                            && x.Version > update.oldFileData.Version
+                        );
+                    return syncFile != null;
+                });
+            }
+            catch (Exception)
+            {
+                int a = 0;
+            }
+
+            return syncFile;
+        }
+
+        private static SyncFileData? GetOldFileEnntryIDataBase(
+            AbstractDataBaseContext ctx,
+            UpdateFileDataRequest update
+        )
+        {
+            return ctx
+                .Files.ToList()
+                .FirstOrDefault(x =>
+                    x.GetRealativePath().Equals(update.oldFileData.GetRealativePath())
+                    && x.DeviceOwner.Contains(update.DeviceReuqested)
+                    && x.Version == update.oldFileData.Version
+                );
+        }
+
+        private static void AddDeviceToNewDBEntry(
+            AbstractDataBaseContext ctx,
+            SyncFileData newFileVersion,
+            UpdateFileDataRequest update
+        )
+        {
+            //var trackedEntity = ctx
+            //    .ChangeTracker.Entries<SyncFileData>()
+            //    .FirstOrDefault(e =>
+            //        e.Entity.Id == newFileVersion.Id
+            //        && e.Entity.Path == newFileVersion.Path
+            //        && e.Entity.Name == newFileVersion.Name
+            //        && e.Entity.Extenstion == newFileVersion.Extenstion
+            //    );
+
+            //if (trackedEntity != null)
+            //{
+            //    trackedEntity.State = EntityState.Detached;
+            //}
+            SyncFileData updateDataNewFile = newFileVersion.Clone();
+            updateDataNewFile.DeviceOwner.Add(update.DeviceReuqested);
+            FileRepository.UpdateFile(ctx, newFileVersion, updateDataNewFile);
+            ctx.SaveChangesAsync().Wait();
+        }
+
+        private static SyncFileData CreateNewDataEntryNewFileVersion(
+            SyncFileData? dbFileData,
+            UpdateFileDataRequest update,
+            AbstractDataBaseContext ctx
+        )
+        {
+            SyncFileData newFileVersion;
+            newFileVersion = new SyncFileData()
+            {
+                Id = dbFileData == null ? Guid.NewGuid() : dbFileData.Id,
+                Path = update.newFileData.Path,
+                Name = update.newFileData.Name,
+                Extenstion = update.newFileData.Extenstion,
+                Hash = update.newFileData.Hash,
+                Version = update.newFileData.Version,
+                OwnerId = update.UserID,
+                DeviceOwner = new List<string>() { update.DeviceReuqested },
+                //SyncDate = DateTime.Now,
+                BytesSize = update.newFileData.BytesSize,
+            };
+
+            ctx.Files.Add(newFileVersion);
+
+            ctx.SaveChangesAsync().Wait();
+            ctx.Entry(newFileVersion).State = EntityState.Detached;
+            return newFileVersion;
+        }
+
+        private static void RemoveOwnerFromDatabaseEntry(
+            SyncFileData dbFileData,
+            UpdateFileDataRequest update,
+            AbstractDataBaseContext ctx
+        )
+        {
+            SyncFileData updateData = dbFileData.Clone();
+            updateData.DeviceOwner.Remove(update.DeviceReuqested);
+            FileRepository.UpdateFile(ctx, dbFileData, updateData);
+
+            ctx.SaveChangesAsync().Wait();
+            ctx.Entry(dbFileData).State = EntityState.Detached;
         }
     }
 }

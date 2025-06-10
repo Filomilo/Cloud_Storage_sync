@@ -12,7 +12,7 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
     {
         bool CheckIfAuthirized();
         bool CheckIfHelathy();
-        Stream DownloadFile(Guid id);
+        Stream DownloadFile(string relativePath);
         List<SyncFileData> GetAllCloudFilesInfo();
         List<SyncFileData> GetListOfFiles();
         void login(string email, string pass);

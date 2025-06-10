@@ -1,0 +1,81 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/27.0.5 Chrome/134.0.6998.205 Electron/35.3.0 Safari/537.36" version="27.0.5" pages="2">
+  <diagram name="Page-1" id="Sy9gwNoPJgN9ZptFa36B">
+    <mxGraphModel dx="464" dy="952" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="U6wddyCvYquyhD3cocK4-20" value="Common" style="verticalAlign=top;align=left;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=4;html=1;whiteSpace=wrap;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" vertex="1">
+          <mxGeometry x="55" y="80" width="670" height="320" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="TBs81M0RwG120NkoopdF" name="project hirarachy">
+    <mxGraphModel dx="773" dy="1587" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="UrxObCnCBfgxbMKSkJQN-3" value="Cloud_Storage_Common" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="324" y="80" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="UrxObCnCBfgxbMKSkJQN-5" value="Cloud_Storage_Desktop" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="120" y="610" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="UrxObCnCBfgxbMKSkJQN-6" value="Use" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="UrxObCnCBfgxbMKSkJQN-5" target="UrxObCnCBfgxbMKSkJQN-3">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="350" y="380" as="sourcePoint" />
+            <mxPoint x="510" y="380" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="UrxObCnCBfgxbMKSkJQN-7" value="CloudDriveSyncService" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="120" y="450" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="UrxObCnCBfgxbMKSkJQN-8" value="Use" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="UrxObCnCBfgxbMKSkJQN-5" target="UrxObCnCBfgxbMKSkJQN-7">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="240" y="600" as="sourcePoint" />
+            <mxPoint x="400" y="600" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="UrxObCnCBfgxbMKSkJQN-10" value="Cloud_Storage_Desktop_lib" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="120" y="260" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="UrxObCnCBfgxbMKSkJQN-11" value="Use" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="UrxObCnCBfgxbMKSkJQN-10" target="UrxObCnCBfgxbMKSkJQN-3">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="210" y="550" as="sourcePoint" />
+            <mxPoint x="370" y="550" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="360" y="295" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="UrxObCnCBfgxbMKSkJQN-12" value="Cloud_Storage_Server" style="html=1;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="504" y="200" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="UrxObCnCBfgxbMKSkJQN-13" value="Use" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="UrxObCnCBfgxbMKSkJQN-12" target="UrxObCnCBfgxbMKSkJQN-3">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="370" y="510" as="sourcePoint" />
+            <mxPoint x="530" y="510" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="440" y="225" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="UrxObCnCBfgxbMKSkJQN-19" value="Use" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="UrxObCnCBfgxbMKSkJQN-7" target="UrxObCnCBfgxbMKSkJQN-3">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="160" y="900" as="sourcePoint" />
+            <mxPoint x="320" y="900" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="390" y="485" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="UrxObCnCBfgxbMKSkJQN-20" value="Use" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="UrxObCnCBfgxbMKSkJQN-7" target="UrxObCnCBfgxbMKSkJQN-10">
+          <mxGeometry width="160" relative="1" as="geometry">
+            <mxPoint x="340" y="830" as="sourcePoint" />
+            <mxPoint x="500" y="830" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

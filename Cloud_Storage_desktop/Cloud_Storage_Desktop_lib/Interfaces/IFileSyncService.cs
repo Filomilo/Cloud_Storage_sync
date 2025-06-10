@@ -1,4 +1,6 @@
-﻿namespace Cloud_Storage_Desktop_lib.Interfaces
+﻿using Cloud_Storage_Desktop_lib.Services;
+
+namespace Cloud_Storage_Desktop_lib.Interfaces
 {
     public interface ISyncProcess { }
 
@@ -33,5 +35,7 @@
 
         SyncState State { get; }
         void ResetSync();
+
+        ITaskRunController runningTaskController { get; }
     }
 }

@@ -4,6 +4,7 @@
     {
         public object Id { get; }
         public Action ActionToRun { get; }
+        public string Name { get; }
     }
 
     public interface ITaskRunController
