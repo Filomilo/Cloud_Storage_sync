@@ -50,7 +50,7 @@ namespace Cloud_Storage_Common
                 {
                     Thread.Sleep(100);
                     if (stopwatch.ElapsedMilliseconds > timeout)
-                        throw new TimeoutException($"Ensure true timouet {timeout}");
+                        throw ex;
                 }
             }
         }

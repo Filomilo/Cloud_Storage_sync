@@ -229,7 +229,8 @@ namespace Cloud_Storage_Common.Models
 
         [ForeignKey("Devices")]
         public List<string> DeviceOwner { get; set; } = new List<string>();
-        public virtual List<Device> OwnersDevices { get; set; }
+
+        public virtual List<Device> OwnersDevices { get; set; } = new List<Device>();
 
         public override bool Equals(object? o)
         {

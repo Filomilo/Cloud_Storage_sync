@@ -44,7 +44,7 @@ namespace Cloud_Storage_Test
             _logger.LogInformation(
                 "------------------------------------------------------------------------------------------------- SETUP --------------------------------------------------------------------------------"
             );
-            Thread.Sleep(2000);
+            Thread.Sleep(10000);
             TestHelpers.ClearServerStorage();
             TestHelpers.ResetDatabase();
             TestHelpers.EnsureTrue(() =>
@@ -143,6 +143,9 @@ namespace Cloud_Storage_Test
         [TearDown]
         public void TearDown()
         {
+            _logger.LogInformation(
+                "----------------------------------------------------------------------------------------------------------------------- TEARDOWN"
+            );
             this._cloudDriveSyncSystemClient1.SystemWatcher.Stop();
             this._cloudDriveSyncSystemClient2.SystemWatcher.Stop();
             TestHelpers.RemoveTmpDirectory();
@@ -855,7 +858,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
-        [Repeat(25)]
+        [Repeat(100)]
         public void Delete_File_Located_On_Both_Devices()
         {
             //throw new NotImplementedException("Nor implnted");
@@ -1662,7 +1665,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
-        [Repeat(1)]
+        [Repeat(25)]
         public void Create_File_And_rename_it()
         {
             #region Ensure connected and empty
@@ -1719,31 +1722,57 @@ namespace Cloud_Storage_Test
 
 
             #region File repository 1 should have new version of file in repository
-
+            _logger.LogInformation(
+                " File repository 1 should have new version of file in repository"
+            );
 
             Assert.That(
                 _localFileRepositoryService1.GetAllFiles().Count() == 1,
-                $"Local file repository should only one elements but has {_localFileRepositoryService1.GetAllFiles().Count()}"
+                $"Local file repository should only one elements but has {_localFileRepositoryService1.GetAllFiles().Count()} :: \n{String.Join(", \n", _localFileRepositoryService1.GetAllFiles())}"
             );
             LocalFileData localFileData = null;
-            Assert.DoesNotThrow(
-                () =>
-                {
-                    TestHelpers.EnsureTrue(
-                        () =>
-                        {
-                            localFileData = _localFileRepositoryService1
-                                .GetAllFiles()
-                                .FirstOrDefault();
-                            return localFileData != null && localFileData.Name == newName;
-                        },
-                        10000
-                    );
-                },
-                $"File name in database [[{_localFileRepositoryService1
-                    .GetAllFiles()
-                    .FirstOrDefault().Name}]] is not equal to file name in folder [[{newName}]]"
-            );
+            try
+            {
+                Assert.DoesNotThrow(
+                    () =>
+                    {
+                        TestHelpers.EnsureTrue(
+                            () =>
+                            {
+                                try
+                                {
+                                    _logger.LogTrace($"localFileData:: ${localFileData}");
+                                    _logger.LogTrace(
+                                        $"_localFileRepositoryService1:: ${_localFileRepositoryService1}"
+                                    );
+                                    localFileData = _localFileRepositoryService1
+                                        .GetAllFiles()
+                                        .FirstOrDefault();
+                                    return localFileData != null && localFileData.Name == newName;
+                                }
+                                catch (NullReferenceException ex)
+                                {
+                                    _logger.LogError($"error {ex.Message}:: \n {ex.StackTrace}");
+                                    return false;
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError($"error {ex.Message}:: \n {ex.StackTrace}");
+                                    return false;
+                                }
+                            },
+                            10000
+                        );
+                    },
+                    $"File name in database [[{_localFileRepositoryService1
+                        .GetAllFiles()
+                        .FirstOrDefault().Name}]] is not equal to file name in folder [[{newName}]]"
+                );
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
 
             Assert.That(
                 localFileData.Extenstion == ".tmp",
@@ -1803,14 +1832,17 @@ namespace Cloud_Storage_Test
             Assert.DoesNotThrow(
                 () =>
                 {
-                    TestHelpers.EnsureTrue(() =>
-                    {
-                        fileWithNewNameSyncData = GetAllFilesOnServer()
-                            .FirstOrDefault(x => x.Name == "newName");
-                        return fileWithNewNameSyncData.DeviceOwner.Count == 2;
-                    });
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            fileWithNewNameSyncData = GetAllFilesOnServer()
+                                .FirstOrDefault(x => x.Name == "newName");
+                            return fileWithNewNameSyncData.DeviceOwner.Count == 2;
+                        },
+                        50000
+                    );
                 },
-                $"File should have 2 owners but has [[{fileWithNewNameSyncData.DeviceOwner.Count}]]"
+                $"File should have 2 owners but has [[{fileWithNewNameSyncData.DeviceOwner.Count}]] ::\n[[{string.Join(", \n", fileWithNewNameSyncData)}]]"
             );
 
             Assert.DoesNotThrow(
@@ -1834,7 +1866,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
-        [Repeat(1)]
+        [Repeat(25)]
         public void Create_File_And_Edit_it_AndBringBackOlderVersion()
         {
             _logger.LogInformation(
@@ -1876,6 +1908,10 @@ namespace Cloud_Storage_Test
             EditFile(_Client2Config, createdFileName, newAdditionalContent);
 
             #endregion
+
+
+            #region Ensure File edtion
+
             _logger.LogInformation(
                 "------------------------------------------------------------------- Finsih -------------------------------------------------------------------"
             );
@@ -1891,8 +1927,19 @@ namespace Cloud_Storage_Test
 
             EnsureAmountOfFilesOnServer(2);
 
+            #endregion
+
+
+            #region Edit egain
+
+
+
             EditFile(_Client1Config, createdFileName, newAdditionalContent + "new");
             EnsureAmountOfFilesOnServer(3);
+            #endregion
+
+            #region Bring back older file
+
 
             List<SyncFileData> currentStateOfServerDb =
                 _cloudDriveSyncSystemClient1.ServerConnection.GetListOfFiles();
@@ -1902,6 +1949,11 @@ namespace Cloud_Storage_Test
                 oldestFle.Id,
                 oldestFle.Version
             );
+
+            #endregion
+
+
+            #region Ensure after brought bac
             EnsureAmountOfFilesOnServer(3);
             Assert.DoesNotThrow(
                 () =>
@@ -1916,18 +1968,15 @@ namespace Cloud_Storage_Test
                 },
                 $"new File versoin in server db should be 3 but instead db is {String.Join(", \n", GetAllFilesOnServer())}"
             );
-
             SyncFileData newestFileDb = GetAllFilesOnServer()
                 .OrderByDescending(x => x.Version)
                 .First();
-
             Assert.That(newestFileDb.Hash.Equals(oldestFle.Hash), "File hash is not the same");
 
             Assert.That(
                 _localFileRepositoryService1.GetAllFiles().Count() == 1,
                 $"Local file repository should only one elements but has {_localFileRepositoryService1.GetAllFiles().Count()}"
             );
-
             Assert.DoesNotThrow(
                 () =>
                 {
@@ -1951,6 +2000,7 @@ namespace Cloud_Storage_Test
             });
 
             BothDevicesShouldHAveTheSameData();
+            #endregion
         }
 
         private void EnsureAmountOfFilesOnServer(int filesOnserver)
@@ -2579,7 +2629,7 @@ namespace Cloud_Storage_Test
                                 return true;
                             return filesOnDevice1.Order().SequenceEqual(filesOnDevice2.Order());
                         },
-                        50000
+                        10000
                     );
                 },
                 $"Both local file sotrage should bew equal but are \n [[{String.Join(", \n", filesOnDevice1)}  \n]] \n != \n[[{String.Join(", \n", filesOnDevice2)} \n]]"

@@ -69,6 +69,37 @@ namespace Cloud_Storage_Server.Services
             }
         }
 
+        public void SendMessageToUserExcluingDevice(
+            long userID,
+            string deviceReuqested,
+            WebSocketMessage message
+        )
+        {
+            ValidateConnections();
+            lock (Locker)
+            {
+                _connectedDevices
+                    .Values.ToList()
+                    .ForEach(device =>
+                    {
+                        if (
+                            device.UserId.Equals(userID)
+                            && !device.DeviceId.ToString().Equals(deviceReuqested)
+                        )
+                        {
+                            device.WebSocket.SendAsync(
+                                new ArraySegment<byte>(
+                                    Encoding.UTF8.GetBytes(JsonOperations.jsonFromObject(message))
+                                ),
+                                WebSocketMessageType.Text,
+                                true,
+                                CancellationToken.None
+                            );
+                        }
+                    });
+            }
+        }
+
         public IEnumerable<IConnectedDevice> GetAllConnectedDevices()
         {
             return _connectedDevices.Values;

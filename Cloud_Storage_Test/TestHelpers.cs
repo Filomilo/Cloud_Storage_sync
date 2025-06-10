@@ -37,6 +37,7 @@ public class TestDataBaseSerwerContext : Cloud_Storage_Server.Database.AbstractD
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseInMemoryDatabase("serwer");
+        optionsBuilder.ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning));
     }
 }
 
@@ -358,7 +359,7 @@ namespace Cloud_Storage_Test
         {
             if (Debugger.IsAttached)
             {
-                timeout *= 100;
+                timeout *= 1;
             }
 
             bool state = false;
@@ -378,7 +379,7 @@ namespace Cloud_Storage_Test
         {
             if (Debugger.IsAttached)
             {
-                timeout *= 100;
+                timeout *= 1;
             }
 
             bool state = false;
@@ -527,6 +528,18 @@ namespace Cloud_Storage_Test
             {
                 _Logger.LogError($"Eror killign donet exe : [[{ex.Message}]]");
             }
+        }
+
+        internal static SyncFileData CreateSyncFileData()
+        {
+            SyncFileData syncFileData = new SyncFileData();
+            syncFileData.Id = Guid.NewGuid();
+            syncFileData.BytesSize = 100;
+            syncFileData.Extenstion = ".tmp";
+            syncFileData.Hash = "########";
+            syncFileData.Path = ".";
+            syncFileData.Name = getRandomName();
+            return syncFileData;
         }
     }
 }

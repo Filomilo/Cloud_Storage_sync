@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cloud_Storage_Server.Database.Repositories
 {
@@ -93,7 +94,12 @@ namespace Cloud_Storage_Server.Database.Repositories
         )
         {
             SyncFileData file = context
-                .Files.Where(x => x.Id.Equals(fileInRepositry.Id))
+                .Files.Where(x =>
+                    x.Id.Equals(fileInRepositry.Id)
+                    && x.Name.Equals(fileInRepositry.Name)
+                    && x.Path.Equals(fileInRepositry.Path)
+                    && x.Extenstion.Equals(fileInRepositry.Extenstion)
+                )
                 .FirstOrDefault();
             if (file == null)
                 throw new KeyNotFoundException("No file iwth this guuid");
@@ -103,10 +109,17 @@ namespace Cloud_Storage_Server.Database.Repositories
             Awaiters.AwaitNotThrows(
                 () =>
                 {
-                    context.SaveChangesAsync().Wait();
-                    context.Files.Add(fileUpdateData);
+                    try
+                    {
+                        context.SaveChangesAsync().Wait();
+                        context.Files.Add(fileUpdateData);
 
-                    context.SaveChangesAsync().Wait();
+                        context.SaveChangesAsync().Wait();
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
                 },
                 20000
             );
