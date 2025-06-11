@@ -189,6 +189,13 @@ namespace Cloud_Storage_Common.Models
         {
             return $"Path: {this.Path}, Name: {this.Name}, Extension: {this.Extenstion}, Hash: {this.Hash}, Version: {this.Version}, BytesSize: {this.BytesSize}";
         }
+
+        public bool ComparePath(string path, string newName, string newExtesnion)
+        {
+            return this.Path.Equals(path)
+                && this.Name.Equals(newName)
+                && this.Extenstion.Equals(newExtesnion);
+        }
     }
 
     [PrimaryKey(nameof(Id), nameof(Path), nameof(Name), nameof(Extenstion))]
@@ -222,7 +229,8 @@ namespace Cloud_Storage_Common.Models
 
         [ForeignKey("Devices")]
         public List<string> DeviceOwner { get; set; } = new List<string>();
-        public virtual List<Device> OwnersDevices { get; set; }
+
+        public virtual List<Device> OwnersDevices { get; set; } = new List<Device>();
 
         public override bool Equals(object? o)
         {

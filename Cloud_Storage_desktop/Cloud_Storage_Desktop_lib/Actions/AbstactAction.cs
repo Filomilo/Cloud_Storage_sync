@@ -20,5 +20,10 @@ namespace Cloud_Storage_Desktop_lib.Actions
         }
 
         public abstract Action ActionToRun { get; }
+
+        public string Name
+        {
+            get { return ActionType.ToString(); }
+        }
     }
 }

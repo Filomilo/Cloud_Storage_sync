@@ -289,9 +289,9 @@ namespace Cloud_Storage_Desktop_lib
             }
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                logger.LogError(
-                    $"Cannot connect to AUTHorized server on url {_httpClientFactory.GetHttpClient().BaseAddress}"
-                );
+                //logger.LogError(
+                //    $"Cannot connect to AUTHorized server on url {_httpClientFactory.GetHttpClient().BaseAddress}"
+                //);
                 return false;
             }
 
@@ -530,18 +530,18 @@ namespace Cloud_Storage_Desktop_lib
             return parsed;
         }
 
-        public Stream DownloadFile(Guid guid)
+        public Stream DownloadFile(String path)
         {
             var response = this
                 ._httpClientFactory.GetHttpClient()
                 .GetAsync(
-                    $"api/Files/download?guid={guid.ToString()}",
+                    $"api/Files/download?path={path}",
                     HttpCompletionOption.ResponseHeadersRead
                 )
                 .Result;
             if (!response.IsSuccessStatusCode)
                 throw new Exception(
-                    $"Couldn't get File [[{guid.ToString()}]] form server: {response.Content.ReadAsStringAsync().Result}"
+                    $"Couldn't get File [[{path}]] form server: {response.Content.ReadAsStringAsync().Result}"
                 );
             Stream stream = response.Content.ReadAsStream();
             return stream;

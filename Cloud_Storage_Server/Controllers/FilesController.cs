@@ -151,23 +151,48 @@ namespace Cloud_Storage_Server.Controllers
         [Route("download")]
         [Authorize]
         [HttpGet]
-        public IActionResult DownlaodFile([FromQuery] Guid guid)
+        public IActionResult DownlaodFile([FromQuery] string path)
         {
             try
             {
-                _logger.LogInformation($"DownlaodFile:: {guid.ToString()}");
+                _logger.LogInformation($"DownlaodFile:: {path.ToString()}");
 
                 User user = null;
-                SyncFileData fileData;
+                SyncFileData fileData = null;
                 using (var context = _dataBaseContextGenerator.GetDbContext())
                 {
                     user = UserRepository.getUserByMail(
                         context,
                         JwtHelpers.GetEmailFromToken(Request.Headers.Authorization)
                     );
-                    fileData = FileRepository.GetFileOfID(context, guid);
+                    FileManager.GetFilePathParamsFormRelativePath(
+                        path,
+                        out string directory,
+                        out string name,
+                        out string extesnion
+                    );
+                    try
+                    {
+                        Awaiters.AwaitTrue(() =>
+                        {
+                            fileData = FileRepository.getNewestFileByPathNameExtensionAndUser(
+                                context,
+                                directory,
+                                name,
+                                extesnion,
+                                user.id
+                            );
+                            return fileData != null;
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        if (fileData == null)
+                            throw new Exception(
+                                $"{ex.Message} could find file [[[{path}]] in [[{string.Join(", \n", FileRepository.GetAllUserFiles(context, user.id))}]]"
+                            );
+                    }
                 }
-
                 string deviceId = JwtHelpers.GetDeviceIDFromAuthString(
                     Request.Headers.Authorization
                 );
@@ -177,7 +202,7 @@ namespace Cloud_Storage_Server.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(ex.Message + "\n" + ex.StackTrace);
             }
         }
 

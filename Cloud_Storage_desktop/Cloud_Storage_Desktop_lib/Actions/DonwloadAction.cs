@@ -47,7 +47,9 @@ namespace Cloud_Storage_Desktop_lib.Actions
                         {
                             fileRepositoryService.AddNewFile(newData);
                         }
-                        Stream stream = serverConnection.DownloadFile(syncFileData.Id);
+                        Stream stream = serverConnection.DownloadFile(
+                            syncFileData.GetRealativePath()
+                        );
                         FileManager.SaveFile(
                             syncFileData.getFullFilePathForBasePath(configuration.StorageLocation),
                             stream

@@ -1,5 +1,6 @@
 ﻿using Cloud_Storage_Desktop_lib.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Cloud_Storage_Desktop_lib.Database
 {
@@ -13,6 +14,9 @@ namespace Cloud_Storage_Desktop_lib.Database
             //        + Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
             //        + "Files.db"
             //);
+            optionsBuilder.ConfigureWarnings(w =>
+                w.Ignore(InMemoryEventId.TransactionIgnoredWarning)
+            );
         }
     }
 

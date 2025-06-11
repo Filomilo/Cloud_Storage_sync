@@ -1,4 +1,5 @@
 ﻿using System.Net.WebSockets;
+using Cloud_Storage_Common.Models;
 
 namespace Cloud_Storage_Server.Interfaces
 {
@@ -18,5 +19,10 @@ namespace Cloud_Storage_Server.Interfaces
         void SendMessageToDevice(object DeviceId, object message);
         void SendMessageToUser(object userID, object message);
         void DisconnectDevices();
+        void SendMessageToUserExcluingDevice(
+            long userID,
+            string deviceReuqested,
+            WebSocketMessage webSocketMessage
+        );
     }
 }

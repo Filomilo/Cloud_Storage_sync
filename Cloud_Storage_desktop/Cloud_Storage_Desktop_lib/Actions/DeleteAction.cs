@@ -21,9 +21,13 @@ namespace Cloud_Storage_Desktop_lib.Actions
             get { return _deleteAction; }
         }
 
-        private void DelteDirecetoryIfEmpty(string pathToDeletedFile)
+        private void DelteDirecetoryIfEmpty(IConfiguration configuration, string pathToDeletedFile)
         {
             string direcotry = Path.GetDirectoryName(pathToDeletedFile);
+            if (configuration.StorageLocation.Equals(direcotry + "\\"))
+            {
+                return;
+            }
             if (!Directory.GetFiles(direcotry).Any())
             {
                 Directory.Delete(direcotry);
@@ -44,12 +48,12 @@ namespace Cloud_Storage_Desktop_lib.Actions
                     try
                     {
                         FileManager.DeleteFile(file);
-                        DelteDirecetoryIfEmpty(file);
-                        //fileRepositoryService.DeleteFileByPath(
-                        //    syncFileData.Path,
-                        //    syncFileData.Name,
-                        //    syncFileData.Extenstion
-                        //);
+                        DelteDirecetoryIfEmpty(configuration, file);
+                        fileRepositoryService.DeleteFileByPath(
+                            syncFileData.Path,
+                            syncFileData.Name,
+                            syncFileData.Extenstion
+                        );
                     }
                     catch (Exception EX)
                     {

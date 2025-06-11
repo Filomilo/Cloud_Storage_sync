@@ -87,22 +87,25 @@ namespace Cloud_Storage_Desktop_lib.Services
             {
                 using (var context = GetDbContext())
                 {
-                    LocalFileData local = context
-                        .Files.Where(f =>
-                            f.Path == realitveDirectory
-                            && f.Name == name
-                            && f.Extenstion == extesnion
-                        )
-                        .FirstOrDefault();
-                    if (local == null)
+                    Awaiters.AwaitNotThrows(() =>
                     {
-                        throw new ArgumentException(
-                            $"Cannot find file in repository to remove {realitveDirectory}{name}{extesnion}"
-                        );
-                    }
-                    Logger.LogInformation($"Removing from database file: {local}");
-                    context.Files.Remove(local);
-                    context.SaveChanges();
+                        LocalFileData local = context
+                            .Files.Where(f =>
+                                f.Path == realitveDirectory
+                                && f.Name == name
+                                && f.Extenstion == extesnion
+                            )
+                            .FirstOrDefault();
+                        if (local == null)
+                        {
+                            throw new ArgumentException(
+                                $"Cannot find file in repository to remove {realitveDirectory}{name}{extesnion}"
+                            );
+                        }
+                        Logger.LogInformation($"Removing from database file: {local}");
+                        context.Files.Remove(local);
+                        context.SaveChanges();
+                    });
                 }
             }
         }

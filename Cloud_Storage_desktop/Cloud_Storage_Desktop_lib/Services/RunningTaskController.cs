@@ -1,4 +1,6 @@
-﻿using Cloud_Storage_Common;
+﻿using System.Diagnostics;
+using System.Reflection;
+using Cloud_Storage_Common;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -9,6 +11,11 @@ namespace Cloud_Storage_Desktop_lib.Services
         public CancellationTokenSource token = new CancellationTokenSource();
         public ITaskToRun taksTaskToRun;
         public Task task;
+
+        public override string ToString()
+        {
+            return $"[[taksTaskToRun: Task Id: {taksTaskToRun.Id}, Action: {taksTaskToRun.Name}]]";
+        }
     }
 
     public class RunningTaskController : ITaskRunController
@@ -93,6 +100,8 @@ namespace Cloud_Storage_Desktop_lib.Services
                     }
                 }
             }
+
+            logTaks();
         }
 
         private void ActivateNewestTaks()
@@ -117,7 +126,7 @@ namespace Cloud_Storage_Desktop_lib.Services
                 : null;
             if (taskWIthTheSameId != null)
             {
-                this._QueuedTasks.Enqueue(task);
+                addTaskToQueeu(task);
             }
             else
             {
@@ -132,8 +141,21 @@ namespace Cloud_Storage_Desktop_lib.Services
             return this._RunningTask.ContainsKey(task.Id);
         }
 
+        public void addTaskToQueeu(ITaskToRun TaskToRun)
+        {
+            if (
+                this._QueuedTasks.FirstOrDefault(x =>
+                    x.Id.Equals(TaskToRun.Id) && x.Name.Equals(TaskToRun.Name)
+                ) == null
+            )
+            {
+                this._QueuedTasks.Enqueue(TaskToRun);
+            }
+        }
+
         public void AddTask(ITaskToRun TaskToRun)
         {
+            logger.LogTrace($"Adding task: {TaskToRun.Name} :: \n {new StackTrace().ToString()}");
             lock (Locker)
             {
                 if (
@@ -146,9 +168,18 @@ namespace Cloud_Storage_Desktop_lib.Services
                 }
                 else
                 {
-                    this._QueuedTasks.Enqueue(TaskToRun);
+                    addTaskToQueeu(TaskToRun);
                 }
+
+                logTaks();
             }
+        }
+
+        private void logTaks()
+        {
+            this.logger.LogTrace(
+                $"[[[\nActive taks {String.Join(", \n", this._RunningTask.Values)} \n\n queued taks: \n {String.Join(", \n", this._QueuedTasks)}\n]]] "
+            );
         }
 
         public void CancelAllTasks()

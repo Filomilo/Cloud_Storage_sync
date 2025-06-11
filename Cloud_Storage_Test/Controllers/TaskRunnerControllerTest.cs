@@ -19,6 +19,11 @@ namespace Cloud_Storage_Desktop_lib.Services
             get { return _action; }
         }
 
+        public string Name
+        {
+            get { return ActionToRun.ToString(); }
+        }
+
         public TestTask(Int32 id, Action task)
         {
             _key = id;

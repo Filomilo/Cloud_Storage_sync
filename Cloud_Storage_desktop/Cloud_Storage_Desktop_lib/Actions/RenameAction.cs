@@ -42,19 +42,30 @@ namespace Cloud_Storage_Desktop_lib.Actions
                         string newPath = update.newFileData.getFullFilePathForBasePath(
                             configuration.StorageLocation
                         );
+                        if (File.Exists(newPath))
+                            return;
+                        Awaiters.AwaitTrue(
+                            () =>
+                            {
+                                return File.Exists(prevPath);
+                            },
+                            50000
+                        );
 
                         FileManager.ChangeFilePath(prevPath, newPath);
-                        fileRepositoryService.UpdateFile(
-                            (LocalFileData)update.oldFileData,
-                            (LocalFileData)update.newFileData
-                        );
+                        //fileRepositoryService.UpdateFile(
+                        //    (LocalFileData)update.oldFileData,
+                        //    (LocalFileData)update.newFileData
+                        //);
 
                         serverConnection.UpdateFileData(update);
                     }
                     catch (Exception EX)
                     {
                         //TODO: ADD ERROR HADNLER
-                        logger.LogError($"Exception while Renaming file file:: [{this.file}]");
+                        logger.LogError(
+                            $"Exception while Renaming file file:: [{this.file}] :: \n {EX.Message} \n {EX.StackTrace}"
+                        );
                     }
                 }
             );

@@ -33,7 +33,12 @@ namespace Cloud_Storage_Server.Database
     {
         public AbstractDataBaseContext GetDbContext()
         {
-            return new DatabaseContextSqLite();
+            DatabaseContextSqLite ctx = new DatabaseContextSqLite();
+            if (ctx == null)
+            {
+                throw new Exception("No db");
+            }
+            return ctx;
         }
     }
 }

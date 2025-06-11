@@ -55,10 +55,21 @@ namespace Cloud_Storage_Server.Services
             _serverConfig = serverConfig;
             this.FileUpdated += (UpdateFileDataRequest file) =>
             {
-                websocketConnectedController.SendMessageToUser(
-                    file.UserID,
-                    new WebSocketMessage(file)
-                );
+                if (file.UpdateType == UPDATE_TYPE.ADD)
+                {
+                    websocketConnectedController.SendMessageToUserExcluingDevice(
+                        file.UserID,
+                        file.DeviceReuqested,
+                        new WebSocketMessage(file)
+                    );
+                }
+                else
+                {
+                    websocketConnectedController.SendMessageToUser(
+                        file.UserID,
+                        new WebSocketMessage(file)
+                    );
+                }
             };
 
             this._serverChainOfResposibiltyRepository = new ServerChainOfResposibiltyRepository(
