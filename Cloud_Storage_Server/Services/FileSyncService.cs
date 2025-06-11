@@ -1,4 +1,6 @@
-﻿using Cloud_Storage_Common;
+﻿using System.Collections;
+using System.Diagnostics;
+using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Database.Repositories;
@@ -131,6 +133,7 @@ namespace Cloud_Storage_Server.Services
 
         public void SendFileUpdate(UpdateFileDataRequest update)
         {
+            logger.LogTrace($"SendFileUpdate:: [[{update}]] \n [[{new StackTrace().ToString()}]]");
             if (FileUpdated != null)
                 FileUpdated.Invoke(update);
         }

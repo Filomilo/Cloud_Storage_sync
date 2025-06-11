@@ -37,7 +37,13 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
                     "DownloadNewFIleHandler excepts argument of type SyncFileData or UpdateFileDataRequest"
                 );
 
-            if (syncFileData.Hash == "")
+            if (
+                syncFileData.Hash == ""
+                || (
+                    request is UpdateFileDataRequest
+                    && (request as UpdateFileDataRequest).UpdateType == UPDATE_TYPE.RENAME
+                )
+            )
             {
                 if (this._nextHandler != null)
                     return this._nextHandler.Handle(request);

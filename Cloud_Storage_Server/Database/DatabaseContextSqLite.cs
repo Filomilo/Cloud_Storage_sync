@@ -8,7 +8,7 @@ namespace Cloud_Storage_Server.Database
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             //optionsBuilder.UseInMemoryDatabase("cloud_storage");
-            optionsBuilder.UseSqlite("Data Source=databse1.db");
+            optionsBuilder.UseSqlite("Data Source=databse.db");
             optionsBuilder.EnableSensitiveDataLogging();
         }
 

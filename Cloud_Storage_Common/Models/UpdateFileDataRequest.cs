@@ -63,5 +63,15 @@ namespace Cloud_Storage_Common.Models
                 && Equals(this.oldFileData, other.oldFileData)
                 && Equals(this.newFileData, other.newFileData);
         }
+
+        public override string ToString()
+        {
+            return $"UpdateFileDataRequest: "
+                + $"UserID={UserID}, "
+                + $"DeviceReuqested={DeviceReuqested}, "
+                + $"UpdateType={UpdateType}, "
+                + $"oldFileData=[{oldFileData?.ToString() ?? "null"}], "
+                + $"newFileData=[{newFileData?.ToString() ?? "null"}]";
+        }
     }
 }

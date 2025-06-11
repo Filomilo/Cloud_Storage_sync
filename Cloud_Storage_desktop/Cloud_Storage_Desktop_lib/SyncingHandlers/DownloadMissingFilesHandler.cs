@@ -1,4 +1,5 @@
-﻿using Cloud_Storage_Common;
+﻿using System.Runtime.CompilerServices;
+using Cloud_Storage_Common;
 using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Actions;
@@ -40,6 +41,35 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
                         .LocalFiles.Where(y => y.GetRealativePath().Equals(x.GetRealativePath()))
                         .Count() == 0
                 )
+                .ToList();
+            filterd = filterd
+                .Where(x =>
+                {
+                    if (filterd.Where(y => y.Id.Equals(x.Id) && y.Version > x.Version).Count() > 0)
+                        return false;
+                    return true;
+                })
+                .ToList();
+            filterd = filterd
+                .Where(x =>
+                {
+                    if (
+                        filterd
+                            .Where(y =>
+                                y.GetRealativePath().Equals(x.GetRealativePath())
+                                && y.Version > x.Version
+                            )
+                            .Count() > 0
+                    )
+                        return false;
+                    return true;
+                })
+                .ToList();
+            filterd = filterd
+                .Where(x =>
+                {
+                    return x.Hash.Length > 0;
+                })
                 .ToList();
             return filterd;
             ;

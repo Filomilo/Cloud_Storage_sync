@@ -24,7 +24,10 @@ namespace Cloud_Storage_Desktop_lib.Actions
         private void DelteDirecetoryIfEmpty(IConfiguration configuration, string pathToDeletedFile)
         {
             string direcotry = Path.GetDirectoryName(pathToDeletedFile);
-            if (configuration.StorageLocation.Equals(direcotry + "\\"))
+            if (
+                configuration.StorageLocation.Equals(direcotry + "\\")
+                || configuration.StorageLocation.Equals(direcotry)
+            )
             {
                 return;
             }

@@ -186,6 +186,7 @@ namespace Cloud_Storage_Server.Handlers
         {
             SyncFileData updateData = dbFileData.Clone();
             updateData.DeviceOwner.Remove(update.DeviceReuqested);
+
             FileRepository.UpdateFile(ctx, dbFileData, updateData);
 
             ctx.SaveChangesAsync().Wait();

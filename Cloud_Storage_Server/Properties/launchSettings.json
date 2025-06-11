@@ -8,6 +8,14 @@
       "dotnetRunMessages": true,
       "applicationUrl": "http://localhost:8080"
     },
+    "http-public": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://0.0.0.0:8080"
+    },
     "IIS Express": {
       "commandName": "IISExpress",
       "environmentVariables": {

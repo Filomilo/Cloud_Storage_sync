@@ -27,6 +27,8 @@ namespace Cloud_Storage_Server.Handlers
                 removeFileDeviceOwnershipRequest.userID
             );
 
+            updateFileDataRequest.DeviceReuqested = removeFileDeviceOwnershipRequest.deviceId;
+
             if (this._nextHandler != null)
             {
                 return this._nextHandler.Handle(updateFileDataRequest);
