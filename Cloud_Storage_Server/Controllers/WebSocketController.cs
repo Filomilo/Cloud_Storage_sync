@@ -29,27 +29,43 @@ namespace Cloud_Storage_Server.Controllers
         [Authorize]
         public async Task Get()
         {
-            if (HttpContext.WebSockets.IsWebSocketRequest)
+            try
             {
-                using WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-                Device device = null;
-                using (var context = _dataBaseContextGenerator.GetDbContext())
+                if (HttpContext.WebSockets.IsWebSocketRequest)
                 {
-                    device = DeviceRepository.GetDevice(
-                        context,
-                        JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization)
+                    using WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+                    Device device = null;
+                    using (var context = _dataBaseContextGenerator.GetDbContext())
+                    {
+                        device = DeviceRepository.GetDevice(
+                            context,
+                            JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization)
+                        );
+#if DEBUG
+                        
+
+                        if (device == null)
+                        {
+                            device = DeviceRepository.AddNewDevice(context,
+                                UserRepository.getUserByMail(context,"anakonda@wp.pl"));
+                        }
+#endif
+                    }
+
+                    DeviceSocket deviceSocket = new DeviceSocket(device, webSocket);
+                    this.websocketConnectedController.AddDevice(deviceSocket);
+                    ArraySegment<byte> buffer = new ArraySegment<byte>(new byte[1024]);
+                    WebSocketReceiveResult res = await webSocket.ReceiveAsync(
+                        ArraySegment<byte>.Empty,
+                        CancellationToken.None
                     );
                 }
-
-                DeviceSocket deviceSocket = new DeviceSocket(device, webSocket);
-                this.websocketConnectedController.AddDevice(deviceSocket);
-                ArraySegment<byte> buffer = new ArraySegment<byte>(new byte[1024]);
-                WebSocketReceiveResult res = await webSocket.ReceiveAsync(
-                    ArraySegment<byte>.Empty,
-                    CancellationToken.None
-                );
+                else
+                {
+                    HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                }
             }
-            else
+            catch (Exception ex)
             {
                 HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             }

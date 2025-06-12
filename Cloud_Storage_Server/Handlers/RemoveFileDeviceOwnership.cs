@@ -48,7 +48,7 @@ namespace Cloud_Storage_Server.Handlers
                 {
                     if (this._nextHandler != null)
                     {
-                        return this._nextHandler.Handle(existingFile);
+                      //  return this._nextHandler.Handle(existingFile);
                     }
                     return null;
                 }

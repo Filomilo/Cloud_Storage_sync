@@ -221,7 +221,7 @@ namespace Cloud_Storage_Desktop_lib
                         }
                         else
                         {
-                            logger.LogError($"Unhandled AggregateException: [[ {ex.Message} ]]");
+                            logger.LogError($"Unhandled AggregateException: [[ {String.Join(", \n", ex.InnerExceptions.Select(x => x.Message)) } ]]");
                         }
                     }
                     catch (Exception ex)
