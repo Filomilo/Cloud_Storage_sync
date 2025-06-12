@@ -28,17 +28,17 @@ namespace Cloud_Storage_Server.Handlers
                 uploudFileData = request as SyncFileData;
             }
 
-            if (request is UpdateFileDataRequest)
+            if (request is UpdateFileDataMessage)
             {
-                if ((request as UpdateFileDataRequest).newFileData == null)
+                if ((request as UpdateFileDataMessage).newFileData == null)
                     throw new ArgumentException("File update quest hsould hav enew file data");
-                uploudFileData = new SyncFileData((request as UpdateFileDataRequest).newFileData);
+                uploudFileData = new SyncFileData((request as UpdateFileDataMessage).newFileData);
                 uploudFileData.DeviceOwner = new List<string>()
                 {
-                    ((UpdateFileDataRequest)request).DeviceReuqested,
+                    ((UpdateFileDataMessage)request).DeviceReuqested,
                 };
-                uploudFileData.OwnerId = ((UpdateFileDataRequest)request).UserID;
-                if ((request as UpdateFileDataRequest).oldFileData != null)
+                uploudFileData.OwnerId = ((UpdateFileDataMessage)request).UserID;
+                if ((request as UpdateFileDataMessage).oldFileData != null)
                 {
                     if (this._nextHandler != null)
                     {
@@ -63,6 +63,12 @@ namespace Cloud_Storage_Server.Handlers
                     uploudFileData.Extenstion,
                     uploudFileData.OwnerId
                 );
+                if (newestFileInRepository!=null && context.Files.ToList().Where(x =>
+                        x.Id.Equals(newestFileInRepository.Id) && x.Version > newestFileInRepository.Version).Count() >
+                    0)
+                {
+                    newestFileInRepository = null;
+                }
             }
 
             if (

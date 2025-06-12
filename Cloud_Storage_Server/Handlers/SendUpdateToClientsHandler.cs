@@ -4,6 +4,10 @@ using Cloud_Storage_Server.Services;
 
 namespace Cloud_Storage_Server.Handlers
 {
+
+
+
+
     public class SendUpdateToClientsHandler : AbstactHandler
     {
         IFileSyncService _fileSyncService;
@@ -15,17 +19,17 @@ namespace Cloud_Storage_Server.Handlers
 
         public override object Handle(object request)
         {
-            UpdateFileDataRequest update = null;
-            if (request is UpdateFileDataRequest)
+            UpdateFileDataMessageRequest update = null;
+            if (request is UpdateFileDataMessageRequest)
             {
-                UpdateFileDataRequest fileUpdateRequest = (UpdateFileDataRequest)request;
-                update = fileUpdateRequest;
+                UpdateFileDataMessageRequest fileUpdateMessage = (UpdateFileDataMessageRequest)request;
+                update = fileUpdateMessage;
             }
 
             if (update is null)
             {
                 throw new ArgumentException(
-                    "SendUpdateToClientsHandler excepts argument of type UpdateFileDataRequest"
+                    "SendUpdateToClientsHandler excepts argument of type UpdateFileDataMessageRequest"
                 );
             }
             this._fileSyncService.SendFileUpdate(update);

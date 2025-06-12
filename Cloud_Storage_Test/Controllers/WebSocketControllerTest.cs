@@ -51,7 +51,7 @@ namespace Cloud_Storage_Test.Controllers
         {
             new WebSocketMessage("TestMEssage"),
             new WebSocketMessage(
-                new UpdateFileDataRequest()
+                new UpdateFileDataMessage()
                 {
                     DeviceReuqested = "123",
                     newFileData = new SyncFileData()

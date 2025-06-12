@@ -24,7 +24,7 @@ namespace Cloud_Storage_Desktop_lib.Actions
         public RenameAction(
             IServerConnection serverConnection,
             IConfiguration configuration,
-            UpdateFileDataRequest update,
+            UpdateFileDataMessage update,
             IFileRepositoryService fileRepositoryService
         )
         {

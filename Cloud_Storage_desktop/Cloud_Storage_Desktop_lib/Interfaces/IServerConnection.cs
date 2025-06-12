@@ -19,7 +19,7 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
         void Logout();
         void Register(string email, string pass);
         void UploudFile(UploudFileData fileData, Stream value);
-        void UpdateFileData(UpdateFileDataRequest file);
+        void UpdateFileData(UpdateFileDataMessage file);
         event OnConnectionStateChange ConnectionChangeHandler;
         event OnAuthStateChange AuthChangeHandler;
         event OnServerWebSockerMessage ServerWerbsocketHadnler;

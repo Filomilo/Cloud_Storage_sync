@@ -33,8 +33,8 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
             SyncFileData syncFileData = null;
             if (request is SyncFileData)
                 syncFileData = request as SyncFileData;
-            if (request is UpdateFileDataRequest)
-                syncFileData = (request as UpdateFileDataRequest).newFileData;
+            if (request is UpdateFileDataMessage)
+                syncFileData = (request as UpdateFileDataMessage).newFileData;
             if (syncFileData == null)
                 throw new ArgumentException(
                     "DeleteUpdateFileHandler excepts argument of type SyncFileData or UpdateFileDataRequest"

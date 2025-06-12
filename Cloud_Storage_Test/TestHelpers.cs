@@ -359,7 +359,7 @@ namespace Cloud_Storage_Test
         {
             if (Debugger.IsAttached)
             {
-                timeout *= 1;
+                timeout *= 100;
             }
 
             bool state = false;
@@ -379,7 +379,7 @@ namespace Cloud_Storage_Test
         {
             if (Debugger.IsAttached)
             {
-                timeout *= 1;
+                timeout *= 100;
             }
 
             bool state = false;

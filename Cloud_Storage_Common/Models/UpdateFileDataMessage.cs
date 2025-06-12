@@ -13,17 +13,18 @@ namespace Cloud_Storage_Common.Models
 
     [AllArgsConstructor]
     [NoArgsConstructor]
-    public partial class UpdateFileDataRequest
+    public partial class UpdateFileDataMessage
     {
         public long UserID { get; set; }
         public string DeviceReuqested { get; set; }
         public SyncFileData oldFileData { get; set; }
         public SyncFileData newFileData { get; set; }
 
+
         [Required]
         public UPDATE_TYPE UpdateType { get; set; }
 
-        public UpdateFileDataRequest(
+        public UpdateFileDataMessage(
             UPDATE_TYPE update,
             LocalFileData? oldData,
             LocalFileData newData
@@ -36,7 +37,7 @@ namespace Cloud_Storage_Common.Models
                 this.newFileData = new SyncFileData(newData);
         }
 
-        public UpdateFileDataRequest(
+        public UpdateFileDataMessage(
             UPDATE_TYPE update,
             SyncFileData value,
             SyncFileData sync,
@@ -56,7 +57,7 @@ namespace Cloud_Storage_Common.Models
             if (obj is null || this.GetType() != obj.GetType())
                 return false;
 
-            UpdateFileDataRequest other = (UpdateFileDataRequest)obj;
+            UpdateFileDataMessage other = (UpdateFileDataMessage)obj;
 
             return this.UserID == other.UserID
                 && this.DeviceReuqested == other.DeviceReuqested

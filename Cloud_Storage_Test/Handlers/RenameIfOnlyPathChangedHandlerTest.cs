@@ -68,7 +68,7 @@ namespace Cloud_Storage_Test.Handlers
                 SyncFileData newSyncFileData = syncFileDataExisitng.Clone();
                 newSyncFileData.Name = "newName";
                 newSyncFileData.Version++;
-                UpdateFileDataRequest request = new UpdateFileDataRequest()
+                UpdateFileDataMessage message = new UpdateFileDataMessage()
                 {
                     DeviceReuqested = device1.Id.ToString(),
                     newFileData = newSyncFileData,
@@ -76,7 +76,7 @@ namespace Cloud_Storage_Test.Handlers
                     UpdateType = UPDATE_TYPE.RENAME,
                     UserID = user1.id,
                 };
-                handler.Handle(request);
+                handler.Handle(message);
 
                 using (var ctx = this.dataBaseContextGenerator.GetDbContext())
                 {
@@ -117,7 +117,7 @@ namespace Cloud_Storage_Test.Handlers
                 SyncFileData newSyncFileData = syncFileDataExisitng.Clone();
                 newSyncFileData.Name = "newName";
                 newSyncFileData.Version++;
-                UpdateFileDataRequest request = new UpdateFileDataRequest()
+                UpdateFileDataMessage message = new UpdateFileDataMessage()
                 {
                     DeviceReuqested = device1.Id.ToString(),
                     newFileData = newSyncFileData,
@@ -125,7 +125,7 @@ namespace Cloud_Storage_Test.Handlers
                     UpdateType = UPDATE_TYPE.RENAME,
                     UserID = user1.id,
                 };
-                handler.Handle(request);
+                handler.Handle(message);
 
                 using (var ctx = this.dataBaseContextGenerator.GetDbContext())
                 {
@@ -148,8 +148,8 @@ namespace Cloud_Storage_Test.Handlers
                     );
                 }
 
-                request.DeviceReuqested = device2.Id.ToString();
-                handler.Handle(request);
+                message.DeviceReuqested = device2.Id.ToString();
+                handler.Handle(message);
 
                 using (var ctx = this.dataBaseContextGenerator.GetDbContext())
                 {

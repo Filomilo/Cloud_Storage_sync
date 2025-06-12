@@ -65,7 +65,7 @@ namespace Cloud_Storage_Desktop_lib.Services
             }
         }
 
-        private void onFileUPdate(UpdateFileDataRequest syncFileData)
+        private void onFileUPdate(UpdateFileDataMessage syncFileData)
         {
             switch (syncFileData.UpdateType)
             {

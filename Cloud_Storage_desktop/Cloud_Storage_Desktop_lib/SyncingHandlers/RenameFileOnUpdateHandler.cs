@@ -27,27 +27,27 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 
         public override object Handle(object request)
         {
-            UpdateFileDataRequest updateFileDataRequest = null;
-            if (request is UpdateFileDataRequest)
-                updateFileDataRequest = (request as UpdateFileDataRequest);
-            if (updateFileDataRequest == null)
+            UpdateFileDataMessage updateFileDataMessage = null;
+            if (request is UpdateFileDataMessage)
+                updateFileDataMessage = (request as UpdateFileDataMessage);
+            if (updateFileDataMessage == null)
                 throw new ArgumentException(
                     "DownloadNewFIleHandler excepts argument of type SyncFileData or UpdateFileDataRequest"
                 );
-            if (updateFileDataRequest.oldFileData == null)
+            if (updateFileDataMessage.oldFileData == null)
             {
                 if (this._nextHandler != null)
                     return this._nextHandler.Handle(request);
             }
             LocalFileData currentFileData = this._fileRepositoryService.GetFileByPathNameExtension(
-                updateFileDataRequest.oldFileData.Path,
-                updateFileDataRequest.oldFileData.Name,
-                updateFileDataRequest.oldFileData.Extenstion
+                updateFileDataMessage.oldFileData.Path,
+                updateFileDataMessage.oldFileData.Name,
+                updateFileDataMessage.oldFileData.Extenstion
             );
 
             if (
                 currentFileData == null
-                || currentFileData.Version != updateFileDataRequest.oldFileData.Version
+                || currentFileData.Version != updateFileDataMessage.oldFileData.Version
             )
             {
                 if (this._nextHandler != null)
@@ -58,7 +58,7 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
                 new RenameAction(
                     _serverConnection,
                     _configuration,
-                    updateFileDataRequest,
+                    updateFileDataMessage,
                     _fileRepositoryService
                 )
             );
@@ -66,7 +66,7 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
             //{
             //    return this._nextHandler.Handle(request);
             //}
-            return updateFileDataRequest;
+            return updateFileDataMessage;
         }
     }
 }

@@ -30,8 +30,8 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
             SyncFileData syncFileData = null;
             if (request is SyncFileData)
                 syncFileData = request as SyncFileData;
-            if (request is UpdateFileDataRequest)
-                syncFileData = (request as UpdateFileDataRequest).newFileData;
+            if (request is UpdateFileDataMessage)
+                syncFileData = (request as UpdateFileDataMessage).newFileData;
             if (syncFileData == null)
                 throw new ArgumentException(
                     "DownloadNewFIleHandler excepts argument of type SyncFileData or UpdateFileDataRequest"
@@ -40,8 +40,8 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
             if (
                 syncFileData.Hash == ""
                 || (
-                    request is UpdateFileDataRequest
-                    && (request as UpdateFileDataRequest).UpdateType == UPDATE_TYPE.RENAME
+                    request is UpdateFileDataMessage
+                    && (request as UpdateFileDataMessage).UpdateType == UPDATE_TYPE.RENAME
                 )
             )
             {

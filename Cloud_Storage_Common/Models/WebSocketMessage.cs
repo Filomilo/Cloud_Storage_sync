@@ -11,7 +11,7 @@ namespace Cloud_Storage_Common.Models
     public class MessageData
     {
         public string text { get; set; }
-        public UpdateFileDataRequest FlieUpdate { get; set; }
+        public UpdateFileDataMessage FlieUpdate { get; set; }
     }
 
     [AllArgsConstructor]
@@ -28,7 +28,7 @@ namespace Cloud_Storage_Common.Models
             set { _data = value; }
         }
 
-        public WebSocketMessage(UpdateFileDataRequest data)
+        public WebSocketMessage(UpdateFileDataMessage data)
         {
             this.messageType = MESSAGE_TYPE.UPDATE;
             this._data.FlieUpdate = data;

@@ -20,20 +20,20 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 
         public override object Handle(object request)
         {
-            if (request is not UpdateFileDataRequest)
+            if (request is not UpdateFileDataMessage)
                 throw new ArgumentException(
                     "SendLocalFileUpdateToServer excepts argument of type UpdateFileDataRequest"
                 );
 
-            UpdateFileDataRequest updateFileDataRequest = request as UpdateFileDataRequest;
+            UpdateFileDataMessage updateFileDataMessage = request as UpdateFileDataMessage;
 
-            this._serverConnection.UpdateFileData(updateFileDataRequest);
+            this._serverConnection.UpdateFileData(updateFileDataMessage);
 
             if (this._nextHandler != null)
             {
-                return this._nextHandler.Handle(updateFileDataRequest);
+                return this._nextHandler.Handle(updateFileDataMessage);
             }
-            return updateFileDataRequest;
+            return updateFileDataMessage;
         }
     }
 }

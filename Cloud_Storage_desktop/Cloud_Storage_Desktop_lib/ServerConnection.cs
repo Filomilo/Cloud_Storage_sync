@@ -421,7 +421,7 @@ namespace Cloud_Storage_Desktop_lib
             }
         }
 
-        public void UpdateFileData(UpdateFileDataRequest file)
+        public void UpdateFileData(UpdateFileDataMessage file)
         {
             logger.LogDebug($"Updating file on device {this._credentialManager.GetDeviceID()}");
             var response = _httpClientFactory
