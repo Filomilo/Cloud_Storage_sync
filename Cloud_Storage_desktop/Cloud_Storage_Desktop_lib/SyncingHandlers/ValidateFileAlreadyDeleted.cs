@@ -30,7 +30,7 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
                 throw new ArgumentException(
                     "DeleteUpdateFileHandler excepts argument of type SyncFileData or UpdateFileDataRequest"
                 );
-            List<FileData> fileDatas = FileManager.GetAllFilesInLocation(
+            List<FileData> fileDatas = FileManager.GetAllFilesInLocationRelative(
                 this._configuration.StorageLocation
             );
 
