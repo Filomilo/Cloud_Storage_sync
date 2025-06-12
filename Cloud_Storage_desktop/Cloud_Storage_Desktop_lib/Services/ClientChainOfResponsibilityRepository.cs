@@ -101,6 +101,7 @@ namespace Cloud_Storage_Desktop_lib.Services
                 //        this._fileRepositoryService
                 //    )
                 //)
+                .Next(new ValidateFileAlreadyDeleted(this._configuration))
                 .Next(
                     new DeleteUpdateFileHandler(
                         this._taskRunController,
