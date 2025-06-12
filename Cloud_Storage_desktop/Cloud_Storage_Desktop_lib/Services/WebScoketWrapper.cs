@@ -31,7 +31,8 @@ namespace Cloud_Storage_Desktop_lib.Services
             CancellationToken cancellationToken
         )
         {
-            _clientWebSocket.CloseAsync(closeStatus, statusDescription, cancellationToken).Wait();
+
+            _clientWebSocket.CloseAsync(closeStatus, statusDescription, cancellationToken);
         }
 
         public void SetRequestHeader(string str1, string value)
