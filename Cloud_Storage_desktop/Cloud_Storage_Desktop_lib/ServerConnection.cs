@@ -58,7 +58,7 @@ namespace Cloud_Storage_Desktop_lib
                 if (serverStatus != this._ServerStatus)
                 {
                     _ServerStatus = serverStatus;
-                    UpdateOnConncotionChange(_ServerStatus);
+                    UpdateOnConncotionChange(serverStatus);
                 }
             }
         }
@@ -66,6 +66,8 @@ namespace Cloud_Storage_Desktop_lib
         private void UpdateOnConncotionChange(bool state)
         {
             logger.LogTrace($"Conneciton change: {state}");
+            if(state==false)
+            InovkeAuthChange(state);
             if (ConnectionChangeHandler != null)
             {
                 ConnectionChangeHandler.Invoke(state);
@@ -144,7 +146,7 @@ namespace Cloud_Storage_Desktop_lib
             if (_webSocket != null && _webSocket.State == WebSocketState.Open)
             {
                 _webSocket.Close(
-                    WebSocketCloseStatus.NormalClosure,
+                    WebSocketCloseStatus.EndpointUnavailable,
                     "Resetting",
                     CancellationToken.None
                 );
