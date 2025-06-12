@@ -85,22 +85,23 @@ namespace Cloud_Storage_Desktop_lib.Services
         {
             return new ChainOfResponsiblityBuilder()
                 .Next(new ValidateIfFileAlreadyExisitInDataBase(_fileRepositoryService))
-                .Next(
-                    new RenameFileOnUpdateHandler(
-                        this._taskRunController,
-                        this._serverConnection,
-                        this._configuration,
-                        this._fileRepositoryService
-                    )
-                )
-                .Next(
-                    new DownloadNewFIleHandler(
-                        this._taskRunController,
-                        this._serverConnection,
-                        this._configuration,
-                        this._fileRepositoryService
-                    )
-                )
+                //.Next(
+                //    new RenameFileOnUpdateHandler(
+                //        this._taskRunController,
+                //        this._serverConnection,
+                //        this._configuration,
+                //        this._fileRepositoryService
+                //    )
+                //)
+                //.Next(
+                //    new DownloadNewFIleHandler(
+                //        this._taskRunController,
+                //        this._serverConnection,
+                //        this._configuration,
+                //        this._fileRepositoryService
+                //    )
+                //)
+                .Next(new ValidateFileAlreadyDeleted(this._configuration))
                 .Next(
                     new DeleteUpdateFileHandler(
                         this._taskRunController,

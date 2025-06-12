@@ -502,15 +502,25 @@ namespace Cloud_Storage_Desktop_lib
 
         public List<SyncFileData> GetListOfFiles()
         {
-            var response = this
-                ._httpClientFactory.GetHttpClient()
-                .GetAsync("api/Files/list")
-                .Result;
-            var raw = response.Content.ReadAsStringAsync().Result;
-            List<SyncFileData> parsed = JsonConvert.DeserializeObject<List<SyncFileData>>(raw);
+            try
+            {
+                var response = this
+                       ._httpClientFactory.GetHttpClient()
+                       .GetAsync("api/Files/list")
+                       .Result;
+                var raw = response.Content.ReadAsStringAsync().Result;
+                List<SyncFileData> parsed = JsonConvert.DeserializeObject<List<SyncFileData>>(raw);
+                return parsed;
+            }
+            catch(Exception ex)
+            {
+                logger.LogWarning($"GetListOfFiles:: {ex.Message}");
+                return new List<SyncFileData>();
+            }
+   
             //var parsed = JsonSerializer.Deserialize<List<SyncFileData>>(raw);
 
-            return parsed;
+
         }
 
         internal class FileDownloadRequest
