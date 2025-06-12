@@ -98,7 +98,7 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
                     }
                 }
 
-                UpdateFileDataRequest updateFileDataRequest = new UpdateFileDataRequest()
+                UpdateFileDataMessage updateFileDataMessage = new UpdateFileDataMessage()
                 {
                     oldFileData =
                         oldFileDataCopy == null ? null : new SyncFileData(oldFileDataCopy),
@@ -107,14 +107,14 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 
                 if (
                     this._nextHandler != null
-                    && updateFileDataRequest != null
-                    && updateFileDataRequest.newFileData != null
+                    && updateFileDataMessage != null
+                    && updateFileDataMessage.newFileData != null
                 )
                 {
-                    return this._nextHandler.Handle(updateFileDataRequest);
+                    return this._nextHandler.Handle(updateFileDataMessage);
                 }
 
-                return updateFileDataRequest;
+                return updateFileDataMessage;
             }
             catch (Exception ex)
             {

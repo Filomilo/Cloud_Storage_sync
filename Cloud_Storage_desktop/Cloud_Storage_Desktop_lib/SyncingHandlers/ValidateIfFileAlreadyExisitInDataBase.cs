@@ -22,8 +22,8 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
             {
                 syncFileData = new LocalFileData((UploudFileData)request);
             }
-            if (request is UpdateFileDataRequest)
-                syncFileData = (LocalFileData)(request as UpdateFileDataRequest).newFileData;
+            if (request is UpdateFileDataMessage)
+                syncFileData = (LocalFileData)(request as UpdateFileDataMessage).newFileData;
             if (syncFileData == null)
                 throw new ArgumentException(
                     "ValidateIfFileAlreadyExisitInDataBase excepts argument of type SyncFileData or UpdateFileDataRequest or UploudFileData"

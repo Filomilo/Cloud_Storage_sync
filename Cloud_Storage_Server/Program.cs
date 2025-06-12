@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text;
 using Cloud_Storage_Server.Configurations;
 using Cloud_Storage_Server.Database;
+using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Database.Repositories;
 using Cloud_Storage_Server.Interfaces;
 using Cloud_Storage_Server.Services;
@@ -144,8 +145,16 @@ using (var scope = app.Services.CreateScope())
     //context.Database.Migrate();
     using (var context = contextGeneratorTmp.GetDbContext())
     {
-        //context.Database.EnsureDeleted();
+        context.Database.EnsureDeleted();
+
         context.Database.EnsureCreated();
+        context.Users.Add(new User()
+        {
+            id = 0,
+            mail = "anakonda@wp.pl",
+            password = "$2a$11$V6LUDGcXJfjn5Jom5FL6V.LRoLiPiXwtpzhgyDISeb0CQ56ckZnRq",
+        });
+        context.SaveChanges();
     }
 }
 

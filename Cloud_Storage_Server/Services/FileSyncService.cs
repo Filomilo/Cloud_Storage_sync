@@ -21,7 +21,17 @@ namespace Cloud_Storage_Server.Services
         }
     }
 
-    public delegate void FileUpdateHandler(UpdateFileDataRequest uploudFile);
+
+    public class UpdateFileDataMessageRequest()
+    {
+        public UpdateFileDataMessage updateFileDataMessage { get; set; }
+
+        public long UserIdToSendTo { get; set; }
+        public List<string> InlcudedDevices { get; set; } = new List<string>();
+        public List<string> ExcludedDevices { get; set; } = new List<string>();
+    }
+
+    public delegate void FileUpdateHandler(UpdateFileDataMessageRequest uploudFile);
 
     public interface IFileSyncService
     {
@@ -32,8 +42,8 @@ namespace Cloud_Storage_Server.Services
         void RemoveFile(FileData fileData, long id, string deviceId);
 
         event FileUpdateHandler FileUpdated;
-        void SendFileUpdate(UpdateFileDataRequest update);
-        void UpdateFileForDevice(string email, string deviceId, UpdateFileDataRequest file);
+        void SendFileUpdate(UpdateFileDataMessageRequest update);
+        void UpdateFileForDevice(string email, string deviceId, UpdateFileDataMessage file);
         void SetFileVersion(long useiD, Guid fileId, ulong version);
     }
 
@@ -55,23 +65,17 @@ namespace Cloud_Storage_Server.Services
             _fileSystemService = fileSystemService;
             _dataBaseContextGenerator = dataBaseContextGenerator;
             _serverConfig = serverConfig;
-            this.FileUpdated += (UpdateFileDataRequest file) =>
+            this.FileUpdated += (UpdateFileDataMessageRequest file) =>
             {
-                if (file.UpdateType == UPDATE_TYPE.ADD)
-                {
-                    websocketConnectedController.SendMessageToUserExcluingDevice(
-                        file.UserID,
-                        file.DeviceReuqested,
-                        new WebSocketMessage(file)
-                    );
-                }
-                else
-                {
+              
                     websocketConnectedController.SendMessageToUser(
-                        file.UserID,
-                        new WebSocketMessage(file)
+                        file.UserIdToSendTo,
+                        new WebSocketMessage(file.updateFileDataMessage),
+                        file.InlcudedDevices,
+                        file.ExcludedDevices
                     );
-                }
+                
+          
             };
 
             this._serverChainOfResposibiltyRepository = new ServerChainOfResposibiltyRepository(
@@ -100,7 +104,18 @@ namespace Cloud_Storage_Server.Services
                 if (FileUpdated != null)
                 {
                     FileUpdated.Invoke(
-                        new UpdateFileDataRequest(UPDATE_TYPE.ADD, null, sync, user.id)
+                        new UpdateFileDataMessageRequest()
+                        {
+                            UserIdToSendTo = user.id,
+                            updateFileDataMessage = new UpdateFileDataMessage(
+                                UPDATE_TYPE.ADD,
+                                null,
+                                sync,
+                                user.id
+                            ),
+                            InlcudedDevices = new List<string>(),
+                            ExcludedDevices = new List<string>(){ deviceId },
+                        }
                     );
                 }
             }
@@ -131,7 +146,7 @@ namespace Cloud_Storage_Server.Services
 
         public event FileUpdateHandler? FileUpdated;
 
-        public void SendFileUpdate(UpdateFileDataRequest update)
+        public void SendFileUpdate(UpdateFileDataMessageRequest update)
         {
             logger.LogTrace($"SendFileUpdate:: [[{update}]] \n [[{new StackTrace().ToString()}]]");
             if (FileUpdated != null)
@@ -141,7 +156,7 @@ namespace Cloud_Storage_Server.Services
         public void UpdateFileForDevice(
             string email,
             string deviceId,
-            UpdateFileDataRequest fileUpdate
+            UpdateFileDataMessage fileUpdate
         )
         {
             using (var context = _dataBaseContextGenerator.GetDbContext())
@@ -149,9 +164,9 @@ namespace Cloud_Storage_Server.Services
                 fileUpdate.UserID = UserRepository.getUserByMail(context, email).id;
             }
             fileUpdate.DeviceReuqested = deviceId;
-            UpdateFileDataRequest resolved =
+            UpdateFileDataMessage resolved =
                 this._serverChainOfResposibiltyRepository.OnFileUpdateChain.Handle(fileUpdate)
-                as UpdateFileDataRequest;
+                as UpdateFileDataMessage;
         }
 
         private static string GetRealtivePathForFile(User user, SyncFileData data)
@@ -190,7 +205,7 @@ namespace Cloud_Storage_Server.Services
             if (resolved != null)
             {
                 this.FileUpdated(
-                    new UpdateFileDataRequest(UPDATE_TYPE.ADD, null, resolved, resolved.OwnerId)
+                    new UpdateFileDataMessageRequest() { UserIdToSendTo = resolved.OwnerId, updateFileDataMessage = new UpdateFileDataMessage(UPDATE_TYPE.ADD, null, resolved, resolved.OwnerId), InlcudedDevices = new List<string>(), ExcludedDevices = new List<string>() }
                 );
             }
         }

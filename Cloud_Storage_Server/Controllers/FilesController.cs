@@ -206,7 +206,7 @@ namespace Cloud_Storage_Server.Controllers
             }
         }
 
-        private void ValidateUpdateFileDataRequest(UpdateFileDataRequest fileUpdate)
+        private void ValidateUpdateFileDataRequest(UpdateFileDataMessage fileUpdate)
         {
             if (fileUpdate.newFileData.BytesSize <= 0)
             {
@@ -222,7 +222,7 @@ namespace Cloud_Storage_Server.Controllers
         [Route("update")]
         [Authorize]
         [HttpPost]
-        public IActionResult update([FromBody] UpdateFileDataRequest fileUpdate)
+        public IActionResult update([FromBody] UpdateFileDataMessage fileUpdate)
         {
             _logger.LogInformation($"update:: {fileUpdate}");
 

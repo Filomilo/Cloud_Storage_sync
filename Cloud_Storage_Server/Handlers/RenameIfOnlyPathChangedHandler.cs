@@ -4,6 +4,7 @@ using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Database;
 using Cloud_Storage_Server.Database.Repositories;
 using Cloud_Storage_Server.Interfaces;
+using Cloud_Storage_Server.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Cloud_Storage_Server.Handlers
@@ -19,11 +20,11 @@ namespace Cloud_Storage_Server.Handlers
 
         public override object Handle(object request)
         {
-            UpdateFileDataRequest update = null;
-            if (request is UpdateFileDataRequest)
+            UpdateFileDataMessage update = null;
+            if (request is UpdateFileDataMessage)
             {
-                UpdateFileDataRequest fileUpdateRequest = (UpdateFileDataRequest)request;
-                update = fileUpdateRequest;
+                UpdateFileDataMessage fileUpdateMessage = (UpdateFileDataMessage)request;
+                update = fileUpdateMessage;
             }
 
             if (update is null)
@@ -36,7 +37,15 @@ namespace Cloud_Storage_Server.Handlers
             if (update.oldFileData == null)
             {
                 if (_nextHandler != null)
-                    return this._nextHandler.Handle(update);
+                {
+                    return this._nextHandler.Handle(new UpdateFileDataMessageRequest()
+                    {
+                        ExcludedDevices = new List<string>(){update.DeviceReuqested},
+                        UserIdToSendTo = update.UserID,
+                        updateFileDataMessage = update
+                    });
+                }
+                    
                 return null;
             }
 
@@ -78,14 +87,24 @@ namespace Cloud_Storage_Server.Handlers
 
             update.newFileData = newFileVersion;
 
+
+            UpdateFileDataMessageRequest updateFileDataMessageRequest = new UpdateFileDataMessageRequest()
+            {
+                updateFileDataMessage = update,
+                UserIdToSendTo = update.UserID,
+                InlcudedDevices = update.oldFileData.DeviceOwner,
+                ExcludedDevices = new List<string>() { update.DeviceReuqested }
+            };
+
+
             if (_nextHandler != null)
-                return this._nextHandler.Handle(update);
+                return this._nextHandler.Handle(updateFileDataMessageRequest);
             return update;
         }
 
         private static SyncFileData? GetNewFileDataEntryInDataBase(
             AbstractDataBaseContext ctx,
-            UpdateFileDataRequest update
+            UpdateFileDataMessage update
         )
         {
             SyncFileData syncFile = null;
@@ -94,7 +113,7 @@ namespace Cloud_Storage_Server.Handlers
                 Awaiters.AwaitTrue(() =>
                 {
                     syncFile = ctx
-                        .Files.ToList()
+                        .Files.ToList().OrderByDescending(x=>x.Version)
                         .FirstOrDefault(x =>
                             x.GetRealativePath().Equals(update.newFileData.GetRealativePath())
                             && !x.DeviceOwner.Contains(update.DeviceReuqested)
@@ -113,7 +132,7 @@ namespace Cloud_Storage_Server.Handlers
 
         private static SyncFileData? GetOldFileEnntryIDataBase(
             AbstractDataBaseContext ctx,
-            UpdateFileDataRequest update
+            UpdateFileDataMessage update
         )
         {
             return ctx
@@ -128,7 +147,7 @@ namespace Cloud_Storage_Server.Handlers
         private static void AddDeviceToNewDBEntry(
             AbstractDataBaseContext ctx,
             SyncFileData newFileVersion,
-            UpdateFileDataRequest update
+            UpdateFileDataMessage update
         )
         {
             //var trackedEntity = ctx
@@ -152,7 +171,7 @@ namespace Cloud_Storage_Server.Handlers
 
         private static SyncFileData CreateNewDataEntryNewFileVersion(
             SyncFileData? dbFileData,
-            UpdateFileDataRequest update,
+            UpdateFileDataMessage update,
             AbstractDataBaseContext ctx
         )
         {
@@ -180,7 +199,7 @@ namespace Cloud_Storage_Server.Handlers
 
         private static void RemoveOwnerFromDatabaseEntry(
             SyncFileData dbFileData,
-            UpdateFileDataRequest update,
+            UpdateFileDataMessage update,
             AbstractDataBaseContext ctx
         )
         {

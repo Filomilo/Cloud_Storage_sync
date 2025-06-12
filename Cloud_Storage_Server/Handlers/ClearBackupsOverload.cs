@@ -35,9 +35,9 @@ namespace Cloud_Storage_Server.Handlers
                 syncFileData = request as SyncFileData;
             }
 
-            if (request is UpdateFileDataRequest)
+            if (request is UpdateFileDataMessage)
             {
-                syncFileData = (request as UpdateFileDataRequest).newFileData;
+                syncFileData = (request as UpdateFileDataMessage).newFileData;
             }
 
             if (syncFileData == null)

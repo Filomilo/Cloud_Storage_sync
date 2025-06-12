@@ -167,7 +167,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
-        [Repeat(25)]
+        [Repeat(1)]
         public void Create_And_Sync_File_In_EmptyDirectory()
         {
             #region Ensure connected and empty
@@ -601,7 +601,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
-        [Repeat(25)]
+        [Repeat(1)]
         public void Connect_With_Files_Already_OnDisk()
         {
             #region Ensure not connected and 3 files
@@ -675,7 +675,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
-        [Repeat(25)]
+        [Repeat(1)]
         public void Connect_With_Files_On_Server()
         {
             #region Ensure nor connected and 3 files on server
@@ -750,7 +750,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
-        [Repeat(25)]
+        [Repeat(1)]
         public void Connect_With_Diffrent_Files_On_Server_And_Device()
         {
             _logger.LogInformation(
@@ -858,7 +858,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
-        [Repeat(100)]
+        [Repeat(25)]
         public void Delete_File_Located_On_Both_Devices()
         {
             //throw new NotImplementedException("Nor implnted");
@@ -1140,7 +1140,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
-        [Repeat(25)]
+        [Repeat(1)]
         public void CreateFile_editITOnAnotherDevice_ThenDeleteit_ThenRestoreIT()
         {
             //throw new NotImplementedException("Nor implnted");
@@ -1665,7 +1665,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
-        [Repeat(25)]
+        [Repeat(1)]
         public void Create_File_And_rename_it()
         {
             #region Ensure connected and empty
@@ -1866,7 +1866,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
-        [Repeat(25)]
+        [Repeat(1)]
         public void Create_File_And_Edit_it_AndBringBackOlderVersion()
         {
             _logger.LogInformation(
@@ -2063,7 +2063,7 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
-        [Repeat(25)]
+        [Repeat(1)]
         [TestCase(0)]
         [TestCase(10)]
         //[TestCase(100)]

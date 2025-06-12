@@ -48,7 +48,7 @@ namespace Cloud_Storage_Server.Services
         {
             return new ChainOfResponsiblityBuilder()
                 .Next(new RemoveFileDeviceOwnership(this._dataBaseContextGenerator))
-                .Next(new PrepareFileRemoveUpdateHandler())
+                .Next(new PrepareFileRemoveUpdateHandler(this._dataBaseContextGenerator))
                 .Next(new SendUpdateToClientsHandler(this._fileSyncService))
                 .Next(
                     new ClearBackupsOverload(

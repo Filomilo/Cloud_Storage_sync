@@ -55,7 +55,7 @@ namespace Cloud_Storage_Desktop_lib.Actions
                             stream
                         );
                         serverConnection.UpdateFileData(
-                            new UpdateFileDataRequest(UPDATE_TYPE.ADD, null, newData)
+                            new UpdateFileDataMessage(UPDATE_TYPE.ADD, null, newData)
                         );
                     }
                     catch (Exception EX)
