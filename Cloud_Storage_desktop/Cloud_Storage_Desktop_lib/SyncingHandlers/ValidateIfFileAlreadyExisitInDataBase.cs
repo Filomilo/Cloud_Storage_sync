@@ -1,11 +1,16 @@
-﻿using Cloud_Storage_Common.Interfaces;
+﻿using Cloud_Storage_Common;
+using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 {
     class ValidateIfFileAlreadyExisitInDataBase : AbstactHandler
     {
+        private ILogger Logger = CloudDriveLogging.Instance.GetLogger(
+            "ValidateIfFileAlreadyExisitInDataBase"
+        );
         IFileRepositoryService _fileRepositoryService;
 
         public ValidateIfFileAlreadyExisitInDataBase(IFileRepositoryService repository)
@@ -15,6 +20,7 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 
         public override object Handle(object request)
         {
+            Logger.LogInformation($"ValidateIfFileAlreadyExisitInDataBase:: [[{request}]]");
             LocalFileData syncFileData = null;
             if (request is SyncFileData)
                 syncFileData = (LocalFileData)((SyncFileData)request);

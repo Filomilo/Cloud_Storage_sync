@@ -84,7 +84,7 @@ namespace Cloud_Storage_Desktop_lib.Services
         private IHandler? CreateOnCloudFileDeletedHandler()
         {
             return new ChainOfResponsiblityBuilder()
-                .Next(new ValidateIfFileAlreadyExisitInDataBase(_fileRepositoryService))
+                //.Next(new ValidateIfFileAlreadyExisitInDataBase(_fileRepositoryService))
                 //.Next(
                 //    new RenameFileOnUpdateHandler(
                 //        this._taskRunController,

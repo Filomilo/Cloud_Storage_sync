@@ -67,30 +67,39 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         private void onFileUPdate(UpdateFileDataMessage syncFileData)
         {
-            switch (syncFileData.UpdateType)
+            try
             {
-                case UPDATE_TYPE.RENAME:
-                    _clientChainOfResponsibilityRepository.OnCloudFileRenamedHandler.Handle(
-                        syncFileData
-                    );
-                    break;
-                case UPDATE_TYPE.CONTNETS:
-                    _clientChainOfResponsibilityRepository.OnCloudFileChangeHandler.Handle(
-                        syncFileData
-                    );
-                    break;
-                case UPDATE_TYPE.DELETE:
-                    _clientChainOfResponsibilityRepository.OnCloudFileDeletedHandler.Handle(
-                        syncFileData
-                    );
-                    break;
-                case UPDATE_TYPE.ADD:
-                    _clientChainOfResponsibilityRepository.OnCloudFileCreatedHandler.Handle(
-                        syncFileData
-                    );
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                switch (syncFileData.UpdateType)
+                {
+                    case UPDATE_TYPE.RENAME:
+                        _clientChainOfResponsibilityRepository.OnCloudFileRenamedHandler.Handle(
+                            syncFileData
+                        );
+                        break;
+                    case UPDATE_TYPE.CONTNETS:
+                        _clientChainOfResponsibilityRepository.OnCloudFileChangeHandler.Handle(
+                            syncFileData
+                        );
+                        break;
+                    case UPDATE_TYPE.DELETE:
+                        _clientChainOfResponsibilityRepository.OnCloudFileDeletedHandler.Handle(
+                            syncFileData
+                        );
+                        break;
+                    case UPDATE_TYPE.ADD:
+                        _clientChainOfResponsibilityRepository.OnCloudFileCreatedHandler.Handle(
+                            syncFileData
+                        );
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(
+                    $"Error while handling file update for file [[{syncFileData.newFileData.GetRealativePath()}]] :::: {ex.Message}"
+                );
             }
         }
 

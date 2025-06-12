@@ -7,6 +7,8 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 {
     class RemoveFileFromDatabaseHandler : AbstactHandler
     {
+        private ILogger logger = CloudDriveLogging.Instance.GetLogger("RemoveFileFromDatabaseHandler");
+
         private IConfiguration _configuration;
         private IFileRepositoryService _fileRepositoryService;
         private ILogger Logger = CloudDriveLogging.Instance.GetLogger(
@@ -24,6 +26,7 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 
         public override object Handle(object request)
         {
+            logger.LogInformation($"RemoveFileFromDatabaseHandler:: [[{request}]]");
             if (request is not string)
             {
                 throw new ArgumentException(

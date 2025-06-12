@@ -7,13 +7,16 @@ using Cloud_Storage_Common;
 using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 {
     internal class ValidateFileAlreadyDeleted: AbstactHandler
     {
         private IConfiguration _configuration;
-
+        private ILogger Logger = CloudDriveLogging.Instance.GetLogger(
+            "ValidateFileAlreadyDeleted"
+        );
         public ValidateFileAlreadyDeleted(IConfiguration configuration)
         {
             this._configuration = configuration;
@@ -21,6 +24,7 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 
         public override object Handle(object request)
         {
+            Logger.LogInformation($"ValidateFileAlreadyDeleted:: [[{request}]]");
             SyncFileData syncFileData = null;
             if (request is SyncFileData)
                 syncFileData = request as SyncFileData;
