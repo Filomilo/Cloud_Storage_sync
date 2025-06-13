@@ -8,7 +8,6 @@ using Cloud_Storage_Server.Interfaces;
 using Cloud_Storage_Server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -46,11 +45,11 @@ builder.Services.AddSingleton<IDataBaseContextGenerator, SqliteDataBaseContextGe
 );
 
 #if DEBUG
-IAuthService authService = new AlwaysLoggedAuthService(contextGenerator as IDataBaseContextGenerator);
-
-
+IAuthService authService = new AlwaysLoggedAuthService(
+    contextGenerator as IDataBaseContextGenerator
+);
 #else
-IAuthService authService= new AuthService(contextGenerator);
+IAuthService authService = new AuthService(contextGenerator);
 #endif
 builder.Services.AddSingleton<IAuthService>(provider => authService);
 
@@ -155,12 +154,14 @@ using (var scope = app.Services.CreateScope())
         context.Database.EnsureDeleted();
 
         context.Database.EnsureCreated();
-        context.Users.Add(new User()
-        {
-            id = 0,
-            mail = "anakonda@wp.pl",
-            password = "$2a$11$V6LUDGcXJfjn5Jom5FL6V.LRoLiPiXwtpzhgyDISeb0CQ56ckZnRq",
-        });
+        context.Users.Add(
+            new User()
+            {
+                id = 0,
+                mail = "anakonda@wp.pl",
+                password = "$2a$11$V6LUDGcXJfjn5Jom5FL6V.LRoLiPiXwtpzhgyDISeb0CQ56ckZnRq",
+            }
+        );
         context.SaveChanges();
     }
 }

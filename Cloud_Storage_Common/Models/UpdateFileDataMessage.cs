@@ -20,7 +20,6 @@ namespace Cloud_Storage_Common.Models
         public SyncFileData oldFileData { get; set; }
         public SyncFileData newFileData { get; set; }
 
-
         [Required]
         public UPDATE_TYPE UpdateType { get; set; }
 

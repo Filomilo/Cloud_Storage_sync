@@ -1,17 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_desktop.Logic;
 using Cloud_Storage_Server.Database;
 using Lombok.NET;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
-using NUnit.Framework.Internal;
 
 namespace Cloud_Storage_Test
 {

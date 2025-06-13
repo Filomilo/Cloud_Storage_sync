@@ -3,7 +3,6 @@ using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Database;
 using Cloud_Storage_Server.Database.Repositories;
 using Cloud_Storage_Server.Interfaces;
-using Cloud_Storage_Server.Services;
 
 namespace Cloud_Storage_Server.Handlers
 {

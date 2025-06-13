@@ -63,9 +63,16 @@ namespace Cloud_Storage_Server.Handlers
                     uploudFileData.Extenstion,
                     uploudFileData.OwnerId
                 );
-                if (newestFileInRepository!=null && context.Files.ToList().Where(x =>
-                        x.Id.Equals(newestFileInRepository.Id) && x.Version > newestFileInRepository.Version).Count() >
-                    0)
+                if (
+                    newestFileInRepository != null
+                    && context
+                        .Files.ToList()
+                        .Where(x =>
+                            x.Id.Equals(newestFileInRepository.Id)
+                            && x.Version > newestFileInRepository.Version
+                        )
+                        .Count() > 0
+                )
                 {
                     newestFileInRepository = null;
                 }

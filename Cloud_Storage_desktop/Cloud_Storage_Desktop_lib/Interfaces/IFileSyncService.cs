@@ -1,6 +1,4 @@
-﻿using Cloud_Storage_Desktop_lib.Services;
-
-namespace Cloud_Storage_Desktop_lib.Interfaces
+﻿namespace Cloud_Storage_Desktop_lib.Interfaces
 {
     public interface ISyncProcess { }
 

@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Cloud_Storage_Common;
+﻿using Cloud_Storage_Common;
 using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Actions;
@@ -36,14 +35,16 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
         )
         {
             List<SyncFileData> filterd = LocalAndServerFileData
-                .CloudFiles
-                .Where(x=>
+                .CloudFiles.Where(x =>
                 {
-                    if (LocalAndServerFileData.CloudFiles.Where(y => y.Id.Equals(x.Id) && y.Version > x.Version).Count() > 0)
+                    if (
+                        LocalAndServerFileData
+                            .CloudFiles.Where(y => y.Id.Equals(x.Id) && y.Version > x.Version)
+                            .Count() > 0
+                    )
                         return false;
                     return true;
                 })
-                
                 .Where(x =>
                     LocalAndServerFileData
                         .LocalFiles.Where(y => y.GetRealativePath().Equals(x.GetRealativePath()))

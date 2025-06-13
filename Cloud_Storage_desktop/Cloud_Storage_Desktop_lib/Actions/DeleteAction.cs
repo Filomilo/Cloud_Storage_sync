@@ -21,12 +21,11 @@ namespace Cloud_Storage_Desktop_lib.Actions
             get { return _deleteAction; }
         }
 
-        static Mutex DirecotrYDeleteMutex= new Mutex();
+        static Mutex DirecotrYDeleteMutex = new Mutex();
 
         private void DelteDirecetoryIfEmpty(IConfiguration configuration, string pathToDeletedFile)
         {
-
-            //sometimes casued deeltion of sync foldfer     
+            //sometimes casued deeltion of sync foldfer
 
             //DirecotrYDeleteMutex.WaitOne();
             //string direcotry = Path.GetDirectoryName(pathToDeletedFile);

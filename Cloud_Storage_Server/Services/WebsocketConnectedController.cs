@@ -61,9 +61,14 @@ namespace Cloud_Storage_Server.Services
             }
         }
 
-        public void SendMessageToUser(object userID, object message, List<string> includedDevices = null, List<string> excludedDevices = null)
+        public void SendMessageToUser(
+            object userID,
+            object message,
+            List<string> includedDevices = null,
+            List<string> excludedDevices = null
+        )
         {
-            includedDevices= includedDevices==null ? new List<string>() : includedDevices;
+            includedDevices = includedDevices == null ? new List<string>() : includedDevices;
             excludedDevices = excludedDevices == null ? new List<string>() : excludedDevices;
             ValidateConnections();
             lock (Locker)
@@ -74,9 +79,14 @@ namespace Cloud_Storage_Server.Services
                     {
                         if (
                             device.UserId.Equals(userID)
-                            && (includedDevices.Count == 0 || includedDevices.Contains(device.DeviceId.ToString()))
-                            && (excludedDevices.Count == 0 || !excludedDevices.Contains(device.DeviceId.ToString()))
-
+                            && (
+                                includedDevices.Count == 0
+                                || includedDevices.Contains(device.DeviceId.ToString())
+                            )
+                            && (
+                                excludedDevices.Count == 0
+                                || !excludedDevices.Contains(device.DeviceId.ToString())
+                            )
                         )
                         {
                             device.WebSocket.SendAsync(

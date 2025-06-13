@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 using Cloud_Storage_Server.Database;
 using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Database.Repositories;
-using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 
 namespace Cloud_Storage_Test.Database;

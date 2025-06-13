@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Net.WebSockets;
-using System.Runtime.CompilerServices;
 using System.Text;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Interfaces;
@@ -17,7 +16,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using NUnit.Framework;
 using AbstractDataBaseContext = Cloud_Storage_Desktop_lib.Interfaces.AbstractDataBaseContext;
 

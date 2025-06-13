@@ -1,22 +1,24 @@
-﻿using Cloud_Storage_Common.Models;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_Server.Configurations;
 using Cloud_Storage_Server.Database.Models;
 using Cloud_Storage_Server.Interfaces;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace Cloud_Storage_Server.Services
 {
-    public class AlwaysLoggedAuthService: IAuthService
+    public class AlwaysLoggedAuthService : IAuthService
     {
         private IDataBaseContextGenerator _dataBaseContextGenerator;
+
         public AlwaysLoggedAuthService(IDataBaseContextGenerator dataBaseContextGenerator)
         {
             _dataBaseContextGenerator = dataBaseContextGenerator;
         }
+
         public string GenerateToken(User user, Device device)
         {
             var handler = new JwtSecurityTokenHandler();
@@ -38,6 +40,7 @@ namespace Cloud_Storage_Server.Services
         }
 
         private int deviceCounter = 0;
+
         private ClaimsIdentity GenerateClaims(User user, Device device)
         {
             var claims = new ClaimsIdentity();
@@ -45,6 +48,7 @@ namespace Cloud_Storage_Server.Services
             claims.AddClaim(new Claim(ClaimTypes.Actor, deviceCounter++.ToString()));
             return claims;
         }
+
         public bool VerifyUser(string mail, string password)
         {
             return true;
@@ -56,7 +60,7 @@ namespace Cloud_Storage_Server.Services
             {
                 id = 0,
                 mail = "fakemail",
-                password = "fakeapss"
+                password = "fakeapss",
             };
         }
 

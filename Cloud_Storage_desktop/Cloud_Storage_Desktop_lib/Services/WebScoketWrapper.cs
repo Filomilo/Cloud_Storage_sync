@@ -34,11 +34,8 @@ namespace Cloud_Storage_Desktop_lib.Services
             try
             {
                 _clientWebSocket.CloseAsync(closeStatus, statusDescription, cancellationToken);
-
             }
-            catch (Exception ex)
-            {
-            }
+            catch (Exception ex) { }
             _clientWebSocket = new ClientWebSocket();
         }
 

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Cloud_Storage_Common;
+﻿using Cloud_Storage_Common;
 using Cloud_Storage_Common.Interfaces;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Interfaces;
@@ -11,12 +6,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 {
-    internal class ValidateFileAlreadyDeleted: AbstactHandler
+    internal class ValidateFileAlreadyDeleted : AbstactHandler
     {
         private IConfiguration _configuration;
-        private ILogger Logger = CloudDriveLogging.Instance.GetLogger(
-            "ValidateFileAlreadyDeleted"
-        );
+        private ILogger Logger = CloudDriveLogging.Instance.GetLogger("ValidateFileAlreadyDeleted");
+
         public ValidateFileAlreadyDeleted(IConfiguration configuration)
         {
             this._configuration = configuration;
@@ -38,7 +32,11 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
                 this._configuration.StorageLocation
             );
 
-           if( fileDatas.Where(x=>x.GetRealativePath().Equals(syncFileData.GetRealativePath())).Count()==0)
+            if (
+                fileDatas
+                    .Where(x => x.GetRealativePath().Equals(syncFileData.GetRealativePath()))
+                    .Count() == 0
+            )
             {
                 return request;
             }

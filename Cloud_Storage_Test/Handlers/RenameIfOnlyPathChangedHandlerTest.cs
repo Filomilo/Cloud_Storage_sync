@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Cloud_Storage_Common.Models;
-using Cloud_Storage_Server.Database.Models;
+﻿using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Handlers;
 using Cloud_Storage_Server.Interfaces;
 using NUnit.Framework;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace Cloud_Storage_Test.Handlers
 {

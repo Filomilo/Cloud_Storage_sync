@@ -1,13 +1,8 @@
 ﻿using Cloud_Storage_Common.Interfaces;
-using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Services;
 
 namespace Cloud_Storage_Server.Handlers
 {
-
-
-
-
     public class SendUpdateToClientsHandler : AbstactHandler
     {
         IFileSyncService _fileSyncService;
@@ -22,7 +17,8 @@ namespace Cloud_Storage_Server.Handlers
             UpdateFileDataMessageRequest update = null;
             if (request is UpdateFileDataMessageRequest)
             {
-                UpdateFileDataMessageRequest fileUpdateMessage = (UpdateFileDataMessageRequest)request;
+                UpdateFileDataMessageRequest fileUpdateMessage =
+                    (UpdateFileDataMessageRequest)request;
                 update = fileUpdateMessage;
             }
 

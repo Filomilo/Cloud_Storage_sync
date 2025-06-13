@@ -2,7 +2,6 @@
 using Cloud_Storage_Desktop_lib.Interfaces;
 using CredentialManagement;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 
 namespace Cloud_Storage_Desktop_lib.Services
 {

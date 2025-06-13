@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Net.WebSockets;
+﻿using System.Net.WebSockets;
 using System.Text;
-using System.Threading.Tasks;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib.Interfaces;
@@ -24,7 +19,10 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         private string webSocketConntionAdress
         {
-            get { return $"ws://{baseAdress.Replace("http://", "")}{(baseAdress.Last().Equals('/')?"":'/')}ws"; }
+            get
+            {
+                return $"ws://{baseAdress.Replace("http://", "")}{(baseAdress.Last().Equals('/') ? "" : '/')}ws";
+            }
         }
 
         private string token { get; set; } = "";
@@ -162,7 +160,10 @@ namespace Cloud_Storage_Desktop_lib.Services
 
                 threadCancellationTokenSource = new CancellationTokenSource();
                 WebScoketCancellationTokenSource = new CancellationTokenSource();
-                if (webSocketWrapper.State == WebSocketState.Aborted || webSocketWrapper.State ==WebSocketState.Closed)
+                if (
+                    webSocketWrapper.State == WebSocketState.Aborted
+                    || webSocketWrapper.State == WebSocketState.Closed
+                )
                     webSocketWrapper.Close(WebSocketCloseStatus.Empty, "", CancellationToken.None);
                 this.webSocketWrapper.SetRequestHeader("Authorization", $"Bearer {token}");
 

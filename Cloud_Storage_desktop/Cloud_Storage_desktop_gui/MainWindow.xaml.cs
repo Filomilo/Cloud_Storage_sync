@@ -6,7 +6,6 @@ using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Services;
 using Cloud_Storage_desktop.Logic;
-using log4net.Repository.Hierarchy;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 

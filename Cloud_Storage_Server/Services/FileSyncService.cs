@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Server.Database.Models;
@@ -20,7 +19,6 @@ namespace Cloud_Storage_Server.Services
             this.fileStream = fileStream;
         }
     }
-
 
     public class UpdateFileDataMessageRequest()
     {
@@ -67,15 +65,12 @@ namespace Cloud_Storage_Server.Services
             _serverConfig = serverConfig;
             this.FileUpdated += (UpdateFileDataMessageRequest file) =>
             {
-              
-                    websocketConnectedController.SendMessageToUser(
-                        file.UserIdToSendTo,
-                        new WebSocketMessage(file.updateFileDataMessage),
-                        file.InlcudedDevices,
-                        file.ExcludedDevices
-                    );
-                
-          
+                websocketConnectedController.SendMessageToUser(
+                    file.UserIdToSendTo,
+                    new WebSocketMessage(file.updateFileDataMessage),
+                    file.InlcudedDevices,
+                    file.ExcludedDevices
+                );
             };
 
             this._serverChainOfResposibiltyRepository = new ServerChainOfResposibiltyRepository(
@@ -114,7 +109,7 @@ namespace Cloud_Storage_Server.Services
                                 user.id
                             ),
                             InlcudedDevices = new List<string>(),
-                            ExcludedDevices = new List<string>(){ deviceId },
+                            ExcludedDevices = new List<string>() { deviceId },
                         }
                     );
                 }
@@ -205,7 +200,18 @@ namespace Cloud_Storage_Server.Services
             if (resolved != null)
             {
                 this.FileUpdated(
-                    new UpdateFileDataMessageRequest() { UserIdToSendTo = resolved.OwnerId, updateFileDataMessage = new UpdateFileDataMessage(UPDATE_TYPE.ADD, null, resolved, resolved.OwnerId), InlcudedDevices = new List<string>(), ExcludedDevices = new List<string>() }
+                    new UpdateFileDataMessageRequest()
+                    {
+                        UserIdToSendTo = resolved.OwnerId,
+                        updateFileDataMessage = new UpdateFileDataMessage(
+                            UPDATE_TYPE.ADD,
+                            null,
+                            resolved,
+                            resolved.OwnerId
+                        ),
+                        InlcudedDevices = new List<string>(),
+                        ExcludedDevices = new List<string>(),
+                    }
                 );
             }
         }

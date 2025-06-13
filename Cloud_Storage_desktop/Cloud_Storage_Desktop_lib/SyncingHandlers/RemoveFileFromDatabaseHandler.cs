@@ -7,7 +7,9 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
 {
     class RemoveFileFromDatabaseHandler : AbstactHandler
     {
-        private ILogger logger = CloudDriveLogging.Instance.GetLogger("RemoveFileFromDatabaseHandler");
+        private ILogger logger = CloudDriveLogging.Instance.GetLogger(
+            "RemoveFileFromDatabaseHandler"
+        );
 
         private IConfiguration _configuration;
         private IFileRepositoryService _fileRepositoryService;

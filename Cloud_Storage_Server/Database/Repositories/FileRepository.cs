@@ -1,8 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Runtime.CompilerServices;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Cloud_Storage_Server.Database.Repositories
 {

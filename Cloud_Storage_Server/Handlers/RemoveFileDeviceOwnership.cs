@@ -149,7 +149,7 @@ namespace Cloud_Storage_Server.Handlers
             );
             _logger.LogTrace(
                 $"Searhing in db with content: \n\n [[\n {String.Join(",\n", context
-                    .Files.ToList().Select(x=> $"GetRealativePathWindowsStyle: [[[{x.GetRealativePath()};; OwnerId: {x.OwnerId};;DeviceOwner: [{String.Join(", ",x.DeviceOwner )}]  ]]]"))}\n]]\n"
+                    .Files.ToList().Select(x => $"GetRealativePathWindowsStyle: [[[{x.GetRealativePath()};; OwnerId: {x.OwnerId};;DeviceOwner: [{String.Join(", ", x.DeviceOwner)}]  ]]]"))}\n]]\n"
             );
             _logger.LogTrace(
                 $"Searhing in db with content: \n\n [[\n {String.Join(",\n", context

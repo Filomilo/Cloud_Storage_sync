@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Cloud_Storage_desktop.Logic;
+﻿using Cloud_Storage_desktop.Logic;
 using NUnit.Framework;
 
 namespace Cloud_Storage_Test.Dekstop

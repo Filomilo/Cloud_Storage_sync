@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Cloud_Storage_Desktop_lib;
+﻿using Cloud_Storage_Desktop_lib;
 using Cloud_Storage_Desktop_lib.Database;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Services;
 using Cloud_Storage_Server.Database;
-using Microsoft.Win32;
 
 namespace Cloud_Storage_Test
 {
