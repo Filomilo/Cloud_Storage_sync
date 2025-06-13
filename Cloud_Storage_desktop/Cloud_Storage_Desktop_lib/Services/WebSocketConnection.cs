@@ -24,7 +24,7 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         private string webSocketConntionAdress
         {
-            get { return $"ws://{baseAdress.Replace("http://", "")}/ws"; }
+            get { return $"ws://{baseAdress.Replace("http://", "")}{(baseAdress.Last().Equals('/')?"":'/')}ws"; }
         }
 
         private string token { get; set; } = "";
@@ -162,7 +162,7 @@ namespace Cloud_Storage_Desktop_lib.Services
 
                 threadCancellationTokenSource = new CancellationTokenSource();
                 WebScoketCancellationTokenSource = new CancellationTokenSource();
-                if (webSocketWrapper.State == WebSocketState.Aborted)
+                if (webSocketWrapper.State == WebSocketState.Aborted || webSocketWrapper.State ==WebSocketState.Closed)
                     webSocketWrapper.Close(WebSocketCloseStatus.Empty, "", CancellationToken.None);
                 this.webSocketWrapper.SetRequestHeader("Authorization", $"Bearer {token}");
 
