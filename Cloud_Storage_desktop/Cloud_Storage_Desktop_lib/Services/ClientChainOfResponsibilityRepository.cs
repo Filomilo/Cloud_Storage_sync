@@ -156,14 +156,14 @@ namespace Cloud_Storage_Desktop_lib.Services
                         this._fileRepositoryService
                     )
                 )
-                .Next(
-                    new DownloadNewFIleHandler(
-                        this._taskRunController,
-                        this._serverConnection,
-                        this._configuration,
-                        this._fileRepositoryService
-                    )
-                )
+                //.Next(
+                //    new DownloadNewFIleHandler(
+                //        this._taskRunController,
+                //        this._serverConnection,
+                //        this._configuration,
+                //        this._fileRepositoryService
+                //    )
+                //)
                 //.Next(
                 //    new DeleteUpdateFileHandler(
                 //        this._taskRunController,

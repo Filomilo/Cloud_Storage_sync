@@ -24,6 +24,7 @@ namespace Cloud_Storage_Desktop_lib
         private ICredentialManager _credentialManager;
         private Task serverWatcherTask;
         private CancellationTokenSource cancellationTokenSourceServerWatcher;
+        private CancellationTokenSource cancellationTokenSourceWsThread=new CancellationTokenSource();
         private bool _ServerStatus = false;
         private SelfSetHttpClientFactory _httpClientFactory = new SelfSetHttpClientFactory(
             new HttpClient()
@@ -49,17 +50,44 @@ namespace Cloud_Storage_Desktop_lib
             }
         }
 
+        private void ensureWebSocketConnecetd()
+        {
+            if(this.WebSocketState== WebSocketState.Aborted || this.WebSocketState == WebSocketState.None)
+            {
+                this._webSocket.Close(WebSocketCloseStatus.EndpointUnavailable, "",CancellationToken.None);
+                this.StopWebScoketLisitingThread();
+                this.StartWebScoketLisitingThread();
+                
+            }
+        }
+
         private void ServerWarcher()
         {
             while (!cancellationTokenSourceServerWatcher.IsCancellationRequested)
             {
-                Thread.Sleep(100 * 10);
-                bool serverStatus = CheckIfHelathy();
-                if (serverStatus != this._ServerStatus)
+                try
                 {
-                    _ServerStatus = serverStatus;
-                    UpdateOnConncotionChange(serverStatus);
+                    Thread.Sleep(100 * 10);
+                    bool serverStatus = CheckIfHelathy();
+                    if (serverStatus)
+                    {
+                        bool authorized = CheckIfAuthirized();
+                        if (authorized)
+                        {
+                            ensureWebSocketConnecetd();
+                        }
+                    }
+                    if (serverStatus != this._ServerStatus)
+                    {
+                        _ServerStatus = serverStatus;
+                        UpdateOnConncotionChange(serverStatus);
+                    }
                 }
+                catch(Exception ex)
+                {
+                    logger.LogError($"ServerWarcher:: {ex.Message}");
+                }
+                    
             }
         }
 
@@ -137,7 +165,7 @@ namespace Cloud_Storage_Desktop_lib
             }
             else
             {
-                StopWebSocket();
+                StopWebScoketLisitingThread();
             }
         }
 
@@ -153,8 +181,17 @@ namespace Cloud_Storage_Desktop_lib
             }
         }
 
+        private void StopWebScoketLisitingThread()
+        {
+            cancellationTokenSourceWsThread.Cancel();
+
+            WsThread.Wait();
+            WsThread.Dispose();
+            
+        }
         private async void StartWebScoketLisitingThread()
         {
+            cancellationTokenSourceWsThread = new CancellationTokenSource();
             if (_webSocket != null && _webSocket.State == WebSocketState.Open)
             {
                 _webSocket.Close(
@@ -172,7 +209,8 @@ namespace Cloud_Storage_Desktop_lib
             string token = this._credentialManager.GetToken();
             if (token != null && token.Length > 0)
             {
-                WsThread = new Task(() => ConnectAndListen(uri, token));
+                WsThread = null;
+                WsThread = new Task(() => ConnectAndListen(uri, token), cancellationTokenSourceWsThread.Token);
                 WsThread.Start();
             }
         }
@@ -181,6 +219,12 @@ namespace Cloud_Storage_Desktop_lib
         {
             try
             {
+                if(_webSocket!=null)
+                {
+                    _webSocket.Close(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    _webSocket = null;
+                }
+                _webSocket = new WebSocketWrapper();
                 _webSocket.SetRequestHeader("Authorization", $"Bearer {token}");
                 _webSocket.Connect(new Uri(uri), _cts.Token);
                 while (_webSocket.State == WebSocketState.Open)
@@ -453,7 +497,7 @@ namespace Cloud_Storage_Desktop_lib
 
         public WebSocketState WebSocketState
         {
-            get { return this._webSocket.State; }
+            get { return this._webSocket==null? WebSocketState.None: this._webSocket.State  ; }
         }
 
         public void DeleteFile(string relativePath)
