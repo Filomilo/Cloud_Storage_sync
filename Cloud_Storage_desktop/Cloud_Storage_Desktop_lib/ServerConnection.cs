@@ -66,8 +66,8 @@ namespace Cloud_Storage_Desktop_lib
         private void UpdateOnConncotionChange(bool state)
         {
             logger.LogTrace($"Conneciton change: {state}");
-            if(state==false)
-            InovkeAuthChange(state);
+            if (state == false)
+                InovkeAuthChange(state);
             if (ConnectionChangeHandler != null)
             {
                 ConnectionChangeHandler.Invoke(state);
@@ -198,7 +198,7 @@ namespace Cloud_Storage_Desktop_lib
                             JsonOperations.ObjectFromJSon<WebSocketMessage>(message);
                         if (this.ServerWerbsocketHadnler != null)
                         {
-                            this.ServerWerbsocketHadnler.Invoke(webSocketMessage);
+                            Task.Run(() => this.ServerWerbsocketHadnler.Invoke(webSocketMessage));
                         }
                     }
                     catch (WebSocketException ex)
@@ -223,7 +223,9 @@ namespace Cloud_Storage_Desktop_lib
                         }
                         else
                         {
-                            logger.LogError($"Unhandled AggregateException: [[ {String.Join(", \n", ex.InnerExceptions.Select(x => x.Message)) } ]]");
+                            logger.LogError(
+                                $"Unhandled AggregateException: [[ {String.Join(", \n", ex.InnerExceptions.Select(x => x.Message))} ]]"
+                            );
                         }
                     }
                     catch (Exception ex)
@@ -507,22 +509,20 @@ namespace Cloud_Storage_Desktop_lib
             try
             {
                 var response = this
-                       ._httpClientFactory.GetHttpClient()
-                       .GetAsync("api/Files/list")
-                       .Result;
+                    ._httpClientFactory.GetHttpClient()
+                    .GetAsync("api/Files/list")
+                    .Result;
                 var raw = response.Content.ReadAsStringAsync().Result;
                 List<SyncFileData> parsed = JsonConvert.DeserializeObject<List<SyncFileData>>(raw);
                 return parsed;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.LogWarning($"GetListOfFiles:: {ex.Message}");
                 return new List<SyncFileData>();
             }
-   
+
             //var parsed = JsonSerializer.Deserialize<List<SyncFileData>>(raw);
-
-
         }
 
         internal class FileDownloadRequest
