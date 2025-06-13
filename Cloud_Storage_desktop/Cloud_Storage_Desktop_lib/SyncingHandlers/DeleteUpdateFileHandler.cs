@@ -40,13 +40,13 @@ namespace Cloud_Storage_Desktop_lib.SyncingHandlers
                     "DeleteUpdateFileHandler excepts argument of type SyncFileData or UpdateFileDataRequest"
                 );
 
-            if (syncFileData.Hash != "")
-            {
-                logger.LogDebug($"File {syncFileData.GetRealativePath()} is not to delete.");
-                if (this._nextHandler != null)
-                    return this._nextHandler.Handle(request);
-                return syncFileData;
-            }
+            //if (syncFileData.Hash != "")
+            //{
+            //    logger.LogDebug($"File {syncFileData.GetRealativePath()} is not to delete.");
+            //    if (this._nextHandler != null)
+            //        return this._nextHandler.Handle(request);
+            //    return syncFileData;
+            //}
             _taskRunController.AddTask(
                 new DeleteAction(
                     _serverConnection,

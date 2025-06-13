@@ -114,7 +114,17 @@ namespace Cloud_Storage_Desktop_lib.Services
             ITaskToRun task = this._QueuedTasks.Dequeue();
 
             TaskObject takTaskObject = _CreateTaskObject(task);
-            _RunningTask.Add(task.Id, takTaskObject);
+            try
+            {
+                _RunningTask.Add(task.Id, takTaskObject);
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(e.Message);
+                _QueuedTasks.Enqueue(task);
+                throw;
+            }
+
             takTaskObject.task.Start();
         }
 
