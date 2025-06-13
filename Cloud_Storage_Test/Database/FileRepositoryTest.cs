@@ -8,6 +8,8 @@ using NUnit.Framework;
 
 namespace Cloud_Storage_Test.Database;
 
+[TestFixture]
+[NonParallelizable]
 public class FileRepositoryTest
 {
     private User? _savedUser;

@@ -109,7 +109,7 @@ namespace Cloud_Storage_Desktop_lib.Services
             this._taskRunController.Active = state;
             if (state)
             {
-                this._serverConnection.ServerWerbsocketHadnler +=
+                this._serverConnection.WebSocketConnection.ServerWerbsocketHadnler +=
                     _serverConnection_ServerWerbsocketHadnler;
                 _clientChainOfResponsibilityRepository.InitlalConnectedSyncHandler.Handle(null);
             }

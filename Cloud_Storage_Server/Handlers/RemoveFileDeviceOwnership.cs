@@ -48,7 +48,7 @@ namespace Cloud_Storage_Server.Handlers
                 {
                     if (this._nextHandler != null)
                     {
-                      //  return this._nextHandler.Handle(existingFile);
+                        //  return this._nextHandler.Handle(existingFile);
                     }
                     return null;
                 }
@@ -155,17 +155,24 @@ namespace Cloud_Storage_Server.Handlers
                 $"Searhing in db with content: \n\n [[\n {String.Join(",\n", context
                   .Files.ToList().Select(x => $"path: [[[{x.Path};; OwnerId: {x.OwnerId};;DeviceOwner: [{String.Join(", ", x.DeviceOwner)}]  ]]]"))}\n]]\n"
             );
-
-            SyncFileData existingFile = context
-                .Files.ToList()
-                .Where(x =>
-                    x.GetRealativePath()
-                        .Equals(removeFileDeviceOwnership.fileData.GetRealativePath())
-                    && x.OwnerId.Equals(removeFileDeviceOwnership.userID)
-                    && x.DeviceOwner.Contains(removeFileDeviceOwnership.deviceId)
-                )
-                .FirstOrDefault();
-            if (existingFile == null)
+            SyncFileData existingFile = null;
+            try
+            {
+                Awaiters.AwaitTrue(() =>
+                {
+                    existingFile = context
+                        .Files.ToList()
+                        .Where(x =>
+                            x.GetRealativePath()
+                                .Equals(removeFileDeviceOwnership.fileData.GetRealativePath())
+                            && x.OwnerId.Equals(removeFileDeviceOwnership.userID)
+                            && x.DeviceOwner.Contains(removeFileDeviceOwnership.deviceId)
+                        )
+                        .FirstOrDefault();
+                    return existingFile != null;
+                });
+            }
+            catch (Exception ex)
             {
                 throw new KeyNotFoundException(
                     $"File with path {removeFileDeviceOwnership.fileData.GetRealativePath()} not found"

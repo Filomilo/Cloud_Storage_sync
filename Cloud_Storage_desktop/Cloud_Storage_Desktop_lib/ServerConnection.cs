@@ -18,28 +18,28 @@ namespace Cloud_Storage_Desktop_lib
         private static ILogger logger = CloudDriveLogging.Instance.GetLogger("ServerConnection");
 
         //HttpClient client = new HttpClient();
-        private IWebSocketWrapper _webSocket;
-        private Task WsThread;
-        private CancellationTokenSource _cts = new CancellationTokenSource();
+        //private IWebSocketWrapper _webSocket;
+        //private Task WsThread;
+        //private CancellationTokenSource _cts = new CancellationTokenSource();
         private ICredentialManager _credentialManager;
         private Task serverWatcherTask;
         private CancellationTokenSource cancellationTokenSourceServerWatcher;
-        private CancellationTokenSource cancellationTokenSourceWsThread=new CancellationTokenSource();
+
+        //private CancellationTokenSource cancellationTokenSourceWsThread =
+        //    new CancellationTokenSource();
         private bool _ServerStatus = false;
         private SelfSetHttpClientFactory _httpClientFactory = new SelfSetHttpClientFactory(
             new HttpClient()
         );
+        private IWebSocketConnection _webSocketConnection;
 
-        private void CreateServerStatusWatcher()
+        public IWebSocketConnection WebSocketConnection
         {
-            if (serverWatcherTask != null)
-            {
-                DisposeConnectionStatusWatch();
-            }
-
-            cancellationTokenSourceServerWatcher = new CancellationTokenSource();
-            serverWatcherTask = Task.Run(ServerWarcher, cancellationTokenSourceServerWatcher.Token);
+            get { return _webSocketConnection; }
         }
+
+        public event OnConnectionStateChange? ConnectionChangeHandler;
+        public event OnAuthStateChange? AuthChangeHandler;
 
         ~ServerConnection()
         {
@@ -50,15 +50,285 @@ namespace Cloud_Storage_Desktop_lib
             }
         }
 
-        private void ensureWebSocketConnecetd()
+        //private void ensureWebSocketConnecetd()
+        //{
+        //    if (
+        //        this.WebSocketState == WebSocketState.Aborted
+        //        || this.WebSocketState == WebSocketState.None
+        //    )
+        //    {
+        //        this._webSocket.Close(
+        //            WebSocketCloseStatus.EndpointUnavailable,
+        //            "",
+        //            CancellationToken.None
+        //        );
+        //        this.StopWebScoketLisitingThread();
+        //        this.StartWebScoketLisitingThread();
+        //    }
+        //}
+
+
+
+        private void UpdateOnConncotionChange(bool state)
         {
-            if(this.WebSocketState== WebSocketState.Aborted || this.WebSocketState == WebSocketState.None)
+            logger.LogTrace($"Conneciton change: {state}");
+            if (state == false)
+                InovkeAuthChange(state);
+            if (ConnectionChangeHandler != null)
             {
-                this._webSocket.Close(WebSocketCloseStatus.EndpointUnavailable, "",CancellationToken.None);
-                this.StopWebScoketLisitingThread();
-                this.StartWebScoketLisitingThread();
-                
+                ConnectionChangeHandler.Invoke(state);
             }
+        }
+
+        #region Setup
+
+        public ServerConnection(
+            string ConnetionAdress,
+            ICredentialManager credentialManager,
+            IWebSocketWrapper webSocketWrapper
+        )
+        {
+            if (ConnetionAdress == "")
+                return;
+            try
+            {
+                CreateServerStatusWatcher();
+                this._credentialManager = credentialManager;
+                HttpClient client = new HttpClient();
+                client.BaseAddress = new Uri(ConnetionAdress);
+                _httpClientFactory.SetHttpClient(client);
+                WebSocketSetup(webSocketWrapper, ConnetionAdress);
+                this.ConnectionChangeHandler += LoadTokenOnConnectionChnage;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Coudlnt connect to server");
+                if (this.ConnectionChangeHandler != null)
+                {
+                    this.ConnectionChangeHandler.Invoke(false);
+                }
+            }
+        }
+
+        public ServerConnection(
+            HttpClient client,
+            ICredentialManager credentialManager,
+            IWebSocketWrapper webSocketWrapper
+        )
+        {
+            CreateServerStatusWatcher();
+            _httpClientFactory.SetHttpClient(client);
+
+            this._credentialManager = credentialManager;
+            WebSocketSetup(webSocketWrapper, client.BaseAddress.AbsoluteUri);
+            this.ConnectionChangeHandler += LoadTokenOnConnectionChnage;
+        }
+
+        private void WebSocketSetup(IWebSocketWrapper webSocketWrapper, String url)
+        {
+            this._webSocketConnection = new WebSocketConnection(webSocketWrapper);
+            _webSocketConnection.AdressChange(url);
+
+            this.AuthChangeHandler += (state) =>
+            {
+                if (state)
+                {
+                    this._webSocketConnection.SetAuthToken(this._credentialManager.GetToken());
+                }
+                else
+                {
+                    this._webSocketConnection.CloseWebSocket();
+                }
+            };
+        }
+
+        #endregion
+
+
+
+
+
+        //private void UpdateWebsocketOnConnetionChange(bool state)
+        //{
+        //    if (state)
+        //    {
+        //        StartWebScoketLisitingThread();
+        //    }
+        //    else
+        //    {
+        //        StopWebScoketLisitingThread();
+        //    }
+        //}
+
+        //private void StopWebSocket()
+        //{
+        //    if (_webSocket != null && _webSocket.State == WebSocketState.Open)
+        //    {
+        //        _webSocket.Close(
+        //            WebSocketCloseStatus.EndpointUnavailable,
+        //            "Resetting",
+        //            CancellationToken.None
+        //        );
+        //    }
+        //}
+
+        //private void StopWebScoketLisitingThread()
+        //{
+        //    cancellationTokenSourceWsThread.Cancel();
+
+        //    WsThread.Wait();
+        //    WsThread.Dispose();
+        //}
+
+        //private async void StartWebScoketLisitingThread()
+        //{
+        //    cancellationTokenSourceWsThread = new CancellationTokenSource();
+        //    if (_webSocket != null && _webSocket.State == WebSocketState.Open)
+        //    {
+        //        _webSocket.Close(
+        //            WebSocketCloseStatus.NormalClosure,
+        //            "Resetting",
+        //            CancellationToken.None
+        //        );
+        //    }
+        //    this._cts = new CancellationTokenSource();
+        //    string baseAdress = _httpClientFactory
+        //        .GetHttpClient()
+        //        .BaseAddress.ToString()
+        //        .Replace("http://", "");
+        //    string uri = $"ws://{baseAdress}ws";
+        //    string token = this._credentialManager.GetToken();
+        //    if (token != null && token.Length > 0)
+        //    {
+        //        WsThread = null;
+        //        WsThread = new Task(
+        //            () => ConnectAndListen(uri, token),
+        //            cancellationTokenSourceWsThread.Token
+        //        );
+        //        WsThread.Start();
+        //    }
+        //}
+
+        //private void ConnectAndListen(string uri, string token)
+        //{
+        //    try
+        //    {
+        //        if (_webSocket != null)
+        //        {
+        //            _webSocket.Close(
+        //                WebSocketCloseStatus.NormalClosure,
+        //                "",
+        //                CancellationToken.None
+        //            );
+        //            _webSocket = null;
+        //        }
+        //        _webSocket = new WebSocketWrapper();
+        //        _webSocket.SetRequestHeader("Authorization", $"Bearer {token}");
+        //        _webSocket.Connect(new Uri(uri), _cts.Token);
+        //        while (_webSocket.State == WebSocketState.Open)
+        //        {
+        //            try
+        //            {
+        //                byte[] buffer = new byte[4096];
+        //                WebSocketReceiveResult result = _webSocket.ReceiveAsync(
+        //                    new ArraySegment<byte>(buffer),
+        //                    _cts.Token
+        //                );
+        //                string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+        //                logger.LogInformation($"Received: {message}");
+        //                WebSocketMessage webSocketMessage =
+        //                    JsonOperations.ObjectFromJSon<WebSocketMessage>(message);
+        //                if (this.ServerWerbsocketHadnler != null)
+        //                {
+        //                    Task.Run(() => this.ServerWerbsocketHadnler.Invoke(webSocketMessage));
+        //                }
+        //            }
+        //            catch (WebSocketException ex)
+        //            {
+        //                logger.LogError(
+        //                    $"WebSocketException Error reciving webscoket messages [[ {ex.Message}  ]]"
+        //                );
+        //            }
+        //            catch (ObjectDisposedException ex)
+        //            {
+        //                logger.LogTrace("Webscoket dispodees");
+        //                break;
+        //            }
+        //            catch (AggregateException ex)
+        //            {
+        //                if (ex.InnerExceptions.Any(e => e is IOException))
+        //                {
+        //                    logger.LogError(
+        //                        $"IOException occurred while receiving WebSocket messages: [[ {ex.Message} ]]"
+        //                    );
+        //                    break;
+        //                }
+        //                else
+        //                {
+        //                    logger.LogError(
+        //                        $"Unhandled AggregateException: [[ {String.Join(", \n", ex.InnerExceptions.Select(x => x.Message))} ]]"
+        //                    );
+        //                }
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                logger.LogError(
+        //                    $"Unkwon Error reciving webscoket messages [[ {ex.Message}  ]]"
+        //                );
+        //            }
+        //        }
+        //    }
+        //    catch (ThreadInterruptedException ex)
+        //    {
+        //        logger.LogDebug($"Webscoket interrupted {ex.Message}");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        logger.LogError($"Error webscoket conneiton :: {ex.Message}");
+        //    }
+        //}
+
+        private bool _authState = false;
+
+        private void InovkeAuthChange(bool state)
+        {
+            if (_authState == state)
+                return;
+            _authState = state;
+            logger.LogTrace($"Auth change: {state}");
+            if (this.AuthChangeHandler != null)
+            {
+                this.AuthChangeHandler.Invoke(state);
+            }
+            else { }
+        }
+
+        //public WebSocketState WebSocketState
+        //{
+        //    get { return this._webSocket == null ? WebSocketState.None : this._webSocket.State; }
+        //}
+
+        #region Server Status watching
+
+
+        private void LoadTokenOnConnectionChnage(bool state)
+        {
+            logger.LogTrace($"LoadTokenOnConnectionChnage: {state}");
+            if (state)
+            {
+                _LoadToken();
+            }
+        }
+
+        private void CreateServerStatusWatcher()
+        {
+            if (serverWatcherTask != null)
+            {
+                DisposeConnectionStatusWatch();
+            }
+
+            cancellationTokenSourceServerWatcher = new CancellationTokenSource();
+            serverWatcherTask = Task.Run(ServerWarcher, cancellationTokenSourceServerWatcher.Token);
         }
 
         private void ServerWarcher()
@@ -74,7 +344,7 @@ namespace Cloud_Storage_Desktop_lib
                         bool authorized = CheckIfAuthirized();
                         if (authorized)
                         {
-                            ensureWebSocketConnecetd();
+                            _webSocketConnection.EnsureWebSocketConnected();
                         }
                     }
                     if (serverStatus != this._ServerStatus)
@@ -83,211 +353,68 @@ namespace Cloud_Storage_Desktop_lib
                         UpdateOnConncotionChange(serverStatus);
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     logger.LogError($"ServerWarcher:: {ex.Message}");
                 }
-                    
             }
         }
 
-        private void UpdateOnConncotionChange(bool state)
+        #endregion
+
+        #region ENDPOINTS
+        public void UploudFile(UploudFileData fileData, Stream stream)
         {
-            logger.LogTrace($"Conneciton change: {state}");
-            if (state == false)
-                InovkeAuthChange(state);
-            if (ConnectionChangeHandler != null)
+            logger.LogDebug(
+                $"Upldoing file  file from device {this._credentialManager.GetDeviceID()}"
+            );
+            var form = FileMangamentSerivce.GetFormDatForFile(fileData, stream);
+            var response = _httpClientFactory
+                .GetHttpClient()
+                .PostAsync("api/Files/upload", form)
+                .Result;
+
+            if (response.IsSuccessStatusCode)
             {
-                ConnectionChangeHandler.Invoke(state);
-            }
-        }
-
-        public ServerConnection(
-            string ConnetionAdress,
-            ICredentialManager credentialManager,
-            IWebSocketWrapper webSocketWrapper
-        )
-        {
-            if (ConnetionAdress == "")
-                return;
-            try
-            {
-                CreateServerStatusWatcher();
-                this._credentialManager = credentialManager;
-                HttpClient client = new HttpClient();
-                //client.MaxResponseContentBufferSize=(10L * 1024L * 1024L * 1024);
-                client.BaseAddress = new Uri(ConnetionAdress);
-                _httpClientFactory.SetHttpClient(client);
-                this._webSocket = webSocketWrapper;
-                this.AuthChangeHandler += UpdateWebsocketOnConnetionChange;
-                this.ConnectionChangeHandler += LoadTokenOnConnectionChnage;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError($"Coudlnt connect to server");
-                if (this.ConnectionChangeHandler != null)
-                {
-                    this.ConnectionChangeHandler.Invoke(false);
-                }
-            }
-        }
-
-        private void LoadTokenOnConnectionChnage(bool state)
-        {
-            logger.LogTrace($"LoadTokenOnConnectionChnage: {state}");
-            if (state)
-            {
-                _LoadToken();
-            }
-        }
-
-        public ServerConnection(
-            HttpClient client,
-            ICredentialManager credentialManager,
-            IWebSocketWrapper webSocketWrapper
-        )
-        {
-            CreateServerStatusWatcher();
-            _httpClientFactory.SetHttpClient(client);
-
-            this._credentialManager = credentialManager;
-            this.AuthChangeHandler += UpdateWebsocketOnConnetionChange;
-            this.ConnectionChangeHandler += LoadTokenOnConnectionChnage;
-
-            this._webSocket = webSocketWrapper;
-        }
-
-        private void UpdateWebsocketOnConnetionChange(bool state)
-        {
-            if (state)
-            {
-                StartWebScoketLisitingThread();
+                logger.LogInformation(
+                    $"File {fileData.GetRealativePath()} data uploaded successfully!"
+                );
             }
             else
             {
-                StopWebScoketLisitingThread();
+                string responseMesage = response.Content.ReadAsStringAsync().Result;
+                logger.LogError($"Failed to upload data [[{fileData}]]: {responseMesage}");
+                throw new Exception($"{response.Content.ReadAsStringAsync().Result}");
             }
         }
 
-        private void StopWebSocket()
+        public void UpdateFileData(UpdateFileDataMessage file)
         {
-            if (_webSocket != null && _webSocket.State == WebSocketState.Open)
-            {
-                _webSocket.Close(
-                    WebSocketCloseStatus.EndpointUnavailable,
-                    "Resetting",
-                    CancellationToken.None
-                );
-            }
-        }
-
-        private void StopWebScoketLisitingThread()
-        {
-            cancellationTokenSourceWsThread.Cancel();
-
-            WsThread.Wait();
-            WsThread.Dispose();
-            
-        }
-        private async void StartWebScoketLisitingThread()
-        {
-            cancellationTokenSourceWsThread = new CancellationTokenSource();
-            if (_webSocket != null && _webSocket.State == WebSocketState.Open)
-            {
-                _webSocket.Close(
-                    WebSocketCloseStatus.NormalClosure,
-                    "Resetting",
-                    CancellationToken.None
-                );
-            }
-            this._cts = new CancellationTokenSource();
-            string baseAdress = _httpClientFactory
+            logger.LogDebug($"Updating file on device {this._credentialManager.GetDeviceID()}");
+            var response = _httpClientFactory
                 .GetHttpClient()
-                .BaseAddress.ToString()
-                .Replace("http://", "");
-            string uri = $"ws://{baseAdress}ws";
-            string token = this._credentialManager.GetToken();
-            if (token != null && token.Length > 0)
+                .PostAsJsonAsync("api/Files/update", file)
+                .Result;
+
+            if (response.IsSuccessStatusCode)
             {
-                WsThread = null;
-                WsThread = new Task(() => ConnectAndListen(uri, token), cancellationTokenSourceWsThread.Token);
-                WsThread.Start();
+                logger.LogInformation(
+                    $"File {file.newFileData.GetRealativePath()} data updated successfully!"
+                );
+            }
+            else
+            {
+                string responseMesage = response.Content.ReadAsStringAsync().Result;
+                logger.LogError($"Failed to update file  data [[{file}]]: {responseMesage}");
+                throw new Exception($"{response.Content.ReadAsStringAsync().Result}");
             }
         }
 
-        private void ConnectAndListen(string uri, string token)
+        public void Logout()
         {
-            try
-            {
-                if(_webSocket!=null)
-                {
-                    _webSocket.Close(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
-                    _webSocket = null;
-                }
-                _webSocket = new WebSocketWrapper();
-                _webSocket.SetRequestHeader("Authorization", $"Bearer {token}");
-                _webSocket.Connect(new Uri(uri), _cts.Token);
-                while (_webSocket.State == WebSocketState.Open)
-                {
-                    try
-                    {
-                        byte[] buffer = new byte[4096];
-                        WebSocketReceiveResult result = _webSocket.ReceiveAsync(
-                            new ArraySegment<byte>(buffer),
-                            _cts.Token
-                        );
-                        string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                        logger.LogInformation($"Received: {message}");
-                        WebSocketMessage webSocketMessage =
-                            JsonOperations.ObjectFromJSon<WebSocketMessage>(message);
-                        if (this.ServerWerbsocketHadnler != null)
-                        {
-                            Task.Run(() => this.ServerWerbsocketHadnler.Invoke(webSocketMessage));
-                        }
-                    }
-                    catch (WebSocketException ex)
-                    {
-                        logger.LogError(
-                            $"WebSocketException Error reciving webscoket messages [[ {ex.Message}  ]]"
-                        );
-                    }
-                    catch (ObjectDisposedException ex)
-                    {
-                        logger.LogTrace("Webscoket dispodees");
-                        break;
-                    }
-                    catch (AggregateException ex)
-                    {
-                        if (ex.InnerExceptions.Any(e => e is IOException))
-                        {
-                            logger.LogError(
-                                $"IOException occurred while receiving WebSocket messages: [[ {ex.Message} ]]"
-                            );
-                            break;
-                        }
-                        else
-                        {
-                            logger.LogError(
-                                $"Unhandled AggregateException: [[ {String.Join(", \n", ex.InnerExceptions.Select(x => x.Message))} ]]"
-                            );
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogError(
-                            $"Unkwon Error reciving webscoket messages [[ {ex.Message}  ]]"
-                        );
-                    }
-                }
-            }
-            catch (ThreadInterruptedException ex)
-            {
-                logger.LogDebug($"Webscoket interrupted {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError($"Error webscoket conneiton :: {ex.Message}");
-            }
+            _httpClientFactory.GetHttpClient().DefaultRequestHeaders.Authorization = null;
+            this._credentialManager.RemoveToken();
+            InovkeAuthChange(false);
         }
 
         public bool CheckIfHelathy()
@@ -389,117 +516,6 @@ namespace Cloud_Storage_Desktop_lib
             _LoadToken();
         }
 
-        private bool _authState = false;
-
-        private void InovkeAuthChange(bool state)
-        {
-            if (_authState == state)
-                return;
-            _authState = state;
-            logger.LogTrace($"Auth change: {state}");
-            if (this.AuthChangeHandler != null)
-            {
-                this.AuthChangeHandler.Invoke(state);
-            }
-            else { }
-        }
-
-        private void _LoadToken()
-        {
-            string token = this._credentialManager.GetToken();
-            logger.LogTrace($"_LoadToken :: {token}");
-            if (token.Length > 0)
-            {
-                try
-                {
-                    _httpClientFactory.GetHttpClient().DefaultRequestHeaders.Authorization =
-                        new AuthenticationHeaderValue("Bearer", token);
-                    if (!this.CheckIfAuthirized())
-                    {
-                        logger.LogWarning("Token authirzation failed");
-                        this._credentialManager.RemoveToken();
-                        InovkeAuthChange(false);
-                    }
-                    else
-                    {
-                        InovkeAuthChange(true);
-                    }
-                }
-                catch (Exception e)
-                {
-                    this._credentialManager.RemoveToken();
-                    Console.WriteLine(e);
-                }
-            }
-            else
-            {
-                InovkeAuthChange(false);
-            }
-        }
-
-        public void Logout()
-        {
-            _httpClientFactory.GetHttpClient().DefaultRequestHeaders.Authorization = null;
-            this._credentialManager.RemoveToken();
-            InovkeAuthChange(false);
-        }
-
-        public void UploudFile(UploudFileData fileData, Stream stream)
-        {
-            logger.LogDebug(
-                $"Upldoing file  file from device {this._credentialManager.GetDeviceID()}"
-            );
-            var form = FileMangamentSerivce.GetFormDatForFile(fileData, stream);
-            var response = _httpClientFactory
-                .GetHttpClient()
-                .PostAsync("api/Files/upload", form)
-                .Result;
-
-            if (response.IsSuccessStatusCode)
-            {
-                logger.LogInformation(
-                    $"File {fileData.GetRealativePath()} data uploaded successfully!"
-                );
-            }
-            else
-            {
-                string responseMesage = response.Content.ReadAsStringAsync().Result;
-                logger.LogError($"Failed to upload data [[{fileData}]]: {responseMesage}");
-                throw new Exception($"{response.Content.ReadAsStringAsync().Result}");
-            }
-        }
-
-        public void UpdateFileData(UpdateFileDataMessage file)
-        {
-            logger.LogDebug($"Updating file on device {this._credentialManager.GetDeviceID()}");
-            var response = _httpClientFactory
-                .GetHttpClient()
-                .PostAsJsonAsync("api/Files/update", file)
-                .Result;
-
-            if (response.IsSuccessStatusCode)
-            {
-                logger.LogInformation(
-                    $"File {file.newFileData.GetRealativePath()} data updated successfully!"
-                );
-            }
-            else
-            {
-                string responseMesage = response.Content.ReadAsStringAsync().Result;
-                logger.LogError($"Failed to update file  data [[{file}]]: {responseMesage}");
-                throw new Exception($"{response.Content.ReadAsStringAsync().Result}");
-            }
-        }
-
-        public event OnConnectionStateChange? ConnectionChangeHandler;
-        public event OnAuthStateChange? AuthChangeHandler;
-        public event OnServerWebSockerMessage? ServerWerbsocketHadnler;
-
-        public WebSocketState WebSocketState
-        {
-            get { return this._webSocket==null? WebSocketState.None: this._webSocket.State  ; }
-        }
-
         public void DeleteFile(string relativePath)
         {
             var response = this
@@ -569,11 +585,6 @@ namespace Cloud_Storage_Desktop_lib
             //var parsed = JsonSerializer.Deserialize<List<SyncFileData>>(raw);
         }
 
-        internal class FileDownloadRequest
-        {
-            public Guid guid { get; set; }
-        }
-
         public List<SyncFileData> GetAllCloudFilesInfo()
         {
             var response = this
@@ -603,19 +614,9 @@ namespace Cloud_Storage_Desktop_lib
             return stream;
         }
 
-        private void DisposeConnectionStatusWatch()
-        {
-            this.cancellationTokenSourceServerWatcher.Cancel();
-            this.serverWatcherTask.Wait(5000);
-        }
+        #endregion
 
-        public void Dispose()
-        {
-            DisposeConnectionStatusWatch();
-            this._webSocket.Close(WebSocketCloseStatus.Empty, "close", new CancellationToken());
-            this.WsThread.Wait(5000);
-            this._httpClientFactory.GetHttpClient().Dispose();
-        }
+        #region Configuring
 
         public void AdressChange(string apiUrl)
         {
@@ -629,7 +630,65 @@ namespace Cloud_Storage_Desktop_lib
                 {
                     logger.LogError($"Cannot connect to {apiUrl}");
                 }
+                this._webSocketConnection.AdressChange(apiUrl);
             }
+        }
+
+        private void _LoadToken()
+        {
+            string token = this._credentialManager.GetToken();
+            logger.LogTrace($"_LoadToken :: {token}");
+            if (token.Length > 0)
+            {
+                try
+                {
+                    _httpClientFactory.GetHttpClient().DefaultRequestHeaders.Authorization =
+                        new AuthenticationHeaderValue("Bearer", token);
+                    if (!this.CheckIfAuthirized())
+                    {
+                        logger.LogWarning("Token authirzation failed");
+                        this._credentialManager.RemoveToken();
+                        InovkeAuthChange(false);
+                    }
+                    else
+                    {
+                        InovkeAuthChange(true);
+                    }
+                }
+                catch (Exception e)
+                {
+                    this._credentialManager.RemoveToken();
+                    Console.WriteLine(e);
+                }
+            }
+            else
+            {
+                InovkeAuthChange(false);
+            }
+        }
+
+        #endregion
+
+
+
+        //internal class FileDownloadRequest
+        //{
+        //    public Guid guid { get; set; }
+        //}
+
+        private void DisposeConnectionStatusWatch()
+        {
+            this.cancellationTokenSourceServerWatcher.Cancel();
+            this.serverWatcherTask.Wait(5000);
+        }
+
+        public void Dispose()
+        {
+            DisposeConnectionStatusWatch();
+            this._webSocketConnection.Dispose();
+            //this._webSocket.Close(WebSocketCloseStatus.Empty, "close", new CancellationToken());
+            //this.WsThread.Wait(5000);
+            this._httpClientFactory.GetHttpClient().Dispose();
         }
     }
 }

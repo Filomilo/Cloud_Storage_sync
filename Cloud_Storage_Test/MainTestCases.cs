@@ -19,6 +19,7 @@ using AbstractDataBaseContext = Cloud_Storage_Server.Database.AbstractDataBaseCo
 namespace Cloud_Storage_Test
 {
     [TestFixture]
+    [NonParallelizable]
     class MainTestCases
     {
         private static ILogger _logger = CloudDriveLogging.Instance.GetLogger("Maintetscase");

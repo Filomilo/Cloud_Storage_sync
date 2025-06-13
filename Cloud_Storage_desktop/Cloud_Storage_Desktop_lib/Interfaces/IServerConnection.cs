@@ -22,8 +22,7 @@ namespace Cloud_Storage_Desktop_lib.Interfaces
         void UpdateFileData(UpdateFileDataMessage file);
         event OnConnectionStateChange ConnectionChangeHandler;
         event OnAuthStateChange AuthChangeHandler;
-        event OnServerWebSockerMessage ServerWerbsocketHadnler;
-        WebSocketState WebSocketState { get; }
+        IWebSocketConnection WebSocketConnection { get; }
         void DeleteFile(string relativePath);
         void SetFileVersion(Guid id, ulong version);
         void AdressChange(string apiUrl);
