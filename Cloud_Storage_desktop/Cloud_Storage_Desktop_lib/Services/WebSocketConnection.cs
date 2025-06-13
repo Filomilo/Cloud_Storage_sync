@@ -24,10 +24,7 @@ namespace Cloud_Storage_Desktop_lib.Services
 
         private string webSocketConntionAdress
         {
-            get
-            {
-                return $"ws://{baseAdress.Replace("http://", "")}{(baseAdress.Last().Equals('/') ? "" : '/')}ws";
-            }
+            get { return $"ws://{baseAdress.Replace("http://", "")}{(baseAdress.Last().Equals('/')?"":'/')}ws"; }
         }
 
         private string token { get; set; } = "";
@@ -106,7 +103,7 @@ namespace Cloud_Storage_Desktop_lib.Services
                             JsonOperations.ObjectFromJSon<WebSocketMessage>(message);
                         if (this.ServerWerbsocketHadnler != null)
                         {
-                            this.ServerWerbsocketHadnler.Invoke(webSocketMessage);
+                            Task.Run(() => this.ServerWerbsocketHadnler.Invoke(webSocketMessage));
                         }
                     }
                     catch (WebSocketException ex)
@@ -139,7 +136,7 @@ namespace Cloud_Storage_Desktop_lib.Services
                     catch (Exception ex)
                     {
                         logger.LogError(
-                            $"Unkwon Error reciving webscoket messages [[ {ex.Message}  ]] \n [[{ex.StackTrace}]]"
+                            $"Unkwon Error reciving webscoket messages [[ {ex.Message}  ]]"
                         );
                     }
                 }
@@ -165,10 +162,7 @@ namespace Cloud_Storage_Desktop_lib.Services
 
                 threadCancellationTokenSource = new CancellationTokenSource();
                 WebScoketCancellationTokenSource = new CancellationTokenSource();
-                if (
-                    webSocketWrapper.State == WebSocketState.Aborted
-                    || webSocketWrapper.State == WebSocketState.Closed
-                )
+                if (webSocketWrapper.State == WebSocketState.Aborted || webSocketWrapper.State ==WebSocketState.Closed)
                     webSocketWrapper.Close(WebSocketCloseStatus.Empty, "", CancellationToken.None);
                 this.webSocketWrapper.SetRequestHeader("Authorization", $"Bearer {token}");
 
@@ -182,7 +176,7 @@ namespace Cloud_Storage_Desktop_lib.Services
                     threadCancellationTokenSource.Token
                 );
                 webSocketListeningTask.Start();
-                logger.LogError(
+                logger.LogInformation(
                     $"--------------------------------------------- WEB SOCKET CONNECTION STARTED"
                 );
             }
