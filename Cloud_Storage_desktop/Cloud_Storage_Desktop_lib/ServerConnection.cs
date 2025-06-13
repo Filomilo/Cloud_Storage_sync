@@ -8,6 +8,7 @@ using Cloud_Storage_Common.Models;
 using Cloud_Storage_Common.Requests;
 using Cloud_Storage_Desktop_lib.Interfaces;
 using Cloud_Storage_Desktop_lib.Services;
+using Cloud_Storage_desktop.Logic;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -15,6 +16,7 @@ namespace Cloud_Storage_Desktop_lib
 {
     public class ServerConnection : IServerConnection
     {
+        private static int instanceCounter = 0;
         private static ILogger logger = CloudDriveLogging.Instance.GetLogger("ServerConnection");
 
         //HttpClient client = new HttpClient();
@@ -88,6 +90,11 @@ namespace Cloud_Storage_Desktop_lib
             IWebSocketWrapper webSocketWrapper
         )
         {
+            if (instanceCounter > 0 && !(webSocketWrapper is NullWebSocket))
+                throw new Exception("Cannnot crete new serve connectiopn instnace");
+            ;
+            instanceCounter++;
+
             if (ConnetionAdress == "")
                 return;
             try
@@ -116,6 +123,10 @@ namespace Cloud_Storage_Desktop_lib
             IWebSocketWrapper webSocketWrapper
         )
         {
+            if (instanceCounter > 0)
+                throw new Exception("Cannnot crete new serve connectiopn instnace");
+            ;
+            instanceCounter++;
             CreateServerStatusWatcher();
             _httpClientFactory.SetHttpClient(client);
 
