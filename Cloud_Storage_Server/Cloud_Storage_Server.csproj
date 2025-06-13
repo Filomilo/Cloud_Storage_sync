@@ -7,6 +7,7 @@
 	  <SelfContained>true</SelfContained>
 	  <UseAppHost>true</UseAppHost>
 	  <GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
+	  <Configurations>Debug;Release;NoAuth</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

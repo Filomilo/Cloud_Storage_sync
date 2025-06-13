@@ -41,15 +41,23 @@ namespace Cloud_Storage_Server.Controllers
                             context,
                             JwtHelpers.GetDeviceIDFromAuthString(Request.Headers.Authorization)
                         );
-#if DEBUG
-                        
 
                         if (device == null)
                         {
-                            device = DeviceRepository.AddNewDevice(context,
-                                UserRepository.getUserByMail(context,"anakonda@wp.pl"));
+                            string mail = JwtHelpers.GetEmailFromToken(
+                                Request.Headers.Authorization
+                            );
+
+                            device = DeviceRepository.AddNewDevice(
+                                context,
+                                UserRepository.getUserByMail(context, mail)
+                            );
                         }
-#endif
+                    }
+
+                    if (device == null)
+                    {
+                        throw new KeyNotFoundException("Device not found or created");
                     }
 
                     DeviceSocket deviceSocket = new DeviceSocket(device, webSocket);

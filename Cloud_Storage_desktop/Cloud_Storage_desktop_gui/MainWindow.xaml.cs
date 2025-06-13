@@ -55,6 +55,7 @@ public partial class MainWindow : Window
             filesStateWatcher.RefreshList();
         };
         _cloudFileList.Setup(filesStateWatcher, this.ServerConnection);
+        autoScroll.IsChecked = true;
     }
 
     #region Logs
@@ -69,14 +70,16 @@ public partial class MainWindow : Window
 
     private void AddLogText(string newConetnt)
     {
-        Dispatcher
-            .InvokeAsync(() =>
-            {
-                TextBoc_logs.AppendText(newConetnt);
-                //TextBoc_logs.UpdateLayout();
-                TextBoc_logs.ScrollToEnd();
-            })
-            .Wait(new TimeSpan(0, 0, 0, 1));
+        if (newConetnt.Length > 0)
+            Dispatcher
+                .InvokeAsync(() =>
+                {
+                    TextBoc_logs.AppendText(newConetnt);
+                    //TextBoc_logs.UpdateLayout();
+                    if (autoScroll.IsChecked ?? true)
+                        TextBoc_logs.ScrollToEnd();
+                })
+                .Wait(new TimeSpan(0, 0, 0, 1));
         ;
     }
 

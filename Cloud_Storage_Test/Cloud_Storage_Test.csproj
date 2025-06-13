@@ -8,6 +8,7 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
 	  <GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
+	  <Configurations>Debug;Release;NoAuth</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

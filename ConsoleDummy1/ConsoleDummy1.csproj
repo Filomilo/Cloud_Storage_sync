@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	  <SelfContained>true</SelfContained>
+	  <Configurations>Debug;Release;NoAuth</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

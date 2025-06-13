@@ -44,7 +44,14 @@ SqliteDataBaseContextGenerator contextGenerator = new SqliteDataBaseContextGener
 builder.Services.AddSingleton<IDataBaseContextGenerator, SqliteDataBaseContextGenerator>(provider =>
     contextGenerator
 );
-IAuthService authService = new AlwaysLoggedAuthService(contextGenerator as IDataBaseContextGenerator); // new AuthService(contextGenerator);
+
+#if DEBUG
+IAuthService authService = new AlwaysLoggedAuthService(contextGenerator as IDataBaseContextGenerator);
+
+
+#else
+IAuthService authService= new AuthService(contextGenerator);
+#endif
 builder.Services.AddSingleton<IAuthService>(provider => authService);
 
 //builder.Services.AddDbContext<DatabaseContext>();

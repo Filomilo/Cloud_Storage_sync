@@ -206,6 +206,10 @@
                             <ColumnDefinition Width="0*" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
                         <TextBox
                             x:Name="TextBoc_logs"
                             Grid.ColumnSpan="2"
@@ -224,6 +228,14 @@
                                 </ContextMenu>
                             </TextBox.ContextMenu>
                         </TextBox>
+                        <CheckBox
+                            Name="autoScroll"
+                            Grid.RowSpan="2"
+                            Grid.ColumnSpan="2"
+                            Margin="10,0,0,0"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Bottom"
+                            Content="Auto scroll" />
                     </Grid>
                 </Grid>
             </TabItem>

@@ -11,6 +11,7 @@
 	  <RuntimeIdentifier>win-x64</RuntimeIdentifier>
 	  <SelfContained>true</SelfContained>
 	  <ApplicationIcon>Main Icon.ico</ApplicationIcon>
+	  <Configurations>Debug;Release;NoAuth</Configurations>
   </PropertyGroup>
 
   <ItemGroup>

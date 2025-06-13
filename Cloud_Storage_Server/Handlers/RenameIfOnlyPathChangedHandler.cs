@@ -38,44 +38,49 @@ namespace Cloud_Storage_Server.Handlers
             {
                 if (_nextHandler != null)
                 {
-                    return this._nextHandler.Handle(new UpdateFileDataMessageRequest()
-                    {
-                        ExcludedDevices = new List<string>(){update.DeviceReuqested},
-                        UserIdToSendTo = update.UserID,
-                        updateFileDataMessage = update
-                    });
+                    return this._nextHandler.Handle(
+                        new UpdateFileDataMessageRequest()
+                        {
+                            ExcludedDevices = new List<string>() { update.DeviceReuqested },
+                            UserIdToSendTo = update.UserID,
+                            updateFileDataMessage = update,
+                        }
+                    );
                 }
-                    
+
                 return null;
             }
 
-            SyncFileData newFileVersion;
+            SyncFileData newFileVersion = null;
             using (var ctx = _dataBaseContextGenerator.GetDbContext())
             {
                 using (var transaction = ctx.Database.BeginTransaction())
                 {
                     try
                     {
-                        SyncFileData dbFileData = GetOldFileEnntryIDataBase(ctx, update);
-                        newFileVersion = GetNewFileDataEntryInDataBase(ctx, update);
-                        if (dbFileData != null)
+                        Awaiters.AwaitNotThrows(() =>
                         {
-                            RemoveOwnerFromDatabaseEntry(dbFileData, update, ctx);
-                        }
+                            SyncFileData dbFileData = GetOldFileEnntryIDataBase(ctx, update);
+                            newFileVersion = GetNewFileDataEntryInDataBase(ctx, update);
+                            if (dbFileData != null)
+                            {
+                                RemoveOwnerFromDatabaseEntry(dbFileData, update, ctx);
+                            }
 
-                        if (newFileVersion == null)
-                        {
-                            newFileVersion = CreateNewDataEntryNewFileVersion(
-                                dbFileData,
-                                update,
-                                ctx
-                            );
-                        }
-                        else
-                        {
-                            AddDeviceToNewDBEntry(ctx, newFileVersion, update);
-                        }
-                        transaction.Commit();
+                            if (newFileVersion == null)
+                            {
+                                newFileVersion = CreateNewDataEntryNewFileVersion(
+                                    dbFileData,
+                                    update,
+                                    ctx
+                                );
+                            }
+                            else
+                            {
+                                AddDeviceToNewDBEntry(ctx, newFileVersion, update);
+                            }
+                            transaction.Commit();
+                        });
                     }
                     catch (Exception ex)
                     {
@@ -87,15 +92,14 @@ namespace Cloud_Storage_Server.Handlers
 
             update.newFileData = newFileVersion;
 
-
-            UpdateFileDataMessageRequest updateFileDataMessageRequest = new UpdateFileDataMessageRequest()
-            {
-                updateFileDataMessage = update,
-                UserIdToSendTo = update.UserID,
-                InlcudedDevices = update.oldFileData.DeviceOwner,
-                ExcludedDevices = new List<string>() { update.DeviceReuqested }
-            };
-
+            UpdateFileDataMessageRequest updateFileDataMessageRequest =
+                new UpdateFileDataMessageRequest()
+                {
+                    updateFileDataMessage = update,
+                    UserIdToSendTo = update.UserID,
+                    InlcudedDevices = update.oldFileData.DeviceOwner,
+                    ExcludedDevices = new List<string>() { update.DeviceReuqested },
+                };
 
             if (_nextHandler != null)
                 return this._nextHandler.Handle(updateFileDataMessageRequest);
@@ -113,7 +117,8 @@ namespace Cloud_Storage_Server.Handlers
                 Awaiters.AwaitTrue(() =>
                 {
                     syncFile = ctx
-                        .Files.ToList().OrderByDescending(x=>x.Version)
+                        .Files.ToList()
+                        .OrderByDescending(x => x.Version)
                         .FirstOrDefault(x =>
                             x.GetRealativePath().Equals(update.newFileData.GetRealativePath())
                             && !x.DeviceOwner.Contains(update.DeviceReuqested)
