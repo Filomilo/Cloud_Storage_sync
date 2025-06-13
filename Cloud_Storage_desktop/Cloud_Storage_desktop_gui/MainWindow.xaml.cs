@@ -50,7 +50,7 @@ public partial class MainWindow : Window
                 filesStateWatcher.RefreshList();
             }
         };
-        this.ServerConnection.ServerWerbsocketHadnler += message =>
+        this.ServerConnection.WebSocketConnection.ServerWerbsocketHadnler += message =>
         {
             filesStateWatcher.RefreshList();
         };

@@ -876,14 +876,14 @@ namespace Cloud_Storage_Test
                 "cloud drive system 2 is no authorized"
             );
             Assert.That(
-                this._cloudDriveSyncSystemClient1.ServerConnection.WebSocketState
+                this._cloudDriveSyncSystemClient1.ServerConnection.WebSocketConnection.State
                     == WebSocketState.Open,
-                $"_cloudDriveSyncSystemClient1 Conenction not opened but {this._cloudDriveSyncSystemClient1.ServerConnection.WebSocketState}"
+                $"_cloudDriveSyncSystemClient1 Conenction not opened but {this._cloudDriveSyncSystemClient1.ServerConnection.WebSocketConnection.State}"
             );
             Assert.That(
-                this._cloudDriveSyncSystemClient2.ServerConnection.WebSocketState
+                this._cloudDriveSyncSystemClient2.ServerConnection.WebSocketConnection.State
                     == WebSocketState.Open,
-                $"_cloudDriveSyncSystemClient2 Conenction not opened but {this._cloudDriveSyncSystemClient2.ServerConnection.WebSocketState}"
+                $"_cloudDriveSyncSystemClient2 Conenction not opened but {this._cloudDriveSyncSystemClient2.ServerConnection.WebSocketConnection.State}"
             );
             Assert.That(
                 websocketConnectedController.GetAllConnectedDevices().Count() == 2,
@@ -1159,14 +1159,14 @@ namespace Cloud_Storage_Test
                 "cloud drive system 2 is no authorized"
             );
             Assert.That(
-                this._cloudDriveSyncSystemClient1.ServerConnection.WebSocketState
+                this._cloudDriveSyncSystemClient1.ServerConnection.WebSocketConnection.State
                     == WebSocketState.Open,
-                $"_cloudDriveSyncSystemClient1 Conenction not opened but {this._cloudDriveSyncSystemClient1.ServerConnection.WebSocketState}"
+                $"_cloudDriveSyncSystemClient1 Conenction not opened but {this._cloudDriveSyncSystemClient1.ServerConnection.WebSocketConnection.State}"
             );
             Assert.That(
-                this._cloudDriveSyncSystemClient2.ServerConnection.WebSocketState
+                this._cloudDriveSyncSystemClient2.ServerConnection.WebSocketConnection.State
                     == WebSocketState.Open,
-                $"_cloudDriveSyncSystemClient2 Conenction not opened but {this._cloudDriveSyncSystemClient2.ServerConnection.WebSocketState}"
+                $"_cloudDriveSyncSystemClient2 Conenction not opened but {this._cloudDriveSyncSystemClient2.ServerConnection.WebSocketConnection.State}"
             );
             Assert.That(
                 websocketConnectedController.GetAllConnectedDevices().Count() == 2,
