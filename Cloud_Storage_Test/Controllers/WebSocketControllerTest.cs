@@ -83,7 +83,9 @@ namespace Cloud_Storage_Test.Controllers
                 credentialMangager,
                 this.webSocketWrapper
             );
-            serverConnection.ServerWerbsocketHadnler += (WebSocketMessage message) =>
+            serverConnection.WebSocketConnection.ServerWerbsocketHadnler += (
+                WebSocketMessage message
+            ) =>
             {
                 Assert.That(message.Equals(webSocketMessage));
                 recivedMEssage = true;
