@@ -367,7 +367,7 @@ namespace Cloud_Storage_Test
                 state = func();
                 if (state == true)
                     break;
-                Thread.Sleep(100);
+                Thread.Sleep(50);
                 if (stopwatch.ElapsedMilliseconds > timeout)
                     throw new TimeoutException($"Ensure true timouet {timeout}");
             }
@@ -390,7 +390,7 @@ namespace Cloud_Storage_Test
                 }
                 catch (Exception ex)
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(50);
                     if (stopwatch.ElapsedMilliseconds > timeout)
                     {
                         _Logger.LogError(

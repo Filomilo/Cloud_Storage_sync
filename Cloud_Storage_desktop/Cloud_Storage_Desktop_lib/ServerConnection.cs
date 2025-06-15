@@ -121,9 +121,9 @@ namespace Cloud_Storage_Desktop_lib
             IWebSocketWrapper webSocketWrapper
         )
         {
-            if (instanceCounter > 0)
-                throw new Exception("Cannnot crete new serve connectiopn instnace");
-            ;
+            //if (instanceCounter > 0)
+            //    throw new Exception("Cannnot crete new serve connectiopn instnace");
+            //;
             instanceCounter++;
             CreateServerStatusWatcher();
             _httpClientFactory.SetHttpClient(client);

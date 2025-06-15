@@ -1,5 +1,7 @@
-﻿using System.Net.WebSockets;
+﻿using System.Diagnostics;
+using System.Net.WebSockets;
 using System.Text;
+using System.Windows.Media.Animation;
 using Cloud_Storage_Common;
 using Cloud_Storage_Common.Models;
 using Cloud_Storage_Desktop_lib;
@@ -2117,12 +2119,113 @@ namespace Cloud_Storage_Test
         }
 
         [Test]
+        [Repeat(5)]
+        [TestCase(1)]
+        [TestCase(5)]
+        [TestCase(10)]
+        [TestCase(25)]
+        [TestCase(50)]
+        [TestCase(100)]
+        [TestCase(250)]
+        [TestCase(500)]
+        public void Test_Sync_File_Of_Amount(int amountOfFiles)
+        {
+            #region Ensure connected and empty
+            ConnectBothDevices();
+
+            #endregion
+
+            #region Create New File
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            List<string> files = this.AddTMpFiles(amountOfFiles, this._Client1Config);
+
+            #endregion
+
+            #region Ensure second device also has file
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            return _localFileRepositoryService1
+                                .GetAllFiles()
+                                .Count()
+                                .Equals(amountOfFiles);
+                        },
+                        10000 + 100000 * amountOfFiles
+                    );
+                },
+                $"Locla repostir should have osme file"
+            );
+
+            string serverFclient1 = this
+                ._localFileRepositoryService1.GetAllFiles()
+                .FirstOrDefault()
+                .Hash;
+            string newDevieFileHAs = "";
+            Assert.DoesNotThrow(
+                () =>
+                {
+                    TestHelpers.EnsureTrue(
+                        () =>
+                        {
+                            List<FileData> fileOnsecondClinet = FileManager.GetAllFilesInLocation(
+                                _Client2Config.StorageLocation
+                            );
+                            return fileOnsecondClinet.Count.Equals(amountOfFiles);
+                        },
+                        10000 + 1000 * amountOfFiles
+                    );
+                },
+                $"new device file hash \n[[{newDevieFileHAs}]]\n IS not the same as file hash on server \n[[{serverFclient1}]]\n"
+            );
+
+            #endregion
+
+
+
+            #region Ensure Correct finsihs state
+
+
+            BothDevicesShouldHAveTheSameData();
+            stopwatch.Stop();
+            string resultPath = "D:\\temp\\amoumntSavETest.csv";
+
+            if (!File.Exists(resultPath))
+            {
+                using (var file = File.OpenWrite(resultPath))
+                {
+                    file.Seek(0, SeekOrigin.End);
+                    using (var stream = new StreamWriter(file))
+                    {
+                        stream.WriteLine("amount;TimeInMs");
+                    }
+                }
+            }
+
+            using (
+                var file = File.Open(resultPath, FileMode.Open, FileAccess.Write, FileShare.None)
+            )
+            {
+                file.Seek(0, SeekOrigin.End);
+                using (var stream = new StreamWriter(file))
+                {
+                    stream.WriteLine($"{amountOfFiles};{stopwatch.ElapsedMilliseconds}");
+                }
+            }
+            #endregion
+        }
+
+        [Test]
+        [Repeat(5)]
         [TestCase(1)]
         [TestCase(10)]
         [TestCase(100)]
         [TestCase(500)]
         [TestCase(1024)]
-        [TestCase(2000)]
+        [TestCase(2048)]
         [TestCase(4096)]
         [TestCase(8192)]
         public void Test_Sync_File_Of_Size(long sizeInMb)
@@ -2134,6 +2237,7 @@ namespace Cloud_Storage_Test
 
             #region Create New File
 
+            Stopwatch stopwatch = Stopwatch.StartNew();
             String createdFileName = this.AddTMpFileOfSize(
                 sizeInMb * 1024 * 1024,
                 this._Client1Config
@@ -2186,7 +2290,31 @@ namespace Cloud_Storage_Test
 
 
             BothDevicesShouldHAveTheSameData();
+            stopwatch.Stop();
+            string resultPath = "D:\\temp\\sizeSavETest.csv";
 
+            if (!File.Exists(resultPath))
+            {
+                using (var file = File.OpenWrite(resultPath))
+                {
+                    file.Seek(0, SeekOrigin.End);
+                    using (var stream = new StreamWriter(file))
+                    {
+                        stream.WriteLine("SizeinMB;TimeInMs");
+                    }
+                }
+            }
+
+            using (
+                var file = File.Open(resultPath, FileMode.Open, FileAccess.Write, FileShare.None)
+            )
+            {
+                file.Seek(0, SeekOrigin.End);
+                using (var stream = new StreamWriter(file))
+                {
+                    stream.WriteLine($"{sizeInMb};{stopwatch.ElapsedMilliseconds}");
+                }
+            }
             #endregion
         }
 
